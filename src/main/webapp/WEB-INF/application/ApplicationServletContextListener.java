@@ -27,6 +27,8 @@ public class ApplicationServletContextListener implements ServletContextListener
 		plainHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
 
 		event.getServletContext().addServlet("SpaWebServiceServlet", new SpaWebServiceServlet()).addMapping("/spahttpws");
+
+		event.getServletContext().addServlet("ViewCaptureServlet", new ViewCaptureServlet()).addMapping("/viewcapture");
 	}
 
 	public void contextDestroyed(ServletContextEvent servletContextEvent) {

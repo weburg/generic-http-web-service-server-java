@@ -1,5 +1,6 @@
 package com.weburg.services;
 
+import com.weburg.ScratchLogitechSimple;
 import com.weburg.domain.Engine;
 import com.weburg.domain.Photo;
 import org.apache.commons.io.FileUtils;
@@ -230,6 +231,14 @@ public class DefaultHttpWebService implements HttpWebService {
 
 			sound.start();
 		} catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void lightKeyboard() {
+		try {
+			ScratchLogitechSimple.main(new String[]{});
+		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}

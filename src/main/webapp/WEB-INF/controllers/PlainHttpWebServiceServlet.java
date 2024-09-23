@@ -277,6 +277,17 @@ public class PlainHttpWebServiceServlet extends HttpServlet {
 			} else {
 				response.setStatus(HttpServletResponse.SC_OK);
 			}
+		} else if (customVerb.equals("light")) {
+			if (getResource(request.getPathInfo()).equals("keyboards")) {
+				service.lightKeyboard();
+			}
+
+			if (getAccept(request).contains("text/html")) {
+				response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+				response.setHeader("Location", "/htmlplainhttpwsclient.jsp");
+			} else {
+				response.setStatus(HttpServletResponse.SC_OK);
+			}
 		} else {
 			response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
 		}

@@ -30,4 +30,6 @@ public interface HttpWebService {
 	String createPhoto(Photo photo) throws IOException;
 
 	void playSound(String name);
+
+	void lightKeyboard();
 }

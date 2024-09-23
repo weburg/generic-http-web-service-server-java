@@ -1,2 +1,2 @@
 <hr>
-<a href="/">Home</a> | <a href="/htmlplainhttpwsclient.jsp">HTML Plain HTTP WS Client</a> | <a href="/spahttpws">SPA Web Service (for JS)</a>
+<a href="/">Home</a> | <a href="/htmlplainhttpwsclient.jsp">HTML Plain HTTP WS Client</a> | <a href="/spahttpws">SPA Web Service (for JS)</a> | <a href="/lonesome.jsp">Lonesome</a> | <a href="/viewcapture">View Capture</a>
