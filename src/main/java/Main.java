@@ -1,6 +1,7 @@
+import org.apache.catalina.Context;
 import org.apache.catalina.LifecycleException;
+import org.apache.catalina.connector.Connector;
 import org.apache.catalina.startup.Tomcat;
-import org.apache.catalina.core.StandardContext;
 
 import java.io.File;
 
@@ -9,10 +10,14 @@ public class Main {
         Tomcat tomcat = new Tomcat();
         tomcat.setPort(8081);
 
-        StandardContext ctx = (StandardContext) tomcat.addWebapp("", new
-                File("src/main/webapp/").getAbsolutePath());
+        Context context = tomcat.addWebapp("", new File("src/main/webapp/").getAbsolutePath());
+        context.addApplicationListener(ApplicationServletContextListener.class.getCanonicalName());
+        context.addWelcomeFile("index");
 
-        tomcat.getConnector();
+        Connector connector = tomcat.getConnector();
+        connector.setParseBodyMethods("POST,PUT,PATCH");
+
+        tomcat.setConnector(connector);
 
         try {
             tomcat.start();
