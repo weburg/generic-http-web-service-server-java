@@ -11,226 +11,226 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class DefaultHttpWebService implements HttpWebService {
-	int lastEngineId = 0;
-	String dataFilePath;
+    int lastEngineId = 0;
+    String dataFilePath;
 
-	public DefaultHttpWebService(String dataFilePath) {
-		this.dataFilePath = dataFilePath;
+    public DefaultHttpWebService(String dataFilePath) {
+        this.dataFilePath = dataFilePath;
 
-		File directory = new File(this.dataFilePath);
+        File directory = new File(this.dataFilePath);
 
-		if (!directory.exists()) {
-			directory.mkdirs();
-		}
+        if (!directory.exists()) {
+            directory.mkdirs();
+        }
 
-		// Set the last engine ID based on existing files
+        // Set the last engine ID based on existing files
 
-		File[] engineFiles = getEngineFiles();
+        File[] engineFiles = getEngineFiles();
 
-		int maxEngineId = 0;
+        int maxEngineId = 0;
 
-		for (File engineFile : engineFiles) {
-			System.out.println(engineFile.getName());
-			int engineId = Integer.parseInt(engineFile.getName().substring(engineFile.getName().indexOf("_") + 1,
-					engineFile.getName().indexOf(".ser")));
-			if (engineId > maxEngineId) {
-				maxEngineId = engineId;
-			}
-		}
+        for (File engineFile : engineFiles) {
+            System.out.println(engineFile.getName());
+            int engineId = Integer.parseInt(engineFile.getName().substring(engineFile.getName().indexOf("_") + 1,
+                    engineFile.getName().indexOf(".ser")));
+            if (engineId > maxEngineId) {
+                maxEngineId = engineId;
+            }
+        }
 
-		this.lastEngineId = maxEngineId;
-	}
+        this.lastEngineId = maxEngineId;
+    }
 
-	public String getDataFilePath() {
-		return dataFilePath;
-	}
+    public String getDataFilePath() {
+        return dataFilePath;
+    }
 
-	public Engine getEngine(int id) throws IOException, ClassNotFoundException {
-		FileInputStream fis = new FileInputStream(this.dataFilePath + System.getProperty("file.separator")
-				+ "Engine_" + id + ".ser");
-		ObjectInputStream ois = new ObjectInputStream(fis);
+    public Engine getEngine(int id) throws IOException, ClassNotFoundException {
+        FileInputStream fis = new FileInputStream(this.dataFilePath + System.getProperty("file.separator")
+                + "Engine_" + id + ".ser");
+        ObjectInputStream ois = new ObjectInputStream(fis);
 
-		Engine engine = (Engine) ois.readObject();
+        Engine engine = (Engine) ois.readObject();
 
-		ois.close();
-		fis.close();
+        ois.close();
+        fis.close();
 
-		return engine;
-	}
+        return engine;
+    }
 
-	public ArrayList<Engine> getEngines() throws IOException, ClassNotFoundException {
-		ArrayList<Engine> engines = new ArrayList<>();
+    public ArrayList<Engine> getEngines() throws IOException, ClassNotFoundException {
+        ArrayList<Engine> engines = new ArrayList<>();
 
-		File[] engineFiles = getEngineFiles();
+        File[] engineFiles = getEngineFiles();
 
-		for (File engineFile : engineFiles) {
-			FileInputStream fis = new FileInputStream(engineFile);
-			ObjectInputStream ois = new ObjectInputStream(fis);
+        for (File engineFile : engineFiles) {
+            FileInputStream fis = new FileInputStream(engineFile);
+            ObjectInputStream ois = new ObjectInputStream(fis);
 
-			Engine engine = (Engine) ois.readObject();
+            Engine engine = (Engine) ois.readObject();
 
-			engines.add(engine);
+            engines.add(engine);
 
-			ois.close();
-			fis.close();
-		}
+            ois.close();
+            fis.close();
+        }
 
-		return engines;
-	}
+        return engines;
+    }
 
-	public int createEngine(Engine engine) throws IOException {
-		int engineId = ++this.lastEngineId;
+    public int createEngine(Engine engine) throws IOException {
+        int engineId = ++this.lastEngineId;
 
-		engine.setId(engineId);
+        engine.setId(engineId);
 
-		FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
-				+ "Engine_" + engineId + ".ser");
-		ObjectOutputStream oos = new ObjectOutputStream(fos);
+        FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
+                + "Engine_" + engineId + ".ser");
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-		oos.writeObject(engine);
+        oos.writeObject(engine);
 
-		oos.close();
-		fos.close();
+        oos.close();
+        fos.close();
 
-		return engineId;
-	}
+        return engineId;
+    }
 
-	public int createOrReplaceEngine(Engine engine) throws IOException {
-		if (engine.getId() == 0) {
-			throw new IllegalArgumentException("For createOrReplace operations, the id must be specified.");
-		}
+    public int createOrReplaceEngine(Engine engine) throws IOException {
+        if (engine.getId() == 0) {
+            throw new IllegalArgumentException("For createOrReplace operations, the id must be specified.");
+        }
 
-		File file = new File(this.dataFilePath + System.getProperty("file.separator")
-				+ "Engine_" + engine.getId() + ".ser");
+        File file = new File(this.dataFilePath + System.getProperty("file.separator")
+                + "Engine_" + engine.getId() + ".ser");
 
-		FileOutputStream fos = new FileOutputStream(file);
-		ObjectOutputStream oos = new ObjectOutputStream(fos);
+        FileOutputStream fos = new FileOutputStream(file);
+        ObjectOutputStream oos = new ObjectOutputStream(fos);
 
-		oos.writeObject(engine);
+        oos.writeObject(engine);
 
-		oos.close();
-		fos.close();
+        oos.close();
+        fos.close();
 
-		if (this.lastEngineId < engine.getId()) {
-			this.lastEngineId = engine.getId();
-		}
+        if (this.lastEngineId < engine.getId()) {
+            this.lastEngineId = engine.getId();
+        }
 
-		return engine.getId();
-	}
+        return engine.getId();
+    }
 
-	public void updateEngine(Engine engine) throws IOException {
-		if (engine.getId() == 0) {
-			throw new IllegalArgumentException("For update operations, the id must be specified.");
-		}
+    public void updateEngine(Engine engine) throws IOException {
+        if (engine.getId() == 0) {
+            throw new IllegalArgumentException("For update operations, the id must be specified.");
+        }
 
-		createOrReplaceEngine(engine); // For simple persistence, reuse other method since replacement happens anyway
-	}
+        createOrReplaceEngine(engine); // For simple persistence, reuse other method since replacement happens anyway
+    }
 
-	public void deleteEngine(int id) throws IOException {
-		File file = new File(this.dataFilePath + System.getProperty("file.separator") + "Engine_" + id + ".ser");
-		boolean deleted = file.delete();
+    public void deleteEngine(int id) throws IOException {
+        File file = new File(this.dataFilePath + System.getProperty("file.separator") + "Engine_" + id + ".ser");
+        boolean deleted = file.delete();
 
-		if (!deleted) {
-			throw new IOException("Could not delete " + file.getName());
-		}
-	}
+        if (!deleted) {
+            throw new IOException("Could not delete " + file.getName());
+        }
+    }
 
-	public void restartEngine(int id) throws IOException, ClassNotFoundException {
-		Engine engine = getEngine(id);
+    public void restartEngine(int id) throws IOException, ClassNotFoundException {
+        Engine engine = getEngine(id);
 
-		if (!engine.getName().endsWith("Restarted")) {
-			engine.setName(engine.getName() + "Restarted");
-			updateEngine(engine);
-		}
-	}
+        if (!engine.getName().endsWith("Restarted")) {
+            engine.setName(engine.getName() + "Restarted");
+            updateEngine(engine);
+        }
+    }
 
-	public void stopEngine(int id) throws IOException, ClassNotFoundException {
-		Engine engine = getEngine(id);
+    public void stopEngine(int id) throws IOException, ClassNotFoundException {
+        Engine engine = getEngine(id);
 
-		if (engine.getName().endsWith("Restarted")) {
-			engine.setName(engine.getName().substring(0, engine.getName().length() - "Restarted".length()));
-			updateEngine(engine);
-		}
-	}
+        if (engine.getName().endsWith("Restarted")) {
+            engine.setName(engine.getName().substring(0, engine.getName().length() - "Restarted".length()));
+            updateEngine(engine);
+        }
+    }
 
-	private File[] getEngineFiles() {
-		File directory = new File(this.dataFilePath);
+    private File[] getEngineFiles() {
+        File directory = new File(this.dataFilePath);
 
-		File engineFiles[] = directory.listFiles(
-				(dir, name) -> {
-					if (name.startsWith("Engine_") && name.endsWith(".ser")) {
-						return true;
-					} else {
-						return false;
-					}
-				}
-		);
+        File engineFiles[] = directory.listFiles(
+                (dir, name) -> {
+                    if (name.startsWith("Engine_") && name.endsWith(".ser")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+        );
 
-		return engineFiles;
-	}
+        return engineFiles;
+    }
 
-	private File[] getPhotoFiles() {
-		File directory = new File(this.dataFilePath);
+    private File[] getPhotoFiles() {
+        File directory = new File(this.dataFilePath);
 
-		File photoFiles[] = directory.listFiles(
-				(dir, name) -> {
-					if (name.toLowerCase().endsWith(".jpg") || name.toLowerCase().endsWith(".jpeg") || name.toLowerCase().endsWith(".png")) {
-						return true;
-					} else {
-						return false;
-					}
-				}
-		);
+        File photoFiles[] = directory.listFiles(
+                (dir, name) -> {
+                    if (name.toLowerCase().endsWith(".jpg") || name.toLowerCase().endsWith(".jpeg") || name.toLowerCase().endsWith(".png")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+        );
 
-		return photoFiles;
-	}
+        return photoFiles;
+    }
 
-	public Photo getPhoto(String photoFile) throws IOException, ClassNotFoundException {
-		Photo photo = new Photo();
-		photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile + ".txt")));
-		photo.setPhotoFile(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile));
+    public Photo getPhoto(String photoFile) throws IOException, ClassNotFoundException {
+        Photo photo = new Photo();
+        photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile + ".txt")));
+        photo.setPhotoFile(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile));
 
-		return photo;
-	}
+        return photo;
+    }
 
-	public List<Photo> getPhotos() throws IOException, ClassNotFoundException {
-		ArrayList<Photo> photos = new ArrayList<>();
+    public List<Photo> getPhotos() throws IOException, ClassNotFoundException {
+        ArrayList<Photo> photos = new ArrayList<>();
 
-		File[] photoFiles = getPhotoFiles();
+        File[] photoFiles = getPhotoFiles();
 
-		for (File photoFile : photoFiles) {
-			Photo photo = new Photo();
-			photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile.getName() + ".txt")));
-			photo.setPhotoFile(photoFile);
+        for (File photoFile : photoFiles) {
+            Photo photo = new Photo();
+            photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile.getName() + ".txt")));
+            photo.setPhotoFile(photoFile);
 
-			photos.add(photo);
-		}
+            photos.add(photo);
+        }
 
-		return photos;
-	}
+        return photos;
+    }
 
-	public String createPhoto(Photo photo) throws IOException {
-		// The file will need to have been written to disk already, we only have a reference to it now
-		// TODO given that this is now a File, we should be able to write it out here instead, it's better to do in here
+    public String createPhoto(Photo photo) throws IOException {
+        // The file will need to have been written to disk already, we only have a reference to it now
+        // TODO given that this is now a File, we should be able to write it out here instead, it's better to do in here
 
-		// Write caption
-		FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
-				+ photo.getPhotoFile().getName() + ".txt");
-		fos.write(photo.getCaption().getBytes());
-		fos.close();
+        // Write caption
+        FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
+                + photo.getPhotoFile().getName() + ".txt");
+        fos.write(photo.getCaption().getBytes());
+        fos.close();
 
-		return photo.getPhotoFile().getName();
-	}
+        return photo.getPhotoFile().getName();
+    }
 
-	public void playSound(String name) {
-		try {
-			Clip sound = AudioSystem.getClip();
+    public void playSound(String name) {
+        try {
+            Clip sound = AudioSystem.getClip();
 
-			sound.open(AudioSystem.getAudioInputStream(new File(this.getClass().getClassLoader().getResource(name).getFile())));
+            sound.open(AudioSystem.getAudioInputStream(new File(this.getClass().getClassLoader().getResource(name).getFile())));
 
-			sound.start();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-	}
+            sound.start();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
