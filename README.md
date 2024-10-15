@@ -12,6 +12,15 @@
 ### Capabilities
 
 - Server allows creating, updating, reading, listing, and deleting example Engine and Photo resources. Playing a sound on the server is also possible.
+- Engine resource is an object with string and numeric data, while Photo shows binary file upload abilities through HTML based file uploads.
+
+The client can make calls easily to the server like so, once it has a `ws` object to the server:
+
+`id = ws->createEngine(engine)`
+
+or
+
+`engines = ws->getEngines()`
 
 ### Limitations
 
@@ -20,3 +29,7 @@
 ### Running the server
 
 Run `src/main/java/Main.java`.
+
+### Related projects
+
+Refer to other grouped GHoWSt projects for various clients enabling native and dynamic method invocation examples.
