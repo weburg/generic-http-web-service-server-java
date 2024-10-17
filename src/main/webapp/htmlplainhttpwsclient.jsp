@@ -1,27 +1,6 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>HTML Plain HTTP WS Client</title>
-    <link rel="stylesheet" href="/css/main.css">
-    <style>
-        form {
-            margin-bottom: 1.5em;
-        }
-
-        form:last-of-type {
-            margin-bottom: 1em;
-        }
-
-        blockquote {
-            margin-left: 16px;
-        }
-    </style>
-</head>
-
-<body>
-
-<h1>HTML Plain HTTP WS Client</h1>
+<jsp:include page="/WEB-INF/views/header.jsp">
+    <jsp:param name="title" value="HTML Plain HTTP WS Client"/>
+</jsp:include>
 
 <h2>Sounds</h2>
 
@@ -94,6 +73,3 @@
 <blockquote><a href="plainhttpws/photos">Get all photos</a></blockquote>
 
 <%@ include file="WEB-INF/views/footer.jsp" %>
-
-</body>
-</html>

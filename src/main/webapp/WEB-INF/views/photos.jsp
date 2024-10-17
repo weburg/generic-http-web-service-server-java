@@ -1,18 +1,8 @@
 <%@ page import="com.weburg.domain.Photo" %>
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
 <jsp:useBean id="model" class="beans.PhotosBean" scope="request"/>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Photos</title>
-    <link rel="stylesheet" href="/css/main.css">
-</head>
-
-<body>
-
-<h1>HTML Plain HTTP WS Client - Photos</h1>
+<jsp:include page="/WEB-INF/views/header.jsp">
+    <jsp:param name="title" value="HTML Plain HTTP WS Client - Photos"/>
+</jsp:include>
 
 <table>
     <thead>
@@ -34,6 +24,3 @@
 </table>
 
 <%@ include file="footer.jsp" %>
-
-</body>
-</html>
