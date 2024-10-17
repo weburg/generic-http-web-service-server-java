@@ -25,6 +25,7 @@ or
 ### Limitations
 
 - See project Issues for current limitations and plans.
+- The HTML-only client cannot delete or modify content. For that ability, refer to the related JavaScript client project which runs in a browser.
 
 ### Running the server
 
