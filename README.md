@@ -29,9 +29,11 @@ or
 ### Running the server
 
 If using the CLI, ensure Java 11 or better and Maven are installed and that you are in the project directory. Run:
+
 `mvn compile exec:exec`
 
 If using an IDE, you should only need to run the below class after compiling:
+
 `src/main/java/Main.java`.
 
 The server creates a directory called ".HttpWebService" in your user home directory to write serialized resources and other created files into.
