@@ -1,6 +1,6 @@
 # Generic HTTP Web Service Server in Java (GHoWSt)
 
-## An example server providing the Web service and an HTML-only static client in one.
+## An example server providing the Web service and an HTML-only static client in one
 
 ### Design goals
 
