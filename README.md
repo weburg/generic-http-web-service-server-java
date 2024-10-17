@@ -14,7 +14,7 @@
 - Server allows creating, updating, reading, listing, and deleting example Engine and Photo resources. Playing a sound on the server is also possible.
 - Engine resource is an object with string and numeric data, while Photo shows binary file upload abilities through HTML based file uploads.
 
-The client can make calls easily to the server like so, once it has a `ws` object to the server:
+The client can make calls easily to the server like so, once it has a `ws` proxy object to the server:
 
 `id = ws->createEngine(engine)`
 
@@ -28,7 +28,17 @@ or
 
 ### Running the server
 
-Run `src/main/java/Main.java`.
+If using the CLI, ensure Java 11 or better and Maven are installed and that you are in the project directory. Run:
+`mvn compile exec:exec`
+
+If using an IDE, you should only need to run the below class after compiling:
+`src/main/java/Main.java`.
+
+The server creates a directory called ".HttpWebService" in your user home directory to write serialized resources and other created files into.
+
+You can now navigate to http://localhost:8081 to view the server and browse any created content, or create new content with the HTML forms interface.
+
+Leave the server running when using the related projects to create content. Those projects can run on another machine, or the same machine. Just remember to change localhost to the desired server as required.
 
 ### Related projects
 

@@ -62,6 +62,19 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.4.1</version>
+                <configuration>
+                    <executable>java</executable><!-- Must use an external java process (exec:exec) instead of (exec:java) or listener class loader issues occur -->
+                    <arguments>
+                        <argument>-classpath</argument>
+                        <classpath/><!-- automatically creates classpath with alll project dependencies and project directory -->
+                        <argument>Main</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 </project>
