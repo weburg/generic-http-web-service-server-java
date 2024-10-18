@@ -21,10 +21,10 @@ public class ApplicationServletContextListener implements ServletContextListener
 
         String dataFilePath = System.getProperty("user.home") + System.getProperty("file.separator") + ".HttpWebService";
         DefaultHttpWebService httpWebService = new DefaultHttpWebService(dataFilePath);
-        ServletRegistration.Dynamic plainHttpWebServiceServletRegistration = event.getServletContext()
-                .addServlet("PlainHttpWebServiceServlet", new PlainHttpWebServiceServlet(httpWebService));
-        plainHttpWebServiceServletRegistration.addMapping("/plainhttpws/*");
-        plainHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
+        ServletRegistration.Dynamic genericHttpWebServiceServletRegistration = event.getServletContext()
+                .addServlet("GenericHttpWebServiceServlet", new GenericHttpWebServiceServlet(httpWebService));
+        genericHttpWebServiceServletRegistration.addMapping("/generichttpws/*");
+        genericHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
 
         event.getServletContext().addServlet("SpaWebServiceServlet", new SpaWebServiceServlet()).addMapping("/spahttpws");
     }

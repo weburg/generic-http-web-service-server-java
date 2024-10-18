@@ -1,7 +1,7 @@
 <%@ page import="com.weburg.domain.Engine" %>
 <jsp:useBean id="model" class="beans.EnginesBean" scope="request"/>
 <jsp:include page="/WEB-INF/views/header.jsp">
-    <jsp:param name="title" value="HTML Plain HTTP WS Client - Engines"/>
+    <jsp:param name="title" value="HTML Generic HTTP WS Client - Engines"/>
 </jsp:include>
 
 <table>
@@ -16,7 +16,7 @@
     <tbody>
     <% for (Engine engine : model.getEngines()) { %>
         <tr>
-            <td><a href="${pageContext.request.contextPath}/plainhttpws/engines?id=<%= engine.getId() %>"><%= engine.getId() %></a></td>
+            <td><a href="${pageContext.request.contextPath}/generichttpws/engines?id=<%= engine.getId() %>"><%= engine.getId() %></a></td>
             <td><%= engine.getName() %></td>
             <td><%= engine.getCylinders() %></td>
             <td><%= engine.getThrottleSetting() %></td>

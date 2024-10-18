@@ -1,7 +1,7 @@
 <%@ page import="com.weburg.domain.Photo" %>
 <jsp:useBean id="model" class="beans.PhotosBean" scope="request"/>
 <jsp:include page="/WEB-INF/views/header.jsp">
-    <jsp:param name="title" value="HTML Plain HTTP WS Client - Photos"/>
+    <jsp:param name="title" value="HTML Generic HTTP WS Client - Photos"/>
 </jsp:include>
 
 <table>
@@ -15,7 +15,7 @@
     <tbody>
     <% for (Photo photo : model.getPhotos()) { %>
         <tr>
-            <td><a href="${pageContext.request.contextPath}/plainhttpws/photos?photoFile=<%= photo.getPhotoFile().getName() %>"><img src="${pageContext.request.contextPath}/plainhttpws/photos?photoFile=<%= photo.getPhotoFile().getName() %>" width="128"></a></td>
+            <td><a href="${pageContext.request.contextPath}/generichttpws/photos?photoFile=<%= photo.getPhotoFile().getName() %>"><img src="${pageContext.request.contextPath}/generichttpws/photos?photoFile=<%= photo.getPhotoFile().getName() %>" width="128"></a></td>
             <td><%= photo.getCaption() %></td>
             <td><%= photo.getPhotoFile().getName() %></td>
         </tr>

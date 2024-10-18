@@ -26,16 +26,16 @@ TODO Request and response should factor encoding type into the way processing is
 Right now, we assume form encoded data in and JSON data out.
 */
 
-public class PlainHttpWebServiceServlet extends HttpServlet {
+public class GenericHttpWebServiceServlet extends HttpServlet {
     private HttpWebService httpWebService;
 
     private String dataFilePath;
 
     private HashMap<String, Object> serviceLookup = new HashMap<>();
 
-    private static final Logger LOGGER = Logger.getLogger(PlainHttpWebServiceServlet.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(GenericHttpWebServiceServlet.class.getName());
 
-    public PlainHttpWebServiceServlet(HttpWebService httpWebService) {
+    public GenericHttpWebServiceServlet(HttpWebService httpWebService) {
         dataFilePath = ((DefaultHttpWebService) httpWebService).getDataFilePath();
 
         this.httpWebService = httpWebService;
@@ -198,7 +198,7 @@ public class PlainHttpWebServiceServlet extends HttpServlet {
                     } else {
                         response.setStatus(HttpServletResponse.SC_CREATED);
                     }
-                    response.setHeader("Location", "/plainhttpws/engines?id=" + id);
+                    response.setHeader("Location", "/generichttpws/engines?id=" + id);
 
                     Gson gson = new Gson();
                     String idJson = gson.toJson(id);
@@ -230,7 +230,7 @@ public class PlainHttpWebServiceServlet extends HttpServlet {
                     } else {
                         response.setStatus(HttpServletResponse.SC_CREATED);
                     }
-                    response.setHeader("Location", "/plainhttpws/photos?photoFile=" + photoFileName);
+                    response.setHeader("Location", "/generichttpws/photos?photoFile=" + photoFileName);
 
                     Gson gson = new Gson();
                     String idJson = gson.toJson(photoFileName);
@@ -259,7 +259,7 @@ public class PlainHttpWebServiceServlet extends HttpServlet {
                     } else {
                         response.setStatus(HttpServletResponse.SC_OK);
                     }
-                    response.setHeader("Location", "/plainhttpws/engines?id=" + request.getParameter("id"));
+                    response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
                 } catch (Exception e) {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 }
@@ -273,7 +273,7 @@ public class PlainHttpWebServiceServlet extends HttpServlet {
 
             if (getAccept(request).contains("text/html")) {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                response.setHeader("Location", "/htmlplainhttpwsclient.jsp");
+                response.setHeader("Location", "/htmlgenerichttpwsclient.jsp");
             } else {
                 response.setStatus(HttpServletResponse.SC_OK);
             }
@@ -285,7 +285,7 @@ public class PlainHttpWebServiceServlet extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         HttpWebService service = getServiceFromPath(request.getPathInfo());
 
-        // TODO Plain HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
+        // TODO Generic HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
 
         Engine engine = new Engine();
         engine.setId(new Integer(request.getParameter("id")));
@@ -301,7 +301,7 @@ public class PlainHttpWebServiceServlet extends HttpServlet {
             } else {
                 response.setStatus(HttpServletResponse.SC_CREATED);
             }
-            response.setHeader("Location", "/plainhttpws/engines?id=" + request.getParameter("id"));
+            response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
 
             Gson gson = new Gson();
             String idJson = gson.toJson(id);
@@ -319,7 +319,7 @@ public class PlainHttpWebServiceServlet extends HttpServlet {
 
         HttpWebService service = getServiceFromPath(request.getPathInfo());
 
-        // TODO Plain HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
+        // TODO Generic HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
 
         try {
             Engine engine = service.getEngine(new Integer(request.getParameter("id")));
