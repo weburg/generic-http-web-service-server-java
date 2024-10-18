@@ -71,7 +71,7 @@
                     <executable>java</executable><!-- Must use an external java process (exec:exec) instead of (exec:java) or listener class loader issues occur -->
                     <arguments>
                         <argument>-classpath</argument>
-                        <classpath/><!-- automatically creates classpath with alll project dependencies and project directory -->
+                        <classpath/><!-- automatically creates classpath with all project dependencies and project directory -->
                         <argument>Main</argument>
                     </arguments>
                 </configuration>
