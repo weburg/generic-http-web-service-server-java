@@ -273,7 +273,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
             if (getAccept(request).contains("text/html")) {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                response.setHeader("Location", "/htmlgenerichttpwsclient.jsp");
+                response.setHeader("Location", "/generichttpwsclient.jsp");
             } else {
                 response.setStatus(HttpServletResponse.SC_OK);
             }

@@ -1,5 +1,5 @@
 <jsp:include page="/WEB-INF/views/header.jsp">
-    <jsp:param name="title" value="HTML Generic HTTP WS Client"/>
+    <jsp:param name="title" value="Generic HTTP Web Service Client in HTML (GHoWSt)"/>
 </jsp:include>
 
 <h2>Sounds</h2>
