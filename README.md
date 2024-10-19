@@ -41,8 +41,8 @@ or
 
 ### Running the server
 
-If using the CLI, ensure Java 11 or better and Maven are installed and that you
-are in the project directory. Run:
+If using the CLI, ensure Java JDK 11 or better and Maven 3 or better are
+installed and that you are in the project directory. Run:
 
 `mvn compile exec:exec`
 
@@ -50,7 +50,7 @@ If using an IDE, you should only need to run the below class after compiling:
 
 `src/main/java/Main.java`
 
-The server creates a directory called ".HttpWebService" in your user home
+The server creates a directory called `.HttpWebService` in your user home
 directory to write serialized resources and other created files into.
 
 You can now navigate to http://localhost:8081 to view the server and browse any
