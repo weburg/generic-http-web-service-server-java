@@ -41,8 +41,9 @@ or
 
 ### Running the server
 
-If using the CLI, ensure Java JDK 11 or better and Maven 3 or better are
-installed and that you are in the project directory. Run:
+Ensure Java JDK 11 or better and Maven 3 or better are installed.
+
+If using the CLI, ensure you are in the project directory. Run:
 
 `mvn compile exec:exec`
 
