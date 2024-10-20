@@ -174,7 +174,7 @@ public class DefaultHttpWebService implements HttpWebService {
 
         File photoFiles[] = directory.listFiles(
                 (dir, name) -> {
-                    if (name.toLowerCase().endsWith(".jpg") || name.toLowerCase().endsWith(".jpeg") || name.toLowerCase().endsWith(".png")) {
+                    if (name.toLowerCase().endsWith(".gif") || name.toLowerCase().endsWith(".jpg") || name.toLowerCase().endsWith(".jpeg") || name.toLowerCase().endsWith(".png")) {
                         return true;
                     } else {
                         return false;
