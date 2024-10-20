@@ -14,7 +14,7 @@
 <form action="generichttpws/sounds" method="post" enctype="multipart/form-data">
     <fieldset>
         <legend>New sound (wav)</legend>
-        Sound: <input type="file" name="soundFile" value="" size="10" accept=""><br>
+        Sound: <input type="file" name="soundFile" value="" size="10" accept=".wav"><br>
         <br>
         <input type="submit" name="submit" value="Create">
     </fieldset>
@@ -81,9 +81,9 @@
 
 <form action="generichttpws/photos" method="post" enctype="multipart/form-data">
     <fieldset>
-        <legend>New photo (jpg, jpeg, png)</legend>
+        <legend>New photo (gif, jpg, jpeg, png)</legend>
         Caption: <input type="text" name="caption" value="" size="10"><br>
-        Photo: <input type="file" name="photoFile" value="" size="10"><br>
+        Photo: <input type="file" name="photoFile" value="" size="10" accept=".gif,.jpg,.jpeg,.png"><br>
         <br>
         <input type="submit" name="submit" value="Create">
     </fieldset>
