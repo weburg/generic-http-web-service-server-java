@@ -1,8 +1,10 @@
 import beans.EnginesBean;
 import beans.PhotosBean;
+import beans.SoundsBean;
 import com.google.gson.Gson;
 import com.weburg.domain.Engine;
 import com.weburg.domain.Photo;
+import com.weburg.domain.Sound;
 import com.weburg.services.DefaultHttpWebService;
 import com.weburg.services.HttpWebService;
 
@@ -165,6 +167,67 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 }
             }
+        } else if (getResource(request.getPathInfo()).equals("sounds")) {
+            if (request.getParameter("soundFile") != null) {
+                LOGGER.info("Sound service accept header: " + request.getHeader("accept"));
+
+                File soundFileStored = new File(dataFilePath + System.getProperty("file.separator") + request.getParameter("soundFile"));
+
+                if (soundFileStored.exists()) {
+                    if (!getAccept(request).contains("text/html")) {
+                        response.setContentType(Files.probeContentType(soundFileStored.toPath()));
+                        response.setContentLength((int) soundFileStored.length());
+
+                        FileInputStream in = new FileInputStream(soundFileStored);
+                        OutputStream out = response.getOutputStream();
+
+                        // Copy the contents of the file to the output stream
+                        byte[] buf = new byte[1024];
+                        int count = 0;
+                        while ((count = in.read(buf)) >= 0) {
+                            out.write(buf, 0, count);
+                        }
+                        out.close();
+                        in.close();
+                    } else {
+                        try {
+                            Sound sound = service.getSound(request.getParameter("soundFile"));
+
+                            SoundsBean soundsBean = new SoundsBean();
+                            soundsBean.setSounds(Arrays.asList(sound));
+                            request.setAttribute("model", soundsBean);
+                            request.getRequestDispatcher("/WEB-INF/views/sounds.jsp").forward(request, response);
+                        } catch (Exception e) {
+                            LOGGER.log(Level.SEVERE, "Failed", e);
+                            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        }
+                    }
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                }
+            } else {
+                try {
+                    List<Sound> sounds = service.getSounds();
+
+                    if (!getAccept(request).contains("text/html")) {
+                        response.setContentType("application/json");
+                        Gson gson = new Gson();
+                        String json = gson.toJson(sounds);
+
+                        PrintWriter write = response.getWriter();
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        write.print(json);
+                    } else {
+                        SoundsBean soundsBean = new SoundsBean();
+                        soundsBean.setSounds(sounds);
+                        request.setAttribute("model", soundsBean);
+                        request.getRequestDispatcher("/WEB-INF/views/sounds.jsp").forward(request, response);
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed", e);
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                }
+            }
         }
     }
 
@@ -241,9 +304,41 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
                 }
+            } else if (getResource(request.getPathInfo()).equals("sounds")) {
+                Part soundPart = request.getPart("soundFile");
+
+                Sound sound = new Sound();
+                sound.setSoundFile(new File(soundPart.getSubmittedFileName()));
+
+                LOGGER.info("File upload name: " + soundPart.getName());
+                LOGGER.info("File upload submitted name: " + soundPart.getSubmittedFileName());
+                LOGGER.info("File upload size: " + soundPart.getSize());
+
+                try {
+                    soundPart.write(soundPart.getSubmittedFileName());
+
+                    String soundFileName = service.createSound(sound);
+
+                    if (getAccept(request).contains("text/html")) {
+                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_CREATED);
+                    }
+                    response.setHeader("Location", "/generichttpws/sounds?soundFile=" + soundFileName);
+
+                    Gson gson = new Gson();
+                    String idJson = gson.toJson(soundFileName);
+
+                    PrintWriter write = response.getWriter();
+                    write.print(idJson);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed", e);
+                    response.setStatus(HttpServletResponse.SC_CONFLICT);
+                }
             } else {
                 response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
             }
+
         } else if (customVerb.equals("restart") || customVerb.equals("stop")) {
             if (getResource(request.getPathInfo()).equals("engines")) {
                 // handle custom verb "restartEngines" at POST /engines/restart

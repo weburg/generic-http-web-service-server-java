@@ -11,6 +11,25 @@
     </fieldset>
 </form>
 
+<form action="generichttpws/sounds" method="post" enctype="multipart/form-data">
+    <fieldset>
+        <legend>New sound (wav)</legend>
+        Sound: <input type="file" name="soundFile" value="" size="10" accept=""><br>
+        <br>
+        <input type="submit" name="submit" value="Create">
+    </fieldset>
+</form>
+
+<form action="generichttpws/sounds" method="get">
+    <fieldset>
+        <legend>Get sound</legend>
+        Sound: <input type="text" name="soundFile" value="" size="10">
+        <input type="submit" name="submit" value="Get">
+    </fieldset>
+</form>
+
+<blockquote><a href="generichttpws/sounds">Get all sounds</a></blockquote>
+
 <h2>Lights</h2>
 
 <form action="generichttpws/keyboards/light" method="post">

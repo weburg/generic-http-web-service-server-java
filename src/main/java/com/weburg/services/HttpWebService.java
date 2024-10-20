@@ -2,6 +2,7 @@ package com.weburg.services;
 
 import com.weburg.domain.Engine;
 import com.weburg.domain.Photo;
+import com.weburg.domain.Sound;
 
 import java.io.IOException;
 import java.util.List;
@@ -28,6 +29,12 @@ public interface HttpWebService {
     List<Photo> getPhotos() throws IOException, ClassNotFoundException;
 
     String createPhoto(Photo photo) throws IOException;
+
+    Sound getSound(String soundFile) throws IOException, ClassNotFoundException;
+
+    List<Sound> getSounds() throws IOException, ClassNotFoundException;
+
+    String createSound(Sound sound) throws IOException;
 
     void playSound(String name);
 
