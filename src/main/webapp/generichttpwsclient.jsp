@@ -14,7 +14,7 @@
 <form action="generichttpws/sounds" method="post" enctype="multipart/form-data">
     <fieldset>
         <legend>New sound (wav)</legend>
-        Sound: <input type="file" name="soundFile" value="" size="10" accept=""><br>
+        Sound: <input type="file" name="soundFile" value="" size="10" accept=".wav"><br>
         <br>
         <input type="submit" name="submit" value="Create">
     </fieldset>
