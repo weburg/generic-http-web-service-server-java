@@ -2,6 +2,7 @@ package com.weburg.services;
 
 import com.weburg.domain.Engine;
 import com.weburg.domain.Photo;
+import com.weburg.domain.Sound;
 import org.apache.commons.io.FileUtils;
 
 import javax.sound.sampled.AudioSystem;
@@ -185,6 +186,22 @@ public class DefaultHttpWebService implements HttpWebService {
         return photoFiles;
     }
 
+    private File[] getSoundFiles() {
+        File directory = new File(this.dataFilePath);
+
+        File soundFiles[] = directory.listFiles(
+                (dir, name) -> {
+                    if (name.toLowerCase().endsWith(".wav")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+        );
+
+        return soundFiles;
+    }
+
     public Photo getPhoto(String photoFile) throws IOException, ClassNotFoundException {
         Photo photo = new Photo();
         photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile + ".txt")));
@@ -222,11 +239,40 @@ public class DefaultHttpWebService implements HttpWebService {
         return photo.getPhotoFile().getName();
     }
 
+    public Sound getSound(String soundFile) throws IOException, ClassNotFoundException {
+        Sound sound = new Sound();
+        sound.setSoundFile(new File(this.dataFilePath + System.getProperty("file.separator") + soundFile));
+
+        return sound;
+    }
+
+    public List<Sound> getSounds() throws IOException, ClassNotFoundException {
+        ArrayList<Sound> sounds = new ArrayList<>();
+
+        File[] soundFiles = getSoundFiles();
+
+        for (File soundFile : soundFiles) {
+            Sound sound = new Sound();
+            sound.setSoundFile(soundFile);
+
+            sounds.add(sound);
+        }
+
+        return sounds;
+    }
+
+    public String createSound(Sound sound) throws IOException {
+        // The file will need to have been written to disk already, we only have a reference to it now
+        // TODO given that this is now a File, we should be able to write it out here instead, it's better to do in here
+
+        return sound.getSoundFile().getName();
+    }
+
     public void playSound(String name) {
         try {
             Clip sound = AudioSystem.getClip();
 
-            sound.open(AudioSystem.getAudioInputStream(new File(this.getClass().getClassLoader().getResource(name).getFile())));
+            sound.open(AudioSystem.getAudioInputStream(new File(this.dataFilePath + System.getProperty("file.separator") + name)));
 
             sound.start();
         } catch (Exception e) {
