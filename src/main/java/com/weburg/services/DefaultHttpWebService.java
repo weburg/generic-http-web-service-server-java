@@ -244,6 +244,10 @@ public class DefaultHttpWebService implements HttpWebService {
         Sound sound = new Sound();
         sound.setSoundFile(new File(this.dataFilePath + System.getProperty("file.separator") + soundFile));
 
+        if (!sound.getSoundFile().isFile()) {
+            throw new IOException("File not found");
+        }
+
         return sound;
     }
 

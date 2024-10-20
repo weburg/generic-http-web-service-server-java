@@ -11,6 +11,13 @@
     </fieldset>
 </form>
 
+<form action="generichttpws/sounds/play" method="post">
+    <fieldset>
+        Sound: <input type="text" name="name" value="" size="10">
+        <input type="submit" name="submit" value="Play">
+    </fieldset>
+</form>
+
 <form action="generichttpws/sounds" method="post" enctype="multipart/form-data">
     <fieldset>
         <legend>New sound (wav)</legend>
