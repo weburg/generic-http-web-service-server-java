@@ -22,3 +22,15 @@ td, th {
 label {
     user-select: none;
 }
+
+form {
+    margin-bottom: 1.5em;
+}
+
+form:last-of-type {
+    margin-bottom: 1em;
+}
+
+blockquote {
+    margin-left: 16px;
+}
