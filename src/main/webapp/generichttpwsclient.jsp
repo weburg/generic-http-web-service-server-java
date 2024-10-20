@@ -11,6 +11,14 @@
     </fieldset>
 </form>
 
+<h2>Lights</h2>
+
+<form action="generichttpws/keyboards/light" method="post">
+    <fieldset>
+        Keyboard and mouse: <input type="submit" name="submit" value="Light">
+    </fieldset>
+</form>
+
 <h2>Engines</h2>
 
 <form action="generichttpws/engines" method="post">

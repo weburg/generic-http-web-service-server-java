@@ -37,6 +37,13 @@
             <artifactId>gson</artifactId>
             <version>2.10</version>
         </dependency>
+        <dependency>
+            <groupId>com.logitech</groupId>
+            <artifactId>logiled</artifactId>
+            <version>1.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/src/main/webapp/WEB-INF/lib/logiled.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <build>
