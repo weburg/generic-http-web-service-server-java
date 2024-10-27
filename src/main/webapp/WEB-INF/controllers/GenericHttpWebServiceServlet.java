@@ -57,13 +57,15 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOGGER.info("Handling GET at " + request.getPathInfo());
+
         HttpWebService service = getServiceFromPath(request.getPathInfo());
         response.setCharacterEncoding("UTF-8");
 
         if (getResource(request.getPathInfo()).equals("engines")) {
             if (request.getParameter("id") != null) {
                 try {
-                    Engine engine = service.getEngine(new Integer(request.getParameter("id")));
+                    Engine engine = service.getEngines(new Integer(request.getParameter("id")));
 
                     if (!getAccept(request).contains("text/html")) {
                         response.setContentType("application/json");
@@ -107,39 +109,47 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 }
             }
         } else if (getResource(request.getPathInfo()).equals("photos")) {
-            if (request.getParameter("photoFile") != null) {
+            if (request.getParameter("name") != null) {
                 LOGGER.info("Photo service accept header: " + request.getHeader("accept"));
 
-                File photoFileStored = new File(dataFilePath + System.getProperty("file.separator") + request.getParameter("photoFile"));
+                File photoFileStored = new File(dataFilePath + System.getProperty("file.separator") + request.getParameter("name"));
 
                 if (photoFileStored.exists()) {
-                    if (!getAccept(request).contains("text/html")) {
-                        response.setContentType(Files.probeContentType(photoFileStored.toPath()));
-                        response.setContentLength((int) photoFileStored.length());
+                    try {
+                        Photo photo = service.getPhotos(request.getParameter("name"));
 
-                        FileInputStream in = new FileInputStream(photoFileStored);
-                        OutputStream out = response.getOutputStream();
+                        if (getAccept(request).contains("application/json")) {
+                            response.setContentType("application/json");
+                            Gson gson = new Gson();
+                            String json = gson.toJson(photo);
 
-                        // Copy the contents of the file to the output stream
-                        byte[] buf = new byte[1024];
-                        int count = 0;
-                        while ((count = in.read(buf)) >= 0) {
-                            out.write(buf, 0, count);
-                        }
-                        out.close();
-                        in.close();
-                    } else {
-                        try {
-                            Photo photo = service.getPhoto(request.getParameter("photoFile"));
-
+                            PrintWriter write = response.getWriter();
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            write.print(json);
+                        } else if (getAccept(request).contains("text/html")) {
                             PhotosBean photosBean = new PhotosBean();
                             photosBean.setPhotos(Arrays.asList(photo));
                             request.setAttribute("model", photosBean);
                             request.getRequestDispatcher("/WEB-INF/views/photos.jsp").forward(request, response);
-                        } catch (Exception e) {
-                            LOGGER.log(Level.SEVERE, "Failed", e);
-                            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        } else {
+                            response.setContentType(Files.probeContentType(photoFileStored.toPath()));
+                            response.setContentLength((int) photoFileStored.length());
+
+                            FileInputStream in = new FileInputStream(photoFileStored);
+                            OutputStream out = response.getOutputStream();
+
+                            // Copy the contents of the file to the output stream
+                            byte[] buf = new byte[1024];
+                            int count = 0;
+                            while ((count = in.read(buf)) >= 0) {
+                                out.write(buf, 0, count);
+                            }
+                            out.close();
+                            in.close();
                         }
+                    } catch (Exception e) {
+                        LOGGER.log(Level.SEVERE, "Failed", e);
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     }
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -168,39 +178,47 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 }
             }
         } else if (getResource(request.getPathInfo()).equals("sounds")) {
-            if (request.getParameter("soundFile") != null) {
+            if (request.getParameter("name") != null) {
                 LOGGER.info("Sound service accept header: " + request.getHeader("accept"));
 
-                File soundFileStored = new File(dataFilePath + System.getProperty("file.separator") + request.getParameter("soundFile"));
+                File soundFileStored = new File(dataFilePath + System.getProperty("file.separator") + request.getParameter("name"));
 
                 if (soundFileStored.exists()) {
-                    if (!getAccept(request).contains("text/html")) {
-                        response.setContentType(Files.probeContentType(soundFileStored.toPath()));
-                        response.setContentLength((int) soundFileStored.length());
+                    try {
+                        Sound sound = service.getSounds(request.getParameter("name"));
 
-                        FileInputStream in = new FileInputStream(soundFileStored);
-                        OutputStream out = response.getOutputStream();
+                        if (getAccept(request).contains("application/json")) {
+                            response.setContentType("application/json");
+                            Gson gson = new Gson();
+                            String json = gson.toJson(sound);
 
-                        // Copy the contents of the file to the output stream
-                        byte[] buf = new byte[1024];
-                        int count = 0;
-                        while ((count = in.read(buf)) >= 0) {
-                            out.write(buf, 0, count);
-                        }
-                        out.close();
-                        in.close();
-                    } else {
-                        try {
-                            Sound sound = service.getSound(request.getParameter("soundFile"));
-
+                            PrintWriter write = response.getWriter();
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            write.print(json);
+                        } else if (getAccept(request).contains("text/html")) {
                             SoundsBean soundsBean = new SoundsBean();
                             soundsBean.setSounds(Arrays.asList(sound));
                             request.setAttribute("model", soundsBean);
                             request.getRequestDispatcher("/WEB-INF/views/sounds.jsp").forward(request, response);
-                        } catch (Exception e) {
-                            LOGGER.log(Level.SEVERE, "Failed", e);
-                            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        } else {
+                            response.setContentType(Files.probeContentType(soundFileStored.toPath()));
+                            response.setContentLength((int) soundFileStored.length());
+
+                            FileInputStream in = new FileInputStream(soundFileStored);
+                            OutputStream out = response.getOutputStream();
+
+                            // Copy the contents of the file to the output stream
+                            byte[] buf = new byte[1024];
+                            int count = 0;
+                            while ((count = in.read(buf)) >= 0) {
+                                out.write(buf, 0, count);
+                            }
+                            out.close();
+                            in.close();
                         }
+                    } catch (Exception e) {
+                        LOGGER.log(Level.SEVERE, "Failed", e);
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                     }
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -241,9 +259,10 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
     }
 
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOGGER.info("Handling POST at " + request.getPathInfo());
+
         HttpWebService service = getServiceFromPath(request.getPathInfo());
 
-        LOGGER.info("Handling POST at " + request.getPathInfo());
         String customVerb = getCustomVerb(request.getPathInfo());
 
         if (customVerb.isEmpty()) {
@@ -254,7 +273,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 engine.setThrottleSetting(new Integer(request.getParameter("throttleSetting")));
 
                 try {
-                    int id = service.createEngine(engine);
+                    int id = service.createEngines(engine);
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
@@ -286,14 +305,14 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 try {
                     photoPart.write(photoPart.getSubmittedFileName());
 
-                    String photoFileName = service.createPhoto(photo);
+                    String photoFileName = service.createPhotos(photo);
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
                     } else {
                         response.setStatus(HttpServletResponse.SC_CREATED);
                     }
-                    response.setHeader("Location", "/generichttpws/photos?photoFile=" + photoFileName);
+                    response.setHeader("Location", "/generichttpws/photos?name=" + photoFileName);
 
                     Gson gson = new Gson();
                     String idJson = gson.toJson(photoFileName);
@@ -317,20 +336,20 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 try {
                     soundPart.write(soundPart.getSubmittedFileName());
 
-                    String soundFileName = service.createSound(sound);
+                    String soundFileName = service.createSounds(sound);
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("Location", "/generichttpws/sounds?name=" + soundFileName);
                     } else {
                         response.setStatus(HttpServletResponse.SC_CREATED);
+
+                        Gson gson = new Gson();
+                        String idJson = gson.toJson(soundFileName);
+
+                        PrintWriter write = response.getWriter();
+                        write.print(idJson);
                     }
-                    response.setHeader("Location", "/generichttpws/sounds?soundFile=" + soundFileName);
-
-                    Gson gson = new Gson();
-                    String idJson = gson.toJson(soundFileName);
-
-                    PrintWriter write = response.getWriter();
-                    write.print(idJson);
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -344,17 +363,17 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 // handle custom verb "restartEngines" at POST /engines/restart
                 try {
                     if (customVerb.equals("restart")) {
-                        service.restartEngine(new Integer(request.getParameter("id")));
+                        service.restartEngines(new Integer(request.getParameter("id")));
                     } else if (customVerb.equals("stop")) {
-                        service.stopEngine(new Integer(request.getParameter("id")));
+                        service.stopEngines(new Integer(request.getParameter("id")));
                     }
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
                     } else {
                         response.setStatus(HttpServletResponse.SC_OK);
                     }
-                    response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
                 } catch (Exception e) {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 }
@@ -363,7 +382,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             }
         } else if (customVerb.equals("play")) {
             if (getResource(request.getPathInfo()).equals("sounds")) {
-                service.playSound(request.getParameter("name"));
+                service.playSounds(request.getParameter("name"));
             }
 
             if (getAccept(request).contains("text/html")) {
@@ -374,7 +393,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             }
         } else if (customVerb.equals("light")) {
             if (getResource(request.getPathInfo()).equals("keyboards")) {
-                service.lightKeyboard();
+                service.lightKeyboards();
             }
 
             if (getAccept(request).contains("text/html")) {
@@ -389,6 +408,8 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
     }
 
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOGGER.info("Handling PUT at " + request.getPathInfo());
+
         HttpWebService service = getServiceFromPath(request.getPathInfo());
 
         // TODO Generic HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
@@ -400,20 +421,20 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         engine.setThrottleSetting(new Integer(request.getParameter("throttleSetting")));
 
         try {
-            int id = service.createOrReplaceEngine(engine);
+            int id = service.createOrReplaceEngines(engine);
 
             if (getAccept(request).contains("text/html")) {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
             } else {
                 response.setStatus(HttpServletResponse.SC_CREATED);
+
+                Gson gson = new Gson();
+                String idJson = gson.toJson(id);
+
+                PrintWriter write = response.getWriter();
+                write.print(idJson);
             }
-            response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
-
-            Gson gson = new Gson();
-            String idJson = gson.toJson(id);
-
-            PrintWriter write = response.getWriter();
-            write.print(idJson);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed", e);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -428,7 +449,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         // TODO Generic HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
 
         try {
-            Engine engine = service.getEngine(new Integer(request.getParameter("id")));
+            Engine engine = service.getEngines(new Integer(request.getParameter("id")));
 
             // Do the actual updating to the existing engine
             //engine.setId(new Integer(request.getParameter("id"))); // Do not change id
@@ -439,16 +460,18 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             if (request.getParameter("throttleSetting") != null)
                 engine.setThrottleSetting(new Integer(request.getParameter("throttleSetting")));
 
-            service.updateEngine(engine);
+            service.updateEngines(engine);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed", e);
         }
     }
 
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        LOGGER.info("Handling DELETE at " + request.getPathInfo());
+
         HttpWebService service = getServiceFromPath(request.getPathInfo());
 
-        service.deleteEngine(new Integer(request.getParameter("id")));
+        service.deleteEngines(new Integer(request.getParameter("id")));
     }
 
     private HttpWebService getServiceFromPath(String pathInfo) {

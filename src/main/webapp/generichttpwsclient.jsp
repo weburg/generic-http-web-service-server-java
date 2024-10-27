@@ -7,14 +7,14 @@
 <form action="generichttpws/sounds/play" method="post">
     <fieldset>
         Sound: <label><input type="radio" name="name" value="arrow_x.wav" size="10" checked>Arrow X</label> <label><input type="radio" name="name" value="arrow2.wav" size="10">Arrow 2</label>
-        <input type="submit" name="submit" value="Play">
+        <input type="submit" name="submit" value="Play on server">
     </fieldset>
 </form>
 
 <form action="generichttpws/sounds/play" method="post">
     <fieldset>
         Sound: <input type="text" name="name" value="" size="10">
-        <input type="submit" name="submit" value="Play">
+        <input type="submit" name="submit" value="Play on server">
     </fieldset>
 </form>
 
@@ -30,7 +30,7 @@
 <form action="generichttpws/sounds" method="get">
     <fieldset>
         <legend>Get sound</legend>
-        Sound: <input type="text" name="soundFile" value="" size="10">
+        Sound: <input type="text" name="name" value="" size="10">
         <input type="submit" name="submit" value="Get">
     </fieldset>
 </form>
@@ -41,7 +41,7 @@
 
 <form action="generichttpws/keyboards/light" method="post">
     <fieldset>
-        Keyboard and mouse: <input type="submit" name="submit" value="Light">
+        Keyboard and mouse: <input type="submit" name="submit" value="Light on server">
     </fieldset>
 </form>
 
@@ -99,7 +99,7 @@
 <form action="generichttpws/photos" method="get">
     <fieldset>
         <legend>Get photo</legend>
-        Photo: <input type="text" name="photoFile" value="" size="10">
+        Photo: <input type="text" name="name" value="" size="10">
         <input type="submit" name="submit" value="Get">
     </fieldset>
 </form>

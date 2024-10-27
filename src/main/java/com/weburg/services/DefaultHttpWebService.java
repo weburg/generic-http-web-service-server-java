@@ -47,7 +47,7 @@ public class DefaultHttpWebService implements HttpWebService {
         return dataFilePath;
     }
 
-    public Engine getEngine(int id) throws IOException, ClassNotFoundException {
+    public Engine getEngines(int id) throws IOException, ClassNotFoundException {
         FileInputStream fis = new FileInputStream(this.dataFilePath + System.getProperty("file.separator")
                 + "Engine_" + id + ".ser");
         ObjectInputStream ois = new ObjectInputStream(fis);
@@ -80,7 +80,7 @@ public class DefaultHttpWebService implements HttpWebService {
         return engines;
     }
 
-    public int createEngine(Engine engine) throws IOException {
+    public int createEngines(Engine engine) throws IOException {
         int engineId = ++this.lastEngineId;
 
         engine.setId(engineId);
@@ -97,7 +97,7 @@ public class DefaultHttpWebService implements HttpWebService {
         return engineId;
     }
 
-    public int createOrReplaceEngine(Engine engine) throws IOException {
+    public int createOrReplaceEngines(Engine engine) throws IOException {
         if (engine.getId() == 0) {
             throw new IllegalArgumentException("For createOrReplace operations, the id must be specified.");
         }
@@ -120,15 +120,15 @@ public class DefaultHttpWebService implements HttpWebService {
         return engine.getId();
     }
 
-    public void updateEngine(Engine engine) throws IOException {
+    public void updateEngines(Engine engine) throws IOException {
         if (engine.getId() == 0) {
             throw new IllegalArgumentException("For update operations, the id must be specified.");
         }
 
-        createOrReplaceEngine(engine); // For simple persistence, reuse other method since replacement happens anyway
+        createOrReplaceEngines(engine); // For simple persistence, reuse other method since replacement happens anyway
     }
 
-    public void deleteEngine(int id) throws IOException {
+    public void deleteEngines(int id) throws IOException {
         File file = new File(this.dataFilePath + System.getProperty("file.separator") + "Engine_" + id + ".ser");
         boolean deleted = file.delete();
 
@@ -137,21 +137,21 @@ public class DefaultHttpWebService implements HttpWebService {
         }
     }
 
-    public void restartEngine(int id) throws IOException, ClassNotFoundException {
-        Engine engine = getEngine(id);
+    public void restartEngines(int id) throws IOException, ClassNotFoundException {
+        Engine engine = getEngines(id);
 
         if (!engine.getName().endsWith("Restarted")) {
             engine.setName(engine.getName() + "Restarted");
-            updateEngine(engine);
+            updateEngines(engine);
         }
     }
 
-    public void stopEngine(int id) throws IOException, ClassNotFoundException {
-        Engine engine = getEngine(id);
+    public void stopEngines(int id) throws IOException, ClassNotFoundException {
+        Engine engine = getEngines(id);
 
         if (engine.getName().endsWith("Restarted")) {
             engine.setName(engine.getName().substring(0, engine.getName().length() - "Restarted".length()));
-            updateEngine(engine);
+            updateEngines(engine);
         }
     }
 
@@ -203,10 +203,16 @@ public class DefaultHttpWebService implements HttpWebService {
         return soundFiles;
     }
 
-    public Photo getPhoto(String photoFile) throws IOException, ClassNotFoundException {
+    public Photo getPhotos(String name) throws IOException, ClassNotFoundException {
         Photo photo = new Photo();
-        photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile + ".txt")));
-        photo.setPhotoFile(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile));
+        photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + name + ".txt")));
+
+        File localPhotoFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
+        if (!localPhotoFile.isFile()) {
+            throw new IOException("File not found");
+        }
+
+        photo.setPhotoFile(new File(localPhotoFile.getName()));
 
         return photo;
     }
@@ -219,7 +225,7 @@ public class DefaultHttpWebService implements HttpWebService {
         for (File photoFile : photoFiles) {
             Photo photo = new Photo();
             photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile.getName() + ".txt")));
-            photo.setPhotoFile(photoFile);
+            photo.setPhotoFile(new File(photoFile.getName()));
 
             photos.add(photo);
         }
@@ -227,7 +233,7 @@ public class DefaultHttpWebService implements HttpWebService {
         return photos;
     }
 
-    public String createPhoto(Photo photo) throws IOException {
+    public String createPhotos(Photo photo) throws IOException {
         // The file will need to have been written to disk already, we only have a reference to it now
         // TODO given that this is now a File, we should be able to write it out here instead, it's better to do in here
 
@@ -240,13 +246,16 @@ public class DefaultHttpWebService implements HttpWebService {
         return photo.getPhotoFile().getName();
     }
 
-    public Sound getSound(String soundFile) throws IOException, ClassNotFoundException {
+    public Sound getSounds(String name) throws IOException, ClassNotFoundException {
         Sound sound = new Sound();
-        sound.setSoundFile(new File(this.dataFilePath + System.getProperty("file.separator") + soundFile));
 
-        if (!sound.getSoundFile().isFile()) {
+        File localSoundFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
+
+        if (!localSoundFile.isFile()) {
             throw new IOException("File not found");
         }
+
+        sound.setSoundFile(new File(localSoundFile.getName()));
 
         return sound;
     }
@@ -258,7 +267,7 @@ public class DefaultHttpWebService implements HttpWebService {
 
         for (File soundFile : soundFiles) {
             Sound sound = new Sound();
-            sound.setSoundFile(soundFile);
+            sound.setSoundFile(new File(soundFile.getName()));
 
             sounds.add(sound);
         }
@@ -266,14 +275,14 @@ public class DefaultHttpWebService implements HttpWebService {
         return sounds;
     }
 
-    public String createSound(Sound sound) throws IOException {
+    public String createSounds(Sound sound) throws IOException {
         // The file will need to have been written to disk already, we only have a reference to it now
         // TODO given that this is now a File, we should be able to write it out here instead, it's better to do in here
 
         return sound.getSoundFile().getName();
     }
 
-    public void playSound(String name) {
+    public void playSounds(String name) {
         try {
             Clip sound = AudioSystem.getClip();
 
@@ -285,7 +294,7 @@ public class DefaultHttpWebService implements HttpWebService {
         }
     }
 
-    public void lightKeyboard() {
+    public void lightKeyboards() {
         try {
             ScratchLogitechSimple.main(new String[]{});
         } catch (InterruptedException e) {

@@ -14,8 +14,8 @@
     <tbody>
     <% for (Sound sound : model.getSounds()) { %>
         <tr>
-            <td><a href="${pageContext.request.contextPath}/generichttpws/sounds?soundFile=<%= sound.getSoundFile().getName() %>"><%= sound.getSoundFile().getName() %></a></td>
-            <td><%= sound.getSoundFile().getName() %></td>
+            <td><audio controls><source src="${pageContext.request.contextPath}/generichttpws/sounds?name=<%= sound.getName() %>"></audio></td>
+            <td><a href="${pageContext.request.contextPath}/generichttpws/sounds?name=<%= sound.getName() %>"><%= sound.getName() %></a></td>
         </tr>
     <% } %>
     </tbody>

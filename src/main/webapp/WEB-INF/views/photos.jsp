@@ -15,9 +15,9 @@
     <tbody>
     <% for (Photo photo : model.getPhotos()) { %>
         <tr>
-            <td><a href="${pageContext.request.contextPath}/generichttpws/photos?photoFile=<%= photo.getPhotoFile().getName() %>"><img src="${pageContext.request.contextPath}/generichttpws/photos?photoFile=<%= photo.getPhotoFile().getName() %>" width="128"></a></td>
+            <td><a href="${pageContext.request.contextPath}/generichttpws/photos?name=<%= photo.getName() %>"><img src="${pageContext.request.contextPath}/generichttpws/photos?name=<%= photo.getName() %>" width="128"></a></td>
             <td><%= photo.getCaption() %></td>
-            <td><%= photo.getPhotoFile().getName() %></td>
+            <td><%= photo.getName() %></td>
         </tr>
     <% } %>
     </tbody>
