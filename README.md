@@ -27,9 +27,11 @@
 ### Capabilities
 
 - Server allows creating, updating, reading, listing, and deleting example
-  Engine and Photo resources. Playing a sound on the server is also possible.
-- Engine resource is an object with string and numeric data, while Photo shows
-  binary file upload abilities through HTML based file uploads.
+  Engine and Photo resources. Creating, reading, listing, and playing Sound
+  resources on the server and in a browser is also possible.
+- Engine resource is an object with string and numeric data, while Photo and
+  Sound resources show binary file upload abilities through HTML based file
+  uploads and viewing/playing resources.
 
 The client can make calls easily to the server like so, once it has a `ws` proxy
 object to the server. Here is some pseudocode:
@@ -44,7 +46,8 @@ or
 
 - See project Issues for current limitations and plans.
 - The HTML-only client cannot delete or modify content. For that ability, refer
-  to the related JavaScript client project which runs in a browser.
+  to the related JavaScript client project which runs in a browser, or other
+  programmatic clients.
 
 ### Running the server
 
