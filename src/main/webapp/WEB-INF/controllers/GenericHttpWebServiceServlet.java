@@ -246,6 +246,75 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 }
             }
+        } else if (getResource(request.getPathInfo()).equals("sounds")) {
+            if (request.getParameter("name") != null) {
+                LOGGER.info("Sound service accept header: " + request.getHeader("accept"));
+
+                File soundFileStored = new File(dataFilePath + System.getProperty("file.separator") + request.getParameter("name"));
+
+                if (soundFileStored.exists()) {
+                    try {
+                        Sound sound = service.getSounds(request.getParameter("name"));
+
+                        if (getAccept(request).contains("application/json")) {
+                            response.setContentType("application/json");
+                            Gson gson = new Gson();
+                            String json = gson.toJson(sound);
+
+                            PrintWriter write = response.getWriter();
+                            response.setStatus(HttpServletResponse.SC_OK);
+                            write.print(json);
+                        } else if (getAccept(request).contains("text/html")) {
+                            SoundsBean soundsBean = new SoundsBean();
+                            soundsBean.setSounds(Arrays.asList(sound));
+                            request.setAttribute("model", soundsBean);
+                            request.getRequestDispatcher("/WEB-INF/views/sounds.jsp").forward(request, response);
+                        } else {
+                            response.setContentType(Files.probeContentType(soundFileStored.toPath()));
+                            response.setContentLength((int) soundFileStored.length());
+
+                            FileInputStream in = new FileInputStream(soundFileStored);
+                            OutputStream out = response.getOutputStream();
+
+                            // Copy the contents of the file to the output stream
+                            byte[] buf = new byte[1024];
+                            int count = 0;
+                            while ((count = in.read(buf)) >= 0) {
+                                out.write(buf, 0, count);
+                            }
+                            out.close();
+                            in.close();
+                        }
+                    } catch (Exception e) {
+                        LOGGER.log(Level.SEVERE, "Failed", e);
+                        response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    }
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                }
+            } else {
+                try {
+                    List<Sound> sounds = service.getSounds();
+
+                    if (!getAccept(request).contains("text/html")) {
+                        response.setContentType("application/json");
+                        Gson gson = new Gson();
+                        String json = gson.toJson(sounds);
+
+                        PrintWriter write = response.getWriter();
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        write.print(json);
+                    } else {
+                        SoundsBean soundsBean = new SoundsBean();
+                        soundsBean.setSounds(sounds);
+                        request.setAttribute("model", soundsBean);
+                        request.getRequestDispatcher("/WEB-INF/views/sounds.jsp").forward(request, response);
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed", e);
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                }
+            }
         }
     }
 
@@ -277,16 +346,16 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("Location", "/generichttpws/engines?id=" + id);
                     } else {
                         response.setStatus(HttpServletResponse.SC_CREATED);
+
+                        Gson gson = new Gson();
+                        String idJson = gson.toJson(id);
+
+                        PrintWriter write = response.getWriter();
+                        write.print(idJson);
                     }
-                    response.setHeader("Location", "/generichttpws/engines?id=" + id);
-
-                    Gson gson = new Gson();
-                    String idJson = gson.toJson(id);
-
-                    PrintWriter write = response.getWriter();
-                    write.print(idJson);
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -309,16 +378,47 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("Location", "/generichttpws/photos?name=" + photoFileName);
                     } else {
                         response.setStatus(HttpServletResponse.SC_CREATED);
+
+                        Gson gson = new Gson();
+                        String idJson = gson.toJson(photoFileName);
+
+                        PrintWriter write = response.getWriter();
+                        write.print(idJson);
                     }
-                    response.setHeader("Location", "/generichttpws/photos?name=" + photoFileName);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed", e);
+                    response.setStatus(HttpServletResponse.SC_CONFLICT);
+                }
+            } else if (getResource(request.getPathInfo()).equals("sounds")) {
+                Part soundPart = request.getPart("soundFile");
 
-                    Gson gson = new Gson();
-                    String idJson = gson.toJson(photoFileName);
+                Sound sound = new Sound();
+                sound.setSoundFile(new File(soundPart.getSubmittedFileName()));
 
-                    PrintWriter write = response.getWriter();
-                    write.print(idJson);
+                LOGGER.info("File upload name: " + soundPart.getName());
+                LOGGER.info("File upload submitted name: " + soundPart.getSubmittedFileName());
+                LOGGER.info("File upload size: " + soundPart.getSize());
+
+                try {
+                    soundPart.write(soundPart.getSubmittedFileName());
+
+                    String soundFileName = service.createSounds(sound);
+
+                    if (getAccept(request).contains("text/html")) {
+                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("Location", "/generichttpws/sounds?name=" + soundFileName);
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_CREATED);
+
+                        Gson gson = new Gson();
+                        String idJson = gson.toJson(soundFileName);
+
+                        PrintWriter write = response.getWriter();
+                        write.print(idJson);
+                    }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
