@@ -6,8 +6,13 @@ import java.io.Serializable;
 public class Photo implements Serializable {
     public Photo() {}
 
+    private String name;
     private String caption = "";
-    private File photoFile;
+    private transient File photoFile;
+
+    public String getName() {
+        return name;
+    }
 
     public String getCaption() {
         return this.caption;
@@ -23,5 +28,6 @@ public class Photo implements Serializable {
 
     public void setPhotoFile(File photoFile) {
         this.photoFile = photoFile;
+        this.name = photoFile.getName();
     }
 }

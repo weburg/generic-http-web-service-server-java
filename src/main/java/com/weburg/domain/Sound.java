@@ -6,7 +6,12 @@ import java.io.Serializable;
 public class Sound implements Serializable {
     public Sound() {}
 
-    private File soundFile;
+    private String name;
+    private transient File soundFile;
+
+    public String getName() {
+        return name;
+    }
 
     public File getSoundFile() {
         return this.soundFile;
@@ -14,5 +19,6 @@ public class Sound implements Serializable {
 
     public void setSoundFile(File soundFile) {
         this.soundFile = soundFile;
+        this.name = soundFile.getName();
     }
 }

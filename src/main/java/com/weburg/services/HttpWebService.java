@@ -8,33 +8,33 @@ import java.io.IOException;
 import java.util.List;
 
 public interface HttpWebService {
-    Engine getEngine(int id) throws IOException, ClassNotFoundException;
+    Engine getEngines(int id) throws IOException, ClassNotFoundException;
 
     List<Engine> getEngines() throws IOException, ClassNotFoundException;
 
-    int createEngine(Engine engine) throws IOException;
+    int createEngines(Engine engine) throws IOException;
 
-    int createOrReplaceEngine(Engine engine) throws IOException;
+    int createOrReplaceEngines(Engine engine) throws IOException;
 
-    void updateEngine(Engine engine) throws IOException;
+    void updateEngines(Engine engine) throws IOException;
 
-    void deleteEngine(int id) throws IOException;
+    void deleteEngines(int id) throws IOException;
 
-    void restartEngine(int id) throws IOException, ClassNotFoundException;
+    void restartEngines(int id) throws IOException, ClassNotFoundException;
 
-    void stopEngine(int id) throws IOException, ClassNotFoundException;
+    void stopEngines(int id) throws IOException, ClassNotFoundException;
 
-    Photo getPhoto(String photoFile) throws IOException, ClassNotFoundException;
+    Photo getPhotos(String name) throws IOException, ClassNotFoundException;
 
     List<Photo> getPhotos() throws IOException, ClassNotFoundException;
 
-    String createPhoto(Photo photo) throws IOException;
+    String createPhotos(Photo photo) throws IOException;
 
-    Sound getSound(String soundFile) throws IOException, ClassNotFoundException;
+    Sound getSounds(String name) throws IOException, ClassNotFoundException;
 
     List<Sound> getSounds() throws IOException, ClassNotFoundException;
 
-    String createSound(Sound sound) throws IOException;
+    String createSounds(Sound sound) throws IOException;
 
-    void playSound(String name);
+    void playSounds(String name);
 }
