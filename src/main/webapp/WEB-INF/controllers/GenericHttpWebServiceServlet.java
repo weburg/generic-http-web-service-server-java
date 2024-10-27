@@ -277,16 +277,16 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("Location", "/generichttpws/engines?id=" + id);
                     } else {
                         response.setStatus(HttpServletResponse.SC_CREATED);
+
+                        Gson gson = new Gson();
+                        String idJson = gson.toJson(id);
+
+                        PrintWriter write = response.getWriter();
+                        write.print(idJson);
                     }
-                    response.setHeader("Location", "/generichttpws/engines?id=" + id);
-
-                    Gson gson = new Gson();
-                    String idJson = gson.toJson(id);
-
-                    PrintWriter write = response.getWriter();
-                    write.print(idJson);
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
@@ -309,16 +309,16 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("Location", "/generichttpws/photos?name=" + photoFileName);
                     } else {
                         response.setStatus(HttpServletResponse.SC_CREATED);
+
+                        Gson gson = new Gson();
+                        String idJson = gson.toJson(photoFileName);
+
+                        PrintWriter write = response.getWriter();
+                        write.print(idJson);
                     }
-                    response.setHeader("Location", "/generichttpws/photos?name=" + photoFileName);
-
-                    Gson gson = new Gson();
-                    String idJson = gson.toJson(photoFileName);
-
-                    PrintWriter write = response.getWriter();
-                    write.print(idJson);
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
