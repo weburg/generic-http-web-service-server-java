@@ -9,13 +9,20 @@
 
 ### Design goals
 
-- Map incoming HTTP requests by looking at resource (from the URI) and verb
-  (HTTP method) to perform the appropriate action.
+- Map incoming HTTP requests by looking at resource (from the URL) and verb
+  (HTTP method) or custom verbs (URL) to perform the appropriate action. This
+  is similar to REST-like frameworks.
+- Also similar to most REST-like frameworks, map exceptions to HTTP response
+  status codes and vice versa.
 - Provide an embedded, easy to run Web service using a basic MVC structure.
   - Stick to simple files plus JavaBeans (models), JSP and JSON (views), and
     Java servlets (controllers).
 - Demonstrate that a basic HTML page containing no JavaScript can GET and POST
   natively via the service.
+- Have the Web service detect the response format the client will accept and
+  send back JSON to programmatic clients or HTML to browsers by looking at the
+  accept header. The HTML client uses the same URLs to interact with the
+  service but its data gets formatted to human-readable HTML.
 
 ### Capabilities
 
@@ -25,7 +32,7 @@
   binary file upload abilities through HTML based file uploads.
 
 The client can make calls easily to the server like so, once it has a `ws` proxy
-object to the server:
+object to the server. Here is some pseudocode:
 
 `id = ws->createEngine(engine)`
 
