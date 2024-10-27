@@ -45,7 +45,6 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         serviceLookup.put("engines", this.httpWebService);
         serviceLookup.put("photos", this.httpWebService);
         serviceLookup.put("sounds", this.httpWebService);
-        serviceLookup.put("keyboards", this.httpWebService);
     }
 
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
