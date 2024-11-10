@@ -44,7 +44,7 @@ public class HttpWebServiceMapper {
                 customTypes.add(method.getGenericReturnType());
             }
 
-            serviceDescription.append("Method: " + method.getName() + ", returns: " + simplifyName(genericReturnType)).append(System.getProperty("line.separator"));
+            serviceDescription.append("Method: " + method.getName() + ", Returns: " + simplifyName(genericReturnType)).append(System.getProperty("line.separator"));
             Parameter[] parameters = method.getParameters();
 
             for (Parameter parameter : parameters) {
@@ -78,8 +78,6 @@ public class HttpWebServiceMapper {
             serviceDescription.append(System.getProperty("line.separator"));
         }
 
-        System.out.println(serviceDescription);
-
         return serviceDescription.toString();
     }
 
@@ -111,6 +109,6 @@ public class HttpWebServiceMapper {
     public static void main(String[] args) {
         HttpWebServiceMapper wsm = new HttpWebServiceMapper(HttpWebService.class);
 
-        wsm.describeService();
+        System.out.println(wsm.describeService());
     }
 }

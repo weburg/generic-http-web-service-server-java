@@ -19,10 +19,6 @@ td, th {
     text-align: left;
 }
 
-label {
-    user-select: none;
-}
-
 form {
     margin-bottom: 1.5em;
 }
@@ -33,4 +29,9 @@ form:last-of-type {
 
 blockquote {
     margin-left: 16px;
+}
+
+label span {
+    display: inline-block;
+    min-width: 80px;
 }

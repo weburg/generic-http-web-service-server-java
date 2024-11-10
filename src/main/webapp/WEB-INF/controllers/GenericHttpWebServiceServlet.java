@@ -246,8 +246,8 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             optionsBean.setOptions(options);
             request.setAttribute("model", optionsBean);*/
 
-            request.setAttribute("optionsText", httpWebServiceMapper.describeService());
-            request.getRequestDispatcher("/WEB-INF/views/options.jsp").forward(request, response);
+            request.setAttribute("serviceDescriptionText", httpWebServiceMapper.describeService());
+            request.getRequestDispatcher("/WEB-INF/views/describe.jsp").forward(request, response);
         }
     }
 
