@@ -39,4 +39,6 @@ public interface HttpWebService {
     void playSounds(String name);
 
     void lightKeyboards();
+
+    void displayPhotos(String name) throws IOException;
 }

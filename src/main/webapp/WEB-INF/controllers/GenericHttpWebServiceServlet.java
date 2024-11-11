@@ -393,12 +393,23 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             }
         } else if (customVerb.equals("light")) {
             if (getResource(request.getPathInfo()).equals("keyboards")) {
-                service.lightKeyboards();
+                this.httpWebService.lightKeyboards();
             }
 
             if (getAccept(request).contains("text/html")) {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
                 response.setHeader("Location", "/generichttpwsclient.jsp");
+            } else {
+                response.setStatus(HttpServletResponse.SC_OK);
+            }
+        } else if (customVerb.equals("display")) {
+            if (getResource(request.getPathInfo()).equals("photos")) {
+                this.httpWebService.displayPhotos(request.getParameter("name"));
+            }
+
+            if (getAccept(request).contains("text/html")) {
+                response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                response.setHeader("Location", "/generichttpws/photos?name=" + request.getParameter("name"));
             } else {
                 response.setStatus(HttpServletResponse.SC_OK);
             }

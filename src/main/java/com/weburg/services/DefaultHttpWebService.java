@@ -4,7 +4,6 @@ import com.weburg.ScratchLogitechSimple;
 import com.weburg.domain.Engine;
 import com.weburg.domain.Photo;
 import com.weburg.domain.Sound;
-import org.apache.commons.io.FileUtils;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -12,18 +11,14 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.weburg.ScratchPhotoDisplay.scratchPhotoDisplay;
+
 public class DefaultHttpWebService implements HttpWebService {
     int lastEngineId = 0;
     String dataFilePath;
 
     public DefaultHttpWebService(String dataFilePath) {
         this.dataFilePath = dataFilePath;
-
-        File directory = new File(this.dataFilePath);
-
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
 
         // Set the last engine ID based on existing files
 
@@ -189,14 +184,13 @@ public class DefaultHttpWebService implements HttpWebService {
 
     public Photo getPhotos(String name) throws IOException, ClassNotFoundException {
         Photo photo = new Photo();
-        photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + name + ".txt")));
 
         File localPhotoFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
-        if (!localPhotoFile.isFile()) {
+        if (!localPhotoFile.exists() || !localPhotoFile.isFile()) {
             throw new IOException("File not found");
         }
 
-        photo.setPhotoFile(new File(localPhotoFile.getName()));
+        photo.setPhotoFile(localPhotoFile);
 
         return photo;
     }
@@ -208,8 +202,7 @@ public class DefaultHttpWebService implements HttpWebService {
 
         for (File photoFile : photoFiles) {
             Photo photo = new Photo();
-            photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + photoFile.getName() + ".txt")));
-            photo.setPhotoFile(new File(photoFile.getName()));
+            photo.setPhotoFile(photoFile);
 
             photos.add(photo);
         }
@@ -300,5 +293,11 @@ public class DefaultHttpWebService implements HttpWebService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+    public void displayPhotos(String name) throws IOException {
+        Photo photo = new Photo();
+        photo.setPhotoFile(new File(this.dataFilePath + System.getProperty("file.separator") + name));
+        scratchPhotoDisplay(photo);
     }
 }
