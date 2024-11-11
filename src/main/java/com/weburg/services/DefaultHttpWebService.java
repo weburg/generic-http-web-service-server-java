@@ -187,22 +187,6 @@ public class DefaultHttpWebService implements HttpWebService {
         return photoFiles;
     }
 
-    private File[] getSoundFiles() {
-        File directory = new File(this.dataFilePath);
-
-        File soundFiles[] = directory.listFiles(
-                (dir, name) -> {
-                    if (name.toLowerCase().endsWith(".wav")) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-        );
-
-        return soundFiles;
-    }
-
     public Photo getPhotos(String name) throws IOException, ClassNotFoundException {
         Photo photo = new Photo();
         photo.setCaption(FileUtils.readFileToString(new File(this.dataFilePath + System.getProperty("file.separator") + name + ".txt")));
@@ -244,6 +228,22 @@ public class DefaultHttpWebService implements HttpWebService {
         fos.close();
 
         return photo.getPhotoFile().getName();
+    }
+
+    private File[] getSoundFiles() {
+        File directory = new File(this.dataFilePath);
+
+        File soundFiles[] = directory.listFiles(
+                (dir, name) -> {
+                    if (name.toLowerCase().endsWith(".wav")) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+        );
+
+        return soundFiles;
     }
 
     public Sound getSounds(String name) throws IOException, ClassNotFoundException {

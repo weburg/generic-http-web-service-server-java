@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.weburg.domain.Engine;
 import com.weburg.domain.Photo;
 import com.weburg.domain.Sound;
+import com.weburg.ghost.HttpWebServiceMapper;
 import com.weburg.services.DefaultHttpWebService;
 import com.weburg.services.HttpWebService;
 
@@ -16,7 +17,6 @@ import jakarta.servlet.http.Part;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -30,10 +30,9 @@ Right now, we assume form encoded data in and JSON data out.
 
 public class GenericHttpWebServiceServlet extends HttpServlet {
     private HttpWebService httpWebService;
+    private HttpWebServiceMapper httpWebServiceMapper;
 
     private String dataFilePath;
-
-    private HashMap<String, Object> serviceLookup = new HashMap<>();
 
     private static final Logger LOGGER = Logger.getLogger(GenericHttpWebServiceServlet.class.getName());
 
@@ -41,11 +40,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         dataFilePath = ((DefaultHttpWebService) httpWebService).getDataFilePath();
 
         this.httpWebService = httpWebService;
-
-        serviceLookup.put("engines", this.httpWebService);
-        serviceLookup.put("photos", this.httpWebService);
-        serviceLookup.put("sounds", this.httpWebService);
-        serviceLookup.put("keyboards", this.httpWebService);
+        this.httpWebServiceMapper = new HttpWebServiceMapper(httpWebService.getClass().getInterfaces()[0]);
     }
 
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -59,13 +54,12 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOGGER.info("Handling GET at " + request.getPathInfo());
 
-        HttpWebService service = getServiceFromPath(request.getPathInfo());
         response.setCharacterEncoding("UTF-8");
 
         if (getResource(request.getPathInfo()).equals("engines")) {
             if (request.getParameter("id") != null) {
                 try {
-                    Engine engine = service.getEngines(new Integer(request.getParameter("id")));
+                    Engine engine = this.httpWebService.getEngines(new Integer(request.getParameter("id")));
 
                     if (!getAccept(request).contains("text/html")) {
                         response.setContentType("application/json");
@@ -87,7 +81,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 }
             } else {
                 try {
-                    List<Engine> engines = service.getEngines();
+                    List<Engine> engines = this.httpWebService.getEngines();
 
                     if (!getAccept(request).contains("text/html")) {
                         response.setContentType("application/json");
@@ -116,7 +110,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
                 if (photoFileStored.exists()) {
                     try {
-                        Photo photo = service.getPhotos(request.getParameter("name"));
+                        Photo photo = this.httpWebService.getPhotos(request.getParameter("name"));
 
                         if (getAccept(request).contains("application/json")) {
                             response.setContentType("application/json");
@@ -156,7 +150,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 }
             } else {
                 try {
-                    List<Photo> photos = service.getPhotos();
+                    List<Photo> photos = this.httpWebService.getPhotos();
 
                     if (!getAccept(request).contains("text/html")) {
                         response.setContentType("application/json");
@@ -185,7 +179,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
                 if (soundFileStored.exists()) {
                     try {
-                        Sound sound = service.getSounds(request.getParameter("name"));
+                        Sound sound = this.httpWebService.getSounds(request.getParameter("name"));
 
                         if (getAccept(request).contains("application/json")) {
                             response.setContentType("application/json");
@@ -225,7 +219,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 }
             } else {
                 try {
-                    List<Sound> sounds = service.getSounds();
+                    List<Sound> sounds = this.httpWebService.getSounds();
 
                     if (!getAccept(request).contains("text/html")) {
                         response.setContentType("application/json");
@@ -246,6 +240,14 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
                 }
             }
+        } else {
+            // Default to showing how to use the service
+            /*OptionsBean optionsBean = new OptionsBean();
+            optionsBean.setOptions(options);
+            request.setAttribute("model", optionsBean);*/
+
+            request.setAttribute("serviceDescriptionText", httpWebServiceMapper.describeService());
+            request.getRequestDispatcher("/WEB-INF/views/describe.jsp").forward(request, response);
         }
     }
 
@@ -261,8 +263,6 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOGGER.info("Handling POST at " + request.getPathInfo());
 
-        HttpWebService service = getServiceFromPath(request.getPathInfo());
-
         String customVerb = getCustomVerb(request.getPathInfo());
 
         if (customVerb.isEmpty()) {
@@ -273,7 +273,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 engine.setThrottleSetting(new Integer(request.getParameter("throttleSetting")));
 
                 try {
-                    int id = service.createEngines(engine);
+                    int id = this.httpWebService.createEngines(engine);
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
@@ -305,7 +305,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 try {
                     photoPart.write(photoPart.getSubmittedFileName());
 
-                    String photoFileName = service.createPhotos(photo);
+                    String photoFileName = this.httpWebService.createPhotos(photo);
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
@@ -336,7 +336,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 try {
                     soundPart.write(soundPart.getSubmittedFileName());
 
-                    String soundFileName = service.createSounds(sound);
+                    String soundFileName = this.httpWebService.createSounds(sound);
 
                     if (getAccept(request).contains("text/html")) {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
@@ -363,9 +363,9 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 // handle custom verb "restartEngines" at POST /engines/restart
                 try {
                     if (customVerb.equals("restart")) {
-                        service.restartEngines(new Integer(request.getParameter("id")));
+                        this.httpWebService.restartEngines(new Integer(request.getParameter("id")));
                     } else if (customVerb.equals("stop")) {
-                        service.stopEngines(new Integer(request.getParameter("id")));
+                        this.httpWebService.stopEngines(new Integer(request.getParameter("id")));
                     }
 
                     if (getAccept(request).contains("text/html")) {
@@ -382,7 +382,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             }
         } else if (customVerb.equals("play")) {
             if (getResource(request.getPathInfo()).equals("sounds")) {
-                service.playSounds(request.getParameter("name"));
+                this.httpWebService.playSounds(request.getParameter("name"));
             }
 
             if (getAccept(request).contains("text/html")) {
@@ -410,8 +410,6 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
     protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOGGER.info("Handling PUT at " + request.getPathInfo());
 
-        HttpWebService service = getServiceFromPath(request.getPathInfo());
-
         // TODO Generic HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
 
         Engine engine = new Engine();
@@ -421,7 +419,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         engine.setThrottleSetting(new Integer(request.getParameter("throttleSetting")));
 
         try {
-            int id = service.createOrReplaceEngines(engine);
+            int id = this.httpWebService.createOrReplaceEngines(engine);
 
             if (getAccept(request).contains("text/html")) {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
@@ -444,12 +442,10 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOGGER.info("Handling PATCH at " + request.getPathInfo() + " with id " + request.getParameter("id"));
 
-        HttpWebService service = getServiceFromPath(request.getPathInfo());
-
         // TODO Generic HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
 
         try {
-            Engine engine = service.getEngines(new Integer(request.getParameter("id")));
+            Engine engine = this.httpWebService.getEngines(new Integer(request.getParameter("id")));
 
             // Do the actual updating to the existing engine
             //engine.setId(new Integer(request.getParameter("id"))); // Do not change id
@@ -460,7 +456,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             if (request.getParameter("throttleSetting") != null)
                 engine.setThrottleSetting(new Integer(request.getParameter("throttleSetting")));
 
-            service.updateEngines(engine);
+            this.httpWebService.updateEngines(engine);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed", e);
         }
@@ -469,20 +465,20 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOGGER.info("Handling DELETE at " + request.getPathInfo());
 
-        HttpWebService service = getServiceFromPath(request.getPathInfo());
-
-        service.deleteEngines(new Integer(request.getParameter("id")));
+        this.httpWebService.deleteEngines(new Integer(request.getParameter("id")));
     }
 
-    private HttpWebService getServiceFromPath(String pathInfo) {
-        String[] pathParts = pathInfo.split("/");
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response) {
+        LOGGER.info("Handling OPTIONS at " + request.getPathInfo());
 
-        HttpWebService service = (HttpWebService) serviceLookup.get(getResource(pathInfo));
-
-        return service;
+        // TODO describe the service via HttpWebServiceMapper, meanwhile see doGet
     }
 
     private String getResource(String pathInfo) {
+        if (pathInfo == null) {
+            return "";
+        }
+
         String[] pathParts = pathInfo.split("/");
 
         if (pathParts.length > 1) {
