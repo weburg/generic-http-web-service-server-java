@@ -83,7 +83,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 try {
                     List<Engine> engines = this.httpWebService.getEngines();
 
-                    if (!getAccept(request).contains("text/html")) {
+                    if (getAccept(request).contains("application/json")) {
                         response.setContentType("application/json");
                         Gson gson = new Gson();
                         String json = gson.toJson(engines);
@@ -152,7 +152,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 try {
                     List<Photo> photos = this.httpWebService.getPhotos();
 
-                    if (!getAccept(request).contains("text/html")) {
+                    if (getAccept(request).contains("application/json")) {
                         response.setContentType("application/json");
                         Gson gson = new Gson();
                         String json = gson.toJson(photos);
@@ -221,13 +221,13 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 try {
                     List<Sound> sounds = this.httpWebService.getSounds();
 
-                    if (!getAccept(request).contains("text/html")) {
+                    if (getAccept(request).contains("application/json")) {
                         response.setContentType("application/json");
                         Gson gson = new Gson();
                         String json = gson.toJson(sounds);
 
-                        PrintWriter write = response.getWriter();
                         response.setStatus(HttpServletResponse.SC_OK);
+                        PrintWriter write = response.getWriter();
                         write.print(json);
                     } else {
                         SoundsBean soundsBean = new SoundsBean();
@@ -275,17 +275,17 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 try {
                     int id = this.httpWebService.createEngines(engine);
 
-                    if (getAccept(request).contains("text/html")) {
-                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("Location", "/generichttpws/engines?id=" + id);
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_CREATED);
-
+                    if (getAccept(request).contains("application/json")) {
+                        response.setContentType("application/json");
                         Gson gson = new Gson();
                         String idJson = gson.toJson(id);
 
+                        response.setStatus(HttpServletResponse.SC_CREATED);
                         PrintWriter write = response.getWriter();
                         write.print(idJson);
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("Location", "/generichttpws/engines?id=" + id);
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
@@ -307,17 +307,17 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
                     String photoFileName = this.httpWebService.createPhotos(photo);
 
-                    if (getAccept(request).contains("text/html")) {
-                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("Location", "/generichttpws/photos?name=" + photoFileName);
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_CREATED);
-
+                    if (getAccept(request).contains("application/json")) {
+                        response.setContentType("application/json");
                         Gson gson = new Gson();
                         String idJson = gson.toJson(photoFileName);
 
+                        response.setStatus(HttpServletResponse.SC_CREATED);
                         PrintWriter write = response.getWriter();
                         write.print(idJson);
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("Location", "/generichttpws/photos?name=" + photoFileName);
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
@@ -338,17 +338,17 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
                     String soundFileName = this.httpWebService.createSounds(sound);
 
-                    if (getAccept(request).contains("text/html")) {
-                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("Location", "/generichttpws/sounds?name=" + soundFileName);
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_CREATED);
-
+                    if (getAccept(request).contains("application/json")) {
+                        response.setContentType("application/json");
                         Gson gson = new Gson();
                         String idJson = gson.toJson(soundFileName);
 
+                        response.setStatus(HttpServletResponse.SC_CREATED);
                         PrintWriter write = response.getWriter();
                         write.print(idJson);
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("Location", "/generichttpws/sounds?name=" + soundFileName);
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
@@ -368,11 +368,11 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         this.httpWebService.stopEngines(new Integer(request.getParameter("id")));
                     }
 
-                    if (getAccept(request).contains("text/html")) {
+                    if (getAccept(request).contains("application/json")) {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                    } else {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
                         response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_OK);
                     }
                 } catch (Exception e) {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -385,11 +385,11 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 this.httpWebService.playSounds(request.getParameter("name"));
             }
 
-            if (getAccept(request).contains("text/html")) {
+            if (getAccept(request).contains("application/json")) {
+                response.setStatus(HttpServletResponse.SC_OK);
+            } else {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
                 response.setHeader("Location", "/generichttpwsclient.jsp");
-            } else {
-                response.setStatus(HttpServletResponse.SC_OK);
             }
         } else {
             response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
@@ -410,17 +410,17 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         try {
             int id = this.httpWebService.createOrReplaceEngines(engine);
 
-            if (getAccept(request).contains("text/html")) {
-                response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
-            } else {
-                response.setStatus(HttpServletResponse.SC_CREATED);
-
+            if (getAccept(request).contains("application/json")) {
+                response.setContentType("application/json");
                 Gson gson = new Gson();
                 String idJson = gson.toJson(id);
 
+                response.setStatus(HttpServletResponse.SC_CREATED);
                 PrintWriter write = response.getWriter();
                 write.print(idJson);
+            } else {
+                response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed", e);
