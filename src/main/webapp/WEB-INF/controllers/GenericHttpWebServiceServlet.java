@@ -369,6 +369,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     }
 
                     if (getAccept(request).contains("application/json")) {
+                        response.setContentType("application/json");
                         response.setStatus(HttpServletResponse.SC_OK);
                     } else {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
@@ -386,6 +387,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             }
 
             if (getAccept(request).contains("application/json")) {
+                response.setContentType("application/json");
                 response.setStatus(HttpServletResponse.SC_OK);
             } else {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
