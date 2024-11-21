@@ -6,7 +6,7 @@
 
 <form action="generichttpws/sounds/play" method="post">
     <fieldset>
-        <label><span>Sound: </span></label><label><input type="radio" name="name" value="arrow_x.wav" size="10" checked>Arrow X</label> <label><input type="radio" name="name" value="arrow2.wav" size="10">Arrow 2</label>
+        <label><span>Sound: </span><input type="radio" name="name" value="arrow_x.wav" size="10" checked>Arrow X</label> <label><input type="radio" name="name" value="arrow2.wav" size="10">Arrow 2</label>
         <input type="submit" name="submit" value="Play on server">
     </fieldset>
 </form>
