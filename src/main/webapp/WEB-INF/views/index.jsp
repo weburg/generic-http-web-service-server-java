@@ -1,3 +1,4 @@
+<%@page import="example.domain.Engine" %>
 <jsp:useBean id="model" class="beans.IndexBean" scope="request"/>
 <jsp:include page="/WEB-INF/views/header.jsp">
     <jsp:param name="title" value="Home"/>

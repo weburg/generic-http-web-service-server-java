@@ -1,4 +1,4 @@
-package com.weburg.domain;
+package example.domain;
 
 import org.apache.commons.io.FileUtils;
 
@@ -9,9 +9,9 @@ import java.io.Serializable;
 public class Photo implements Serializable {
     public Photo() {}
 
-    private String name;
+    private String name = "";
     private String caption = "";
-    private transient File photoFile;
+    private transient File photoFile = new File("");
 
     public String getName() {
         return name;

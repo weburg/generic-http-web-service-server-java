@@ -1,13 +1,13 @@
-package com.weburg.domain;
+package example.domain;
 
 import java.io.Serializable;
 
 public class Engine implements Serializable {
     public Engine() {}
 
-    private int id;
-    private String name = "Pentastar";
-    private int cylinders = 6;
+    private int id = 0;
+    private String name = "";
+    private int cylinders = 0;
     private int throttleSetting = 0;
 
     public int getId() {

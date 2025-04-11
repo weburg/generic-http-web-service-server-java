@@ -1,6 +1,6 @@
 package beans;
 
-import com.weburg.domain.Engine;
+import example.domain.Engine;
 
 import java.io.Serializable;
 import java.util.ArrayList;

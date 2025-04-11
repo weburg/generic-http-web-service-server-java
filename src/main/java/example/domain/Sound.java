@@ -1,4 +1,4 @@
-package com.weburg.domain;
+package example.domain;
 
 import java.io.File;
 import java.io.Serializable;
@@ -6,8 +6,8 @@ import java.io.Serializable;
 public class Sound implements Serializable {
     public Sound() {}
 
-    private String name;
-    private transient File soundFile;
+    private String name = "";
+    private transient File soundFile = new File("");
 
     public String getName() {
         return name;

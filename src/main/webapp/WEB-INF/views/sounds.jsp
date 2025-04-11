@@ -1,4 +1,4 @@
-<%@ page import="com.weburg.domain.Sound" %>
+<%@ page import="example.domain.Sound" %>
 <jsp:useBean id="model" class="beans.SoundsBean" scope="request"/>
 <jsp:include page="/WEB-INF/views/header.jsp">
     <jsp:param name="title" value="HTML Generic HTTP WS Client - Sounds"/>

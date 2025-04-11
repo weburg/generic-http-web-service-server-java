@@ -2,18 +2,20 @@ import beans.EnginesBean;
 import beans.PhotosBean;
 import beans.SoundsBean;
 import com.google.gson.Gson;
-import com.weburg.domain.Engine;
-import com.weburg.domain.Photo;
-import com.weburg.domain.Sound;
+import example.domain.Engine;
+import example.domain.Photo;
+import example.domain.Sound;
+import example.domain.Truck;
 import com.weburg.ghost.HttpWebServiceMapper;
-import com.weburg.services.DefaultHttpWebService;
-import com.weburg.services.HttpWebService;
 
+import example.services.DefaultHttpWebService;
+import example.services.HttpWebService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.Part;
+
 import java.io.*;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -69,6 +71,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         PrintWriter write = response.getWriter();
                         response.setStatus(HttpServletResponse.SC_OK);
                         write.print(engineJson);
+                        write.flush();
                     } else {
                         EnginesBean enginesBean = new EnginesBean();
                         enginesBean.setEngines(Arrays.asList(engine));
@@ -78,6 +81,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("x-error-message", e.getMessage());
                 }
             } else {
                 try {
@@ -91,6 +95,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         PrintWriter write = response.getWriter();
                         response.setStatus(HttpServletResponse.SC_OK);
                         write.print(json);
+                        write.flush();
                     } else {
                         EnginesBean enginesBean = new EnginesBean();
                         enginesBean.setEngines(engines);
@@ -100,6 +105,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("x-error-message", e.getMessage());
                 }
             }
         } else if (getResource(request.getPathInfo()).equals("photos")) {
@@ -120,6 +126,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                             PrintWriter write = response.getWriter();
                             response.setStatus(HttpServletResponse.SC_OK);
                             write.print(json);
+                            write.flush();
                         } else if (getAccept(request).contains("text/html")) {
                             PhotosBean photosBean = new PhotosBean();
                             photosBean.setPhotos(Arrays.asList(photo));
@@ -144,6 +151,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     } catch (Exception e) {
                         LOGGER.log(Level.SEVERE, "Failed", e);
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        response.setHeader("x-error-message", e.getMessage());
                     }
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -160,6 +168,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         PrintWriter write = response.getWriter();
                         response.setStatus(HttpServletResponse.SC_OK);
                         write.print(json);
+                        write.flush();
                     } else {
                         PhotosBean photosBean = new PhotosBean();
                         photosBean.setPhotos(photos);
@@ -169,12 +178,11 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("x-error-message", e.getMessage());
                 }
             }
         } else if (getResource(request.getPathInfo()).equals("sounds")) {
             if (request.getParameter("name") != null) {
-                LOGGER.info("Sound service accept header: " + request.getHeader("accept"));
-
                 File soundFileStored = new File(dataFilePath + System.getProperty("file.separator") + request.getParameter("name"));
 
                 if (soundFileStored.exists()) {
@@ -189,6 +197,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                             PrintWriter write = response.getWriter();
                             response.setStatus(HttpServletResponse.SC_OK);
                             write.print(json);
+                            write.flush();
                         } else if (getAccept(request).contains("text/html")) {
                             SoundsBean soundsBean = new SoundsBean();
                             soundsBean.setSounds(Arrays.asList(sound));
@@ -213,9 +222,11 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     } catch (Exception e) {
                         LOGGER.log(Level.SEVERE, "Failed", e);
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        response.setHeader("x-error-message", e.getMessage());
                     }
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("x-error-message", "Resource not found");
                 }
             } else {
                 try {
@@ -229,6 +240,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         response.setStatus(HttpServletResponse.SC_OK);
                         PrintWriter write = response.getWriter();
                         write.print(json);
+                        write.flush();
                     } else {
                         SoundsBean soundsBean = new SoundsBean();
                         soundsBean.setSounds(sounds);
@@ -238,6 +250,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("x-error-message", e.getMessage());
                 }
             }
         } else {
@@ -267,12 +280,12 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
         if (customVerb.isEmpty()) {
             if (getResource(request.getPathInfo()).equals("engines")) {
-                Engine engine = new Engine();
-                engine.setName(request.getParameter("name"));
-                engine.setCylinders(new Integer(request.getParameter("cylinders")));
-                engine.setThrottleSetting(new Integer(request.getParameter("throttleSetting")));
-
                 try {
+                    Engine engine = new Engine();
+                    engine.setName(request.getParameter("name"));
+                    engine.setCylinders(Integer.parseInt(request.getParameter("cylinders")));
+                    engine.setThrottleSetting(Integer.parseInt(request.getParameter("throttleSetting")));
+
                     int id = this.httpWebService.createEngines(engine);
 
                     if (getAccept(request).contains("application/json")) {
@@ -283,13 +296,15 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         response.setStatus(HttpServletResponse.SC_CREATED);
                         PrintWriter write = response.getWriter();
                         write.print(idJson);
+                        write.flush();
                     } else {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("Location", "/generichttpws/engines?id=" + id);
+                        response.setHeader("location", "/generichttpws/engines?id=" + id);
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
+                    response.setHeader("x-error-message", e.getMessage());
                 }
             } else if (getResource(request.getPathInfo()).equals("photos")) {
                 Part photoPart = request.getPart("photoFile");
@@ -315,13 +330,15 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         response.setStatus(HttpServletResponse.SC_CREATED);
                         PrintWriter write = response.getWriter();
                         write.print(idJson);
+                        write.flush();
                     } else {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("Location", "/generichttpws/photos?name=" + photoFileName);
+                        response.setHeader("location", "/generichttpws/photos?name=" + photoFileName);
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
+                    response.setHeader("x-error-message", e.getMessage());
                 }
             } else if (getResource(request.getPathInfo()).equals("sounds")) {
                 Part soundPart = request.getPart("soundFile");
@@ -346,16 +363,18 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         response.setStatus(HttpServletResponse.SC_CREATED);
                         PrintWriter write = response.getWriter();
                         write.print(idJson);
+                        write.flush();
                     } else {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("Location", "/generichttpws/sounds?name=" + soundFileName);
+                        response.setHeader("location", "/generichttpws/sounds?name=" + soundFileName);
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
                 }
             } else {
-                response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.setHeader("x-error-message", "Verb not supported: " + customVerb);
             }
 
         } else if (customVerb.equals("restart") || customVerb.equals("stop")) {
@@ -373,17 +392,68 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         response.setStatus(HttpServletResponse.SC_OK);
                     } else {
                         response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
+                        response.setHeader("location", "/generichttpws/engines?id=" + request.getParameter("id"));
                     }
                 } catch (Exception e) {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("x-error-message", e.getMessage());
                 }
             } else {
-                response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.setHeader("x-error-message", "Verb not supported: " + customVerb);
             }
         } else if (customVerb.equals("play")) {
             if (getResource(request.getPathInfo()).equals("sounds")) {
-                this.httpWebService.playSounds(request.getParameter("name"));
+                try {
+                    this.httpWebService.playSounds(request.getParameter("name"));
+
+                    if (getAccept(request).contains("application/json")) {
+                        response.setContentType("application/json");
+                        response.setStatus(HttpServletResponse.SC_OK);
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("location", "/generichttpwsclient.jsp");
+                    }
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed", e);
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("x-error-message", e.getMessage());
+                }
+            }
+        } else if (customVerb.equals("race")) {
+            if (getResource(request.getPathInfo()).equals("trucks")) {
+                try {
+                    Truck truck1 = new Truck();
+                    truck1.setName(request.getParameter("truck1.name"));
+                    System.out.println("Ignoring for now: " + request.getParameter("truck1.engine"));
+
+                    Truck truck2 = new Truck();
+                    truck2.setName(request.getParameter("truck2.name"));
+                    System.out.println("Ignoring for now: " + request.getParameter("truck2.engine"));
+
+                    int truckNameCompareResult = this.httpWebService.raceTrucks(truck1, truck2);
+
+                    if (getAccept(request).contains("application/json")) {
+                        response.setContentType("application/json");
+                        Gson gson = new Gson();
+                        String idJson = gson.toJson(truckNameCompareResult);
+
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        PrintWriter write = response.getWriter();
+                        write.print(idJson);
+                        write.flush();
+                    } else if (getAccept(request).contains("text/html")) {
+                        response.setContentType("text/html");
+
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        PrintWriter write = response.getWriter();
+                        write.print("Lexicographical difference between truck names: " + truckNameCompareResult);
+                        write.flush();
+                    }
+                } catch (Exception e) {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.setHeader("x-error-message", e.getMessage());
+                }
             }
 
             if (getAccept(request).contains("application/json")) {
@@ -391,10 +461,11 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_OK);
             } else {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                response.setHeader("Location", "/generichttpwsclient.jsp");
+                response.setHeader("location", "/generichttpwsclient.jsp");
             }
         } else {
-            response.setStatus(HttpServletResponse.SC_NOT_IMPLEMENTED);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setHeader("x-error-message", "Verb not supported: " + customVerb);
         }
     }
 
@@ -403,13 +474,13 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
         // TODO Generic HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
 
-        Engine engine = new Engine();
-        engine.setId(new Integer(request.getParameter("id")));
-        engine.setName(request.getParameter("name"));
-        engine.setCylinders(new Integer(request.getParameter("cylinders")));
-        engine.setThrottleSetting(new Integer(request.getParameter("throttleSetting")));
-
         try {
+            Engine engine = new Engine();
+            engine.setId(Integer.parseInt(request.getParameter("id")));
+            engine.setName(request.getParameter("name"));
+            engine.setCylinders(Integer.parseInt(request.getParameter("cylinders")));
+            engine.setThrottleSetting(Integer.parseInt(request.getParameter("throttleSetting")));
+
             int id = this.httpWebService.createOrReplaceEngines(engine);
 
             if (getAccept(request).contains("application/json")) {
@@ -420,13 +491,15 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 response.setStatus(HttpServletResponse.SC_CREATED);
                 PrintWriter write = response.getWriter();
                 write.print(idJson);
+                write.flush();
             } else {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                response.setHeader("Location", "/generichttpws/engines?id=" + request.getParameter("id"));
+                response.setHeader("location", "/generichttpws/engines?id=" + request.getParameter("id"));
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed", e);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.setHeader("x-error-message", e.getMessage());
         }
     }
 
@@ -443,20 +516,22 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             if (request.getParameter("name") != null)
                 engine.setName(request.getParameter("name"));
             if (request.getParameter("cylinders") != null)
-                engine.setCylinders(new Integer(request.getParameter("cylinders")));
+                engine.setCylinders(Integer.parseInt(request.getParameter("cylinders")));
             if (request.getParameter("throttleSetting") != null)
-                engine.setThrottleSetting(new Integer(request.getParameter("throttleSetting")));
+                engine.setThrottleSetting(Integer.parseInt(request.getParameter("throttleSetting")));
 
             this.httpWebService.updateEngines(engine);
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed", e);
+            response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.setHeader("x-error-message", e.getMessage());
         }
     }
 
     protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOGGER.info("Handling DELETE at " + request.getPathInfo());
 
-        this.httpWebService.deleteEngines(new Integer(request.getParameter("id")));
+        this.httpWebService.deleteEngines(Integer.parseInt(request.getParameter("id")));
     }
 
     protected void doOptions(HttpServletRequest request, HttpServletResponse response) {

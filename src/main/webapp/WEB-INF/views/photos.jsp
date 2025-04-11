@@ -1,4 +1,4 @@
-<%@ page import="com.weburg.domain.Photo" %>
+<%@ page import="example.domain.Photo" %>
 <jsp:useBean id="model" class="beans.PhotosBean" scope="request"/>
 <jsp:include page="/WEB-INF/views/header.jsp">
     <jsp:param name="title" value="HTML Generic HTTP WS Client - Photos"/>

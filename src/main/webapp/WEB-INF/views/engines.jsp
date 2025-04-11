@@ -1,4 +1,4 @@
-<%@ page import="com.weburg.domain.Engine" %>
+<%@ page import="example.domain.Engine" %>
 <jsp:useBean id="model" class="beans.EnginesBean" scope="request"/>
 <jsp:include page="/WEB-INF/views/header.jsp">
     <jsp:param name="title" value="HTML Generic HTTP WS Client - Engines"/>

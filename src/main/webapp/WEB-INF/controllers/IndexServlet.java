@@ -1,6 +1,6 @@
 import beans.IndexBean;
-import com.weburg.domain.Engine;
 
+import example.domain.Engine;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;

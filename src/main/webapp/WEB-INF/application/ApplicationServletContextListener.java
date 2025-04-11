@@ -1,6 +1,5 @@
-import com.weburg.domain.Engine;
-import com.weburg.services.DefaultHttpWebService;
-
+import example.domain.Engine;
+import example.services.DefaultHttpWebService;
 import jakarta.servlet.*;
 
 import java.io.File;
@@ -21,7 +20,8 @@ public class ApplicationServletContextListener implements ServletContextListener
                 .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
 
         Engine engine = new Engine();
-        engine.setCylinders(14);
+        engine.setName("Hemi");
+        engine.setCylinders(12);
 
         event.getServletContext().addServlet("IndexServlet", new IndexServlet(engine)).addMapping("/index");
 

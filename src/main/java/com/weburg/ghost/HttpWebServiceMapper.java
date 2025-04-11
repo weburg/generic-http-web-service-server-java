@@ -1,7 +1,5 @@
 package com.weburg.ghost;
 
-import com.weburg.services.HttpWebService;
-
 import java.beans.*;
 import java.lang.reflect.*;
 import java.util.ArrayList;
@@ -40,7 +38,7 @@ public class HttpWebServiceMapper {
 
         for (Method method : methods) {
             String genericReturnType = method.getGenericReturnType().getTypeName();
-            if (genericReturnType.contains(".") && !genericReturnType.startsWith("java")  && !genericReturnType.contains("[]")) {
+            if (!genericReturnType.startsWith("java.lang")  && !genericReturnType.contains("[]")) {
                 customTypes.add(method.getGenericReturnType());
             }
 
@@ -104,11 +102,5 @@ public class HttpWebServiceMapper {
         }
 
         return newName;
-    }
-
-    public static void main(String[] args) {
-        HttpWebServiceMapper wsm = new HttpWebServiceMapper(HttpWebService.class);
-
-        System.out.println(wsm.describeService());
     }
 }

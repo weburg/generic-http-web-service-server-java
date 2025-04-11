@@ -1,6 +1,6 @@
 package beans;
 
-import com.weburg.domain.Photo;
+import example.domain.Photo;
 
 import java.io.Serializable;
 import java.util.ArrayList;
