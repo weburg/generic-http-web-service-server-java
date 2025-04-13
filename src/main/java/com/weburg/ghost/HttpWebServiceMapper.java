@@ -1,8 +1,13 @@
 package com.weburg.ghost;
 
-import java.beans.*;
-import java.lang.reflect.*;
-import java.util.ArrayList;
+import java.beans.BeanInfo;
+import java.beans.IntrospectionException;
+import java.beans.Introspector;
+import java.beans.PropertyDescriptor;
+import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
+import java.lang.reflect.Type;
+import java.util.HashSet;
 
 public class HttpWebServiceMapper {
     /*
@@ -34,46 +39,49 @@ public class HttpWebServiceMapper {
 
         Method[] methods = webServiceClass.getDeclaredMethods();
 
-        ArrayList<Type> customTypes = new ArrayList<>();
+        HashSet<Type> customTypeCandidates = new HashSet<>();
 
         for (Method method : methods) {
             String genericReturnType = method.getGenericReturnType().getTypeName();
-            if (!genericReturnType.startsWith("java.lang")  && !genericReturnType.contains("[]")) {
-                customTypes.add(method.getGenericReturnType());
+            if (!genericReturnType.startsWith("java.lang") && !genericReturnType.contains("[]")) {
+                customTypeCandidates.add(method.getGenericReturnType());
             }
 
             serviceDescription.append("Method: " + method.getName() + ", Returns: " + simplifyName(genericReturnType)).append(System.getProperty("line.separator"));
             Parameter[] parameters = method.getParameters();
 
             for (Parameter parameter : parameters) {
+                String genericParameterType = parameter.getType().getTypeName();
+                if (!genericParameterType.startsWith("java.lang") && !genericParameterType.contains("[]")) {
+                    customTypeCandidates.add(parameter.getType());
+                }
+
                 serviceDescription.append("    Parameter: " + parameter.getName() + ", Type: " + simplifyName(parameter.getType().getCanonicalName())).append(System.getProperty("line.separator"));
             }
 
             serviceDescription.append(System.getProperty("line.separator"));
         }
 
-        for (Type type : customTypes) {
-            serviceDescription.append("Type: " + simplifyName(type.getTypeName())).append(System.getProperty("line.separator"));
-
-            BeanInfo beanInfo;
-
+        for (Type type : customTypeCandidates) {
             try {
-                beanInfo = Introspector.getBeanInfo(Class.forName(type.getTypeName().replace("[", "").replace("]", "")));
-            } catch (ClassNotFoundException e) {
-                throw new RuntimeException(e);
-            } catch (IntrospectionException e) {
-                throw new RuntimeException(e);
-            }
+                BeanInfo beanInfo = Introspector.getBeanInfo(Class.forName(type.getTypeName().replace("[", "").replace("]", "")));
 
-            PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
+                PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
 
-            for (PropertyDescriptor descriptor : descriptors) {
-                if (descriptor.getName().compareTo("class") != 0) {
-                    serviceDescription.append("    Property: " + descriptor.getName() + ", Type: " + simplifyName(descriptor.getPropertyType().getName())).append(System.getProperty("line.separator"));
+                serviceDescription.append("Type: " + simplifyName(type.getTypeName())).append(System.getProperty("line.separator"));
+
+                for (PropertyDescriptor descriptor : descriptors) {
+                    if (descriptor.getName().compareTo("class") != 0) {
+                        serviceDescription.append("    Property: " + descriptor.getName() + ", Type: " + simplifyName(descriptor.getPropertyType().getName())).append(System.getProperty("line.separator"));
+                    }
                 }
-            }
 
-            serviceDescription.append(System.getProperty("line.separator"));
+                serviceDescription.append(System.getProperty("line.separator"));
+            } catch (ClassNotFoundException e) {
+                // If class wasn't found, it's not a custom type, but something like void, int, a list. Not needed.
+            } catch (IntrospectionException e) {
+                System.out.println("Class " + type.getTypeName() + " could not be fully introspected.");
+            }
         }
 
         return serviceDescription.toString();
