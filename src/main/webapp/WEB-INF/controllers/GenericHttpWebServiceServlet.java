@@ -425,11 +425,11 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 try {
                     Truck truck1 = new Truck();
                     truck1.setName(request.getParameter("truck1.name"));
-                    System.out.println("Ignoring for now: " + request.getParameter("truck1.engine"));
+                    truck1.setEngineId(Integer.parseInt(request.getParameter("truck1.engineId")));
 
                     Truck truck2 = new Truck();
                     truck2.setName(request.getParameter("truck2.name"));
-                    System.out.println("Ignoring for now: " + request.getParameter("truck2.engine"));
+                    truck2.setEngineId(Integer.parseInt(request.getParameter("truck2.engineId")));
 
                     int truckNameCompareResult = this.httpWebService.raceTrucks(truck1, truck2);
 
@@ -454,14 +454,6 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
                     response.setHeader("x-error-message", e.getMessage());
                 }
-            }
-
-            if (getAccept(request).contains("application/json")) {
-                response.setContentType("application/json");
-                response.setStatus(HttpServletResponse.SC_OK);
-            } else {
-                response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                response.setHeader("location", "/generichttpwsclient.jsp");
             }
         } else {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);

@@ -314,7 +314,7 @@ public class DefaultHttpWebService implements HttpWebService {
         // as we want to test whether we can differentiate names.
 
         LOGGER.info("Got trucks: " + truck1.getName() + " and " + truck2.getName());
-        LOGGER.info("Engines: " + truck1.getEngine().getName() + " and " + truck2.getEngine().getName());
+        LOGGER.info("Engines: " + getEngines(truck1.getEngineId()).getName() + " and " + getEngines(truck2.getEngineId()).getName());
 
         return truck1.getName().compareTo(truck2.getName());
     }
