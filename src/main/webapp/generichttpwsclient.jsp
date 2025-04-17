@@ -116,9 +116,9 @@
     <fieldset>
         <legend>Race trucks</legend>
         <label><span>T1 name: </span><input type="text" name="truck1.name" value="" size="10"></label><br>
-        <label><span>T1 engine: </span><input type="text" name="truck1.engine" value="" size="10"></label><br>
+        <label><span>T1 engine id: </span><input type="text" name="truck1.engineId" value="" size="10"></label><br>
         <label><span>T2 name: </span><input type="text" name="truck2.name" value="" size="10"></label><br>
-        <label><span>T2 engine: </span><input type="text" name="truck2.engine" value="" size="10"></label><br>
+        <label><span>T2 engine id: </span><input type="text" name="truck2.engineId" value="" size="10"></label><br>
         <br>
         <input type="submit" name="submit" value="Race">
     </fieldset>
