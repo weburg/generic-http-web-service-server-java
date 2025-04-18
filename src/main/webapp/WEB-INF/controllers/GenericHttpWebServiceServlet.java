@@ -23,13 +23,6 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-// TODO this all needs to be handled generically via dynamic proxy around service class (or thereabouts)
-
-/*
-TODO Request and response should factor encoding type into the way processing is done on the way in and out
-Right now, we assume form encoded data in and JSON data out.
-*/
-
 public class GenericHttpWebServiceServlet extends HttpServlet {
     private HttpWebService httpWebService;
     private HttpWebServiceMapper httpWebServiceMapper;
