@@ -74,6 +74,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
             } else {
@@ -98,6 +99,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
             }
@@ -144,6 +146,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     } catch (Exception e) {
                         LOGGER.log(Level.SEVERE, "Failed", e);
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        response.setHeader("access-control-expose-headers", "x-error-message");
                         response.setHeader("x-error-message", e.getMessage());
                     }
                 } else {
@@ -171,6 +174,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
             }
@@ -215,10 +219,12 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     } catch (Exception e) {
                         LOGGER.log(Level.SEVERE, "Failed", e);
                         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                        response.setHeader("access-control-expose-headers", "x-error-message");
                         response.setHeader("x-error-message", e.getMessage());
                     }
                 } else {
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", "Resource not found");
                 }
             } else {
@@ -243,6 +249,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
             }
@@ -297,6 +304,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
             } else if (getResource(request.getPathInfo()).equals("photos")) {
@@ -331,6 +339,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
             } else if (getResource(request.getPathInfo()).equals("sounds")) {
@@ -364,9 +373,12 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_CONFLICT);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
+                    response.setHeader("x-error-message", e.getMessage());
                 }
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.setHeader("access-control-expose-headers", "x-error-message");
                 response.setHeader("x-error-message", "Verb not supported: " + customVerb);
             }
 
@@ -388,11 +400,14 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         response.setHeader("location", "/generichttpws/engines?id=" + request.getParameter("id"));
                     }
                 } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
             } else {
                 response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.setHeader("access-control-expose-headers", "x-error-message");
                 response.setHeader("x-error-message", "Verb not supported: " + customVerb);
             }
         } else if (customVerb.equals("play")) {
@@ -410,6 +425,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
                     response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
             }
@@ -444,12 +460,15 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         write.flush();
                     }
                 } catch (Exception e) {
-                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    LOGGER.log(Level.SEVERE, "Failed", e);
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
             }
         } else {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            response.setHeader("access-control-expose-headers", "x-error-message");
             response.setHeader("x-error-message", "Verb not supported: " + customVerb);
         }
     }
@@ -484,6 +503,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed", e);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.setHeader("access-control-expose-headers", "x-error-message");
             response.setHeader("x-error-message", e.getMessage());
         }
     }
@@ -509,6 +529,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed", e);
             response.setStatus(HttpServletResponse.SC_CONFLICT);
+            response.setHeader("access-control-expose-headers", "x-error-message");
             response.setHeader("x-error-message", e.getMessage());
         }
     }
