@@ -282,9 +282,9 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             if (getResource(request.getPathInfo()).equals("engines")) {
                 try {
                     Engine engine = new Engine();
-                    engine.setName(request.getParameter("name"));
-                    engine.setCylinders(Integer.parseInt(request.getParameter("cylinders")));
-                    engine.setThrottleSetting(Integer.parseInt(request.getParameter("throttleSetting")));
+                    engine.setName(request.getParameter("engine.name"));
+                    engine.setCylinders(Integer.parseInt(request.getParameter("engine.cylinders")));
+                    engine.setThrottleSetting(Integer.parseInt(request.getParameter("engine.throttleSetting")));
 
                     int id = this.httpWebService.createEngines(engine);
 
@@ -308,10 +308,10 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setHeader("x-error-message", e.getMessage());
                 }
             } else if (getResource(request.getPathInfo()).equals("photos")) {
-                Part photoPart = request.getPart("photoFile");
+                Part photoPart = request.getPart("photo.photoFile");
 
                 Photo photo = new Photo();
-                photo.setCaption(request.getParameter("caption"));
+                photo.setCaption(request.getParameter("photo.caption"));
                 photo.setPhotoFile(new File(photoPart.getSubmittedFileName()));
 
                 LOGGER.info("File upload name: " + photoPart.getName());
@@ -343,7 +343,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setHeader("x-error-message", e.getMessage());
                 }
             } else if (getResource(request.getPathInfo()).equals("sounds")) {
-                Part soundPart = request.getPart("soundFile");
+                Part soundPart = request.getPart("sound.soundFile");
 
                 Sound sound = new Sound();
                 sound.setSoundFile(new File(soundPart.getSubmittedFileName()));
@@ -480,10 +480,10 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
         try {
             Engine engine = new Engine();
-            engine.setId(Integer.parseInt(request.getParameter("id")));
-            engine.setName(request.getParameter("name"));
-            engine.setCylinders(Integer.parseInt(request.getParameter("cylinders")));
-            engine.setThrottleSetting(Integer.parseInt(request.getParameter("throttleSetting")));
+            engine.setId(Integer.parseInt(request.getParameter("engine.id")));
+            engine.setName(request.getParameter("engine.name"));
+            engine.setCylinders(Integer.parseInt(request.getParameter("engine.cylinders")));
+            engine.setThrottleSetting(Integer.parseInt(request.getParameter("engine.throttleSetting")));
 
             int id = this.httpWebService.createOrReplaceEngines(engine);
 
@@ -498,7 +498,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 write.flush();
             } else {
                 response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                response.setHeader("location", "/generichttpws/engines?id=" + request.getParameter("id"));
+                response.setHeader("location", "/generichttpws/engines?id=" + request.getParameter("engine.id"));
             }
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, "Failed", e);
@@ -509,21 +509,21 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
     }
 
     protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        LOGGER.info("Handling PATCH at " + request.getPathInfo() + " with id " + request.getParameter("id"));
+        LOGGER.info("Handling PATCH at " + request.getPathInfo() + " with id " + request.getParameter("engine.id"));
 
         // TODO Generic HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
 
         try {
-            Engine engine = this.httpWebService.getEngines(new Integer(request.getParameter("id")));
+            Engine engine = this.httpWebService.getEngines(new Integer(request.getParameter("engine.id")));
 
             // Do the actual updating to the existing engine
-            //engine.setId(new Integer(request.getParameter("id"))); // Do not change id
-            if (request.getParameter("name") != null)
+            //engine.setId(new Integer(request.getParameter("engine.id"))); // Do not change id
+            if (request.getParameter("engine.name") != null)
                 engine.setName(request.getParameter("name"));
-            if (request.getParameter("cylinders") != null)
-                engine.setCylinders(Integer.parseInt(request.getParameter("cylinders")));
-            if (request.getParameter("throttleSetting") != null)
-                engine.setThrottleSetting(Integer.parseInt(request.getParameter("throttleSetting")));
+            if (request.getParameter("engine.cylinders") != null)
+                engine.setCylinders(Integer.parseInt(request.getParameter("engine.cylinders")));
+            if (request.getParameter("engine.throttleSetting") != null)
+                engine.setThrottleSetting(Integer.parseInt(request.getParameter("engine.throttleSetting")));
 
             this.httpWebService.updateEngines(engine);
         } catch (Exception e) {

@@ -21,7 +21,7 @@
 <form action="generichttpws/sounds" method="post" enctype="multipart/form-data">
     <fieldset>
         <legend>New sound (wav)</legend>
-        <label><span>Sound: </span><input type="file" name="soundFile" value="" size="10" accept=".wav"></label><br>
+        <label><span>Sound: </span><input type="file" name="sound.soundFile" value="" size="10" accept=".wav"></label><br>
         <br>
         <input type="submit" name="submit" value="Create">
     </fieldset>
@@ -46,9 +46,9 @@
 <form action="generichttpws/engines" method="post">
     <fieldset>
         <legend>New engine</legend>
-        <label><span>Name: </span><input type="text" name="name" value="" size="10"></label><br>
-        <label><span>Cylinders: </span><input type="text" name="cylinders" value="" size="10"></label><br>
-        <label><span>Throttle: </span><input type="text" name="throttleSetting" value="" size="10"></label><br>
+        <label><span>Name: </span><input type="text" name="engine.name" value="" size="10"></label><br>
+        <label><span>Cylinders: </span><input type="text" name="engine.cylinders" value="" size="10"></label><br>
+        <label><span>Throttle: </span><input type="text" name="engine.throttleSetting" value="" size="10"></label><br>
         <br>
         <input type="submit" name="submit" value="Create">
     </fieldset>
@@ -89,8 +89,8 @@
 <form action="generichttpws/photos" method="post" enctype="multipart/form-data">
     <fieldset>
         <legend>New photo (gif, jpg, jpeg, png)</legend>
-        <label><span>Caption: </span><input type="text" name="caption" value="" size="10"></label><br>
-        <label><span>Photo: </span><input type="file" name="photoFile" value="" size="10" accept=".gif,.jpg,.jpeg,.png"></label><br>
+        <label><span>Caption: </span><input type="text" name="photo.caption" value="" size="10"></label><br>
+        <label><span>Photo: </span><input type="file" name="photo.photoFile" value="" size="10" accept=".gif,.jpg,.jpeg,.png"></label><br>
         <br>
         <input type="submit" name="submit" value="Create">
     </fieldset>
