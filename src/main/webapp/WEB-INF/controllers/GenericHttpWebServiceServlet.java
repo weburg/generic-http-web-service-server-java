@@ -519,7 +519,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             // Do the actual updating to the existing engine
             //engine.setId(new Integer(request.getParameter("engine.id"))); // Do not change id
             if (request.getParameter("engine.name") != null)
-                engine.setName(request.getParameter("name"));
+                engine.setName(request.getParameter("engine.name"));
             if (request.getParameter("engine.cylinders") != null)
                 engine.setCylinders(Integer.parseInt(request.getParameter("engine.cylinders")));
             if (request.getParameter("engine.throttleSetting") != null)
