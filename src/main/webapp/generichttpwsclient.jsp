@@ -7,14 +7,14 @@
 <form action="generichttpws/sounds/play" method="post">
     <fieldset>
         <label><span>Sound: </span><input type="radio" name="name" value="arrow_x.wav" size="10" checked>Arrow X</label> <label><input type="radio" name="name" value="arrow2.wav" size="10">Arrow 2</label>
-        <input type="submit" name="submit" value="Play on server">
+        <button type="submit">Play on server</button>
     </fieldset>
 </form>
 
 <form action="generichttpws/sounds/play" method="post">
     <fieldset>
         <label><span>Sound: </span><input type="text" name="name" value="" size="10"></label>
-        <input type="submit" name="submit" value="Play on server">
+        <button type="submit">Play on server</button>
     </fieldset>
 </form>
 
@@ -23,7 +23,7 @@
         <legend>New sound (wav)</legend>
         <label><span>Sound: </span><input type="file" name="sound.soundFile" value="" size="10" accept=".wav"></label><br>
         <br>
-        <input type="submit" name="submit" value="Create">
+        <button type="submit">Create</button>
     </fieldset>
 </form>
 
@@ -31,13 +31,13 @@
     <fieldset>
         <legend>Get sound</legend>
         <label><span>Sound: </span><input type="text" name="name" value="" size="10"></label>
-        <input type="submit" name="submit" value="Get">
+        <button type="submit">Get</button>
     </fieldset>
 </form>
 
 <form action="generichttpws/sounds" method="get">
     <fieldset>
-        <input type="submit" name="submit" value="Get all sounds">
+        <button type="submit">Get all sounds</button>
     </fieldset>
 </form>
 
@@ -50,7 +50,7 @@
         <label><span>Cylinders: </span><input type="text" name="engine.cylinders" value="" size="10"></label><br>
         <label><span>Throttle: </span><input type="text" name="engine.throttleSetting" value="" size="10"></label><br>
         <br>
-        <input type="submit" name="submit" value="Create">
+        <button type="submit">Create</button>
     </fieldset>
 </form>
 
@@ -58,7 +58,7 @@
     <fieldset>
         <legend>Restart engine</legend>
         <label><span>Id: </span><input type="text" name="id" value="" size="10"></label>
-        <input type="submit" name="submit" value="Restart">
+        <button type="submit">Restart</button>
     </fieldset>
 </form>
 
@@ -66,7 +66,7 @@
     <fieldset>
         <legend>Stop engine</legend>
         <label><span>Id: </span><input type="text" name="id" value="" size="10"></label>
-        <input type="submit" name="submit" value="Stop">
+        <button type="submit">Stop</button>
     </fieldset>
 </form>
 
@@ -74,13 +74,13 @@
     <fieldset>
         <legend>Get engine</legend>
         <label><span>Id: </span><input type="text" name="id" value="" size="10"></label>
-        <input type="submit" name="submit" value="Get">
+        <button type="submit">Get</button>
     </fieldset>
 </form>
 
 <form action="generichttpws/engines" method="get">
     <fieldset>
-        <input type="submit" name="submit" value="Get all engines">
+        <button type="submit">Get all engines</button>
     </fieldset>
 </form>
 
@@ -92,7 +92,7 @@
         <label><span>Caption: </span><input type="text" name="photo.caption" value="" size="10"></label><br>
         <label><span>Photo: </span><input type="file" name="photo.photoFile" value="" size="10" accept=".gif,.jpg,.jpeg,.png"></label><br>
         <br>
-        <input type="submit" name="submit" value="Create">
+        <button type="submit">Create</button>
     </fieldset>
 </form>
 
@@ -100,13 +100,13 @@
     <fieldset>
         <legend>Get photo</legend>
         <label><span>Photo: </span><input type="text" name="name" value="" size="10"></label>
-        <input type="submit" name="submit" value="Get">
+        <button type="submit">Get</button>
     </fieldset>
 </form>
 
 <form action="generichttpws/photos" method="get">
     <fieldset>
-        <input type="submit" name="submit" value="Get all photos">
+        <button type="submit">Get all photos</button>
     </fieldset>
 </form>
 
@@ -120,7 +120,7 @@
         <label><span>T2 name: </span><input type="text" name="truck2.name" value="" size="10"></label><br>
         <label><span>T2 engine id: </span><input type="text" name="truck2.engineId" value="" size="10"></label><br>
         <br>
-        <input type="submit" name="submit" value="Race">
+        <button type="submit">Race</button>
     </fieldset>
 </form>
 

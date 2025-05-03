@@ -19,6 +19,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -34,7 +35,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         dataFilePath = ((DefaultHttpWebService) httpWebService).getDataFilePath();
 
         this.httpWebService = httpWebService;
-        this.httpWebServiceMapper = new HttpWebServiceMapper(httpWebService.getClass().getInterfaces()[0]);
+        this.httpWebServiceMapper = new HttpWebServiceMapper(this.httpWebService);
     }
 
     protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -258,7 +259,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
             optionsBean.setOptions(options);
             request.setAttribute("model", optionsBean);*/
 
-            request.setAttribute("serviceDescriptionText", httpWebServiceMapper.describeService());
+            request.setAttribute("serviceDescriptionText", httpWebServiceMapper.getServiceDescription());
             request.getRequestDispatcher("/WEB-INF/views/describe.jsp").forward(request, response);
         }
     }
@@ -307,6 +308,9 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setHeader("x-error-message", e.getMessage());
                 }
             } else if (getResource(request.getPathInfo()).equals("photos")) {
+                Map<String, String[]> parameterMap = request.getParameterMap();
+                Object handledResponse = httpWebServiceMapper.handleInvocation(request.getMethod(), getResource(request.getPathInfo()), parameterMap);
+
                 Part photoPart = request.getPart("photo.photoFile");
 
                 Photo photo = new Photo();
