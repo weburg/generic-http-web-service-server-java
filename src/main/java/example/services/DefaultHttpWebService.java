@@ -228,8 +228,15 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createPhotos(Photo photo) {
-        // The file will need to have been written to disk already, we only have a reference to it now
-        // TODO given that this is now a File, we should be able to write it out here instead, it's better to do in here
+        /* The Web server implementation determines whether the photo's file is
+        written by now or not, or after this call (assuming no exceptions are
+        thrown from here). There is currently no way to read the file without
+        having already written it to disk in the server's normal http file
+        upload location. Ideally, the file would be written in a holding
+        location, checked in here, and then moved by the service method. For
+        now, this setup works and is simple, but lacks checking and
+        transactional integrity.
+         */
 
         try {
             // Write caption
@@ -290,9 +297,6 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createSounds(Sound sound) {
-        // The file will need to have been written to disk already, we only have a reference to it now
-        // TODO given that this is now a File, we should be able to write it out here instead, it's better to do in here
-
         return sound.getSoundFile().getName();
     }
 
@@ -309,9 +313,10 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public int raceTrucks(Truck truck1, Truck truck2) {
-        // This method is just to demo and test parsing two objects in same call
-        // and also to handle a 2+ deep object graph. It just returns an int,
-        // as we want to test whether we can differentiate names.
+        /* This method is just to demo and test parsing two objects in same
+        call. It just returns an int, as we want to test whether we can
+        differentiate names.
+         */
 
         LOGGER.info("Got trucks: " + truck1.getName() + " and " + truck2.getName());
         LOGGER.info("Engines: " + getEngines(truck1.getEngineId()).getName() + " and " + getEngines(truck2.getEngineId()).getName());

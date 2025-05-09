@@ -17,11 +17,11 @@ import jakarta.servlet.http.Part;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import static com.weburg.ghost.HttpWebServiceMapper.getResourceFromPath;
 
 public class GenericHttpWebServiceServlet extends HttpServlet {
     private HttpWebService httpWebService;
@@ -51,7 +51,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
         response.setCharacterEncoding("UTF-8");
 
-        if (getResource(request.getPathInfo()).equals("engines")) {
+        if (getResourceFromPath(request.getPathInfo()).equals("engines")) {
             if (request.getParameter("id") != null) {
                 try {
                     Engine engine = this.httpWebService.getEngines(new Integer(request.getParameter("id")));
@@ -103,7 +103,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setHeader("x-error-message", e.getMessage());
                 }
             }
-        } else if (getResource(request.getPathInfo()).equals("photos")) {
+        } else if (getResourceFromPath(request.getPathInfo()).equals("photos")) {
             if (request.getParameter("name") != null) {
                 LOGGER.info("Photo service accept header: " + request.getHeader("accept"));
 
@@ -178,7 +178,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setHeader("x-error-message", e.getMessage());
                 }
             }
-        } else if (getResource(request.getPathInfo()).equals("sounds")) {
+        } else if (getResourceFromPath(request.getPathInfo()).equals("sounds")) {
             if (request.getParameter("name") != null) {
                 File soundFileStored = new File(dataFilePath + System.getProperty("file.separator") + request.getParameter("name"));
 
@@ -279,7 +279,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         String customVerb = getCustomVerb(request.getPathInfo());
 
         if (customVerb.isEmpty()) {
-            if (getResource(request.getPathInfo()).equals("engines")) {
+            if (getResourceFromPath(request.getPathInfo()).equals("engines")) {
                 try {
                     Engine engine = new Engine();
                     engine.setName(request.getParameter("engine.name"));
@@ -307,37 +307,48 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
-            } else if (getResource(request.getPathInfo()).equals("photos")) {
-                Map<String, String[]> parameterMap = request.getParameterMap();
-                Object handledResponse = httpWebServiceMapper.handleInvocation(request.getMethod(), getResource(request.getPathInfo()), parameterMap);
+            } else if (getResourceFromPath(request.getPathInfo()).equals("photos") || getResourceFromPath(request.getPathInfo()).equals("sounds")) {
+                Map<String, String[]> parameterMap = new HashMap<>(request.getParameterMap());
 
-                Part photoPart = request.getPart("photo.photoFile");
+                for (Part part : request.getParts()) {
+                    String[] fileNames = {part.getSubmittedFileName()};
 
-                Photo photo = new Photo();
-                photo.setCaption(request.getParameter("photo.caption"));
-                photo.setPhotoFile(new File(photoPart.getSubmittedFileName()));
+                    String[] priorFileNames = parameterMap.putIfAbsent(part.getName(), fileNames);
+                    if (priorFileNames != null) {
+                        String[] mergedFileNames = Arrays.copyOf(priorFileNames, priorFileNames.length + 1);
+                        System.arraycopy(fileNames, 0, mergedFileNames, priorFileNames.length, 1);
 
-                LOGGER.info("File upload name: " + photoPart.getName());
-                LOGGER.info("File upload submitted name: " + photoPart.getSubmittedFileName());
-                LOGGER.info("File upload size: " + photoPart.getSize());
+                        parameterMap.put(part.getName(), mergedFileNames);
+                    }
+                }
+
+                Object handledResponse = httpWebServiceMapper.handleInvocation(request.getMethod(), getResourceFromPath(request.getPathInfo()), parameterMap);
 
                 try {
-                    photoPart.write(photoPart.getSubmittedFileName());
-
-                    String photoFileName = this.httpWebService.createPhotos(photo);
+                    for (Part part : request.getParts()) {
+                        if (part.getSubmittedFileName() != null) {
+                            part.write(part.getSubmittedFileName());
+                        }
+                    }
 
                     if (getAccept(request).contains("application/json")) {
                         response.setContentType("application/json");
                         Gson gson = new Gson();
-                        String idJson = gson.toJson(photoFileName);
+                        String idJson = gson.toJson(handledResponse);
 
                         response.setStatus(HttpServletResponse.SC_CREATED);
                         PrintWriter write = response.getWriter();
                         write.print(idJson);
                         write.flush();
                     } else {
-                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("location", "/generichttpws/photos?name=" + photoFileName);
+                        String resourceKeyName = httpWebServiceMapper.getResourceKeyName(getResourceFromPath(request.getPathInfo()));
+
+                        if (resourceKeyName != null) {
+                            response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                            response.setHeader("location", request.getRequestURI() + '?' + resourceKeyName + '=' + handledResponse.toString());
+                        } else {
+                            response.setStatus(HttpServletResponse.SC_CREATED);
+                        }
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
@@ -345,48 +356,9 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                     response.setHeader("access-control-expose-headers", "x-error-message");
                     response.setHeader("x-error-message", e.getMessage());
                 }
-            } else if (getResource(request.getPathInfo()).equals("sounds")) {
-                Part soundPart = request.getPart("sound.soundFile");
-
-                Sound sound = new Sound();
-                sound.setSoundFile(new File(soundPart.getSubmittedFileName()));
-
-                LOGGER.info("File upload name: " + soundPart.getName());
-                LOGGER.info("File upload submitted name: " + soundPart.getSubmittedFileName());
-                LOGGER.info("File upload size: " + soundPart.getSize());
-
-                try {
-                    soundPart.write(soundPart.getSubmittedFileName());
-
-                    String soundFileName = this.httpWebService.createSounds(sound);
-
-                    if (getAccept(request).contains("application/json")) {
-                        response.setContentType("application/json");
-                        Gson gson = new Gson();
-                        String idJson = gson.toJson(soundFileName);
-
-                        response.setStatus(HttpServletResponse.SC_CREATED);
-                        PrintWriter write = response.getWriter();
-                        write.print(idJson);
-                        write.flush();
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("location", "/generichttpws/sounds?name=" + soundFileName);
-                    }
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed", e);
-                    response.setStatus(HttpServletResponse.SC_CONFLICT);
-                    response.setHeader("access-control-expose-headers", "x-error-message");
-                    response.setHeader("x-error-message", e.getMessage());
-                }
-            } else {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.setHeader("access-control-expose-headers", "x-error-message");
-                response.setHeader("x-error-message", "Verb not supported: " + customVerb);
             }
-
         } else if (customVerb.equals("restart") || customVerb.equals("stop")) {
-            if (getResource(request.getPathInfo()).equals("engines")) {
+            if (getResourceFromPath(request.getPathInfo()).equals("engines")) {
                 // handle custom verb "restartEngines" at POST /engines/restart
                 try {
                     if (customVerb.equals("restart")) {
@@ -414,7 +386,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 response.setHeader("x-error-message", "Verb not supported: " + customVerb);
             }
         } else if (customVerb.equals("play")) {
-            if (getResource(request.getPathInfo()).equals("sounds")) {
+            if (getResourceFromPath(request.getPathInfo()).equals("sounds")) {
                 try {
                     this.httpWebService.playSounds(request.getParameter("name"));
 
@@ -433,7 +405,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                 }
             }
         } else if (customVerb.equals("race")) {
-            if (getResource(request.getPathInfo()).equals("trucks")) {
+            if (getResourceFromPath(request.getPathInfo()).equals("trucks")) {
                 try {
                     Truck truck1 = new Truck();
                     truck1.setName(request.getParameter("truck1.name"));
@@ -547,20 +519,6 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         LOGGER.info("Handling OPTIONS at " + request.getPathInfo());
 
         // TODO describe the service via HttpWebServiceMapper, meanwhile see doGet
-    }
-
-    private String getResource(String pathInfo) {
-        if (pathInfo == null) {
-            return "";
-        }
-
-        String[] pathParts = pathInfo.split("/");
-
-        if (pathParts.length > 1) {
-            return pathParts[1];
-        } else {
-            return "";
-        }
     }
 
     private String getCustomVerb(String pathInfo) {
