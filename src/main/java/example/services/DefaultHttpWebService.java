@@ -292,10 +292,10 @@ public class DefaultHttpWebService implements HttpWebService {
         File localSoundFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
 
         if (!localSoundFile.isFile()) {
-            throw new RuntimeException("File not found");
+            throw new NotFoundException("Sound \"" + name + "\" not found.");
         }
 
-        sound.setSoundFile(new File(localSoundFile.getName()));
+        sound.setSoundFile(localSoundFile);
 
         return sound;
     }
@@ -307,7 +307,7 @@ public class DefaultHttpWebService implements HttpWebService {
 
         for (File soundFile : soundFiles) {
             Sound sound = new Sound();
-            sound.setSoundFile(new File(soundFile.getName()));
+            sound.setSoundFile(soundFile);
 
             sounds.add(sound);
         }
