@@ -1,6 +1,6 @@
-<%@ page import="example.domain.Sound" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <jsp:useBean id="model" class="beans.SoundsBean" scope="request"/>
-<jsp:include page="/WEB-INF/views/header.jsp">
+<jsp:include page="header.jsp">
     <jsp:param name="title" value="HTML Generic HTTP WS Client - Sounds"/>
 </jsp:include>
 
@@ -12,12 +12,12 @@
         </tr>
     </thead>
     <tbody>
-    <% for (Sound sound : model.getSounds()) { %>
+    <c:forEach var="sound" items="${model.sounds}">
         <tr>
-            <td><audio controls><source src="${pageContext.request.contextPath}/generichttpws/sounds?name=<%= sound.getName() %>"></audio></td>
-            <td><a href="${pageContext.request.contextPath}/generichttpws/sounds?name=<%= sound.getName() %>"><%= sound.getName() %></a></td>
+            <td><audio controls><source src="${pageContext.request.contextPath}/generichttpws/sounds?name=<c:out value="${sound.name}"/>"></audio></td>
+            <td><a href="${pageContext.request.contextPath}/generichttpws/sounds?name=<c:out value="${sound.name}"/>"><c:out value="${sound.name}"/></a></td>
         </tr>
-    <% } %>
+    </c:forEach>
     </tbody>
 </table>
 

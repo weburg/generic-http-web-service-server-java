@@ -1,7 +1,8 @@
-<jsp:include page="/WEB-INF/views/header.jsp">
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<jsp:include page="header.jsp">
     <jsp:param name="title" value="Describe Generic HTTP Web Service"/>
 </jsp:include>
 
-<pre>${serviceDescriptionText}</pre>
+<pre><c:out value="${serviceDescriptionText}"/></pre>
 
 <%@ include file="footer.jsp" %>

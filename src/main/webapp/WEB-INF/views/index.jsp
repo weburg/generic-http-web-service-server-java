@@ -1,6 +1,6 @@
-<%@page import="example.domain.Engine" %>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
 <jsp:useBean id="model" class="beans.IndexBean" scope="request"/>
-<jsp:include page="/WEB-INF/views/header.jsp">
+<jsp:include page="header.jsp">
     <jsp:param name="title" value="Home"/>
 </jsp:include>
 
@@ -10,7 +10,7 @@
 
 <p>But first, an example engine provided by a JSP bean!</p>
 <ul>
-    <li><%= model.getEngine().getName() %> w/ <%= model.getEngine().getCylinders() %> cylinders</li>
+    <li><c:out value="${model.engine.name}"/> w/ <c:out value="${model.engine.cylinders}"/> cylinders</li>
 </ul>
 
 <%@ include file="footer.jsp" %>
