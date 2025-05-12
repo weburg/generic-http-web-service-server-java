@@ -2,11 +2,11 @@ import beans.EnginesBean;
 import beans.PhotosBean;
 import beans.SoundsBean;
 import com.google.gson.Gson;
-import com.weburg.ghost.HttpWebServiceMapper;
+import com.weburg.ghowst.HttpWebServiceMapper;
+import com.weburg.ghowst.NotFoundException;
 import example.domain.Engine;
 import example.domain.Photo;
 import example.domain.Sound;
-import example.domain.Truck;
 import example.services.DefaultHttpWebService;
 import example.services.HttpWebService;
 import jakarta.servlet.ServletException;
@@ -21,7 +21,7 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static com.weburg.ghost.HttpWebServiceMapper.getResourceFromPath;
+import static com.weburg.ghowst.HttpWebServiceMapper.getResourceFromPath;
 
 public class GenericHttpWebServiceServlet extends HttpServlet {
     private HttpWebService httpWebService;
@@ -38,18 +38,134 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
         this.httpWebServiceMapper = new HttpWebServiceMapper(this.httpWebService);
     }
 
-    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        if (request.getMethod().equals("PATCH")) {
-            doPatch(request, response);
+    private static String getAccept(HttpServletRequest request) {
+        String acceptHeader = request.getHeader("accept");
+        if (acceptHeader != null) {
+            return request.getHeader("accept");
         } else {
-            super.service(request, response);
+            return "";
+        }
+    }
+
+    protected void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String method = request.getMethod();
+
+        // Reimplemented portions of original service
+        if (method.equals("GET")) {
+            long lastModified = getLastModified(request);
+            if (lastModified == -1) {
+                // servlet doesn't support if-modified-since, no reason
+                // to go through further expensive logic
+            } else {
+                long ifModifiedSince;
+                try {
+                    ifModifiedSince = request.getDateHeader("If-Modified-Since");
+                } catch (IllegalArgumentException iae) {
+                    // Invalid date header - proceed as if none was set
+                    ifModifiedSince = -1;
+                }
+                if (ifModifiedSince < (lastModified / 1000 * 1000)) {
+                    // If the servlet mod time is later, call doGet()
+                    // Round down to the nearest second for a proper compare
+                    // A ifModifiedSince of -1 will always be less
+                    if (!response.containsHeader("Last-Modified") && lastModified >= 0) {
+                        response.setDateHeader("Last-Modified", lastModified);
+                    }
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                    return;
+                }
+            }
+
+            response.setCharacterEncoding("UTF-8");
+
+            doGet(request, response);
+        } else if (request.getMethod().equals("OPTIONS") || request.getMethod().equals("POST") || request.getMethod().equals("PUT") || request.getMethod().equals("PATCH") || request.getMethod().equals("DELETE")) {
+            LOGGER.info("Handling " + request.getMethod() + " at " + request.getPathInfo());
+
+            Map<String, String[]> parameterMap = new HashMap<>(request.getParameterMap());
+
+            String contentType = request.getContentType();
+
+            if (contentType != null && contentType.startsWith("multipart/form-data")) { // vs. application/x-www-form-urlencoded
+                for (Part part : request.getParts()) {
+                    String[] fileNames = {part.getSubmittedFileName()};
+
+                    String[] priorFileNames = parameterMap.putIfAbsent(part.getName(), fileNames);
+                    if (priorFileNames != null) {
+                        String[] mergedFileNames = Arrays.copyOf(priorFileNames, priorFileNames.length + 1);
+                        System.arraycopy(fileNames, 0, mergedFileNames, priorFileNames.length, 1);
+
+                        parameterMap.put(part.getName(), mergedFileNames);
+                    }
+                }
+            }
+
+            try {
+                Object handledResponse = httpWebServiceMapper.handleInvocation(request.getMethod(), request.getPathInfo(), parameterMap);
+
+                if (contentType != null && contentType.startsWith("multipart/form-data")) {
+                    for (Part part : request.getParts()) {
+                        if (part.getSubmittedFileName() != null) {
+                            part.write(part.getSubmittedFileName());
+                        }
+                    }
+                }
+
+                if (getAccept(request).contains("application/json")) {
+                    response.setContentType("application/json");
+
+                    if (handledResponse != null) {
+                        response.setStatus(HttpServletResponse.SC_CREATED);
+
+                        Gson gson = new Gson();
+                        String idJson = gson.toJson(handledResponse);
+
+                        PrintWriter write = response.getWriter();
+                        write.print(idJson);
+                        write.flush();
+                    } else {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                    }
+                } else {
+                    String resourceKeyName = httpWebServiceMapper.getResourceKeyName(getResourceFromPath(request.getPathInfo()));
+
+                    if (handledResponse != null && resourceKeyName != null) {
+                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                        response.setHeader("location", request.getRequestURI() + '?' + resourceKeyName + '=' + handledResponse);
+                    } else if (handledResponse != null) {
+                        response.setStatus(HttpServletResponse.SC_OK);
+                        PrintWriter write = response.getWriter();
+                        write.print(handledResponse);
+                        write.flush();
+                    } else {
+                        response.setHeader("location", "/generichttpwsclient.jsp");
+                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                    }
+                }
+            } catch (RuntimeException e) {
+                LOGGER.log(Level.SEVERE, "Failed", e);
+                response.setHeader("access-control-expose-headers", "x-error-message");
+
+                if (e instanceof NotFoundException || e.getCause() instanceof NotFoundException) {
+                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    response.setHeader("x-error-message", (e instanceof NotFoundException ? e.getMessage() : e.getCause().getMessage()));
+                } else if (e instanceof IllegalArgumentException || e.getCause() instanceof IllegalArgumentException) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    response.setHeader("x-error-message", (e instanceof IllegalArgumentException ? e.getMessage() : e.getCause().getMessage()));
+                } else {
+                    response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                    response.setHeader("x-error-message", "An internal server error occurred.");
+                }
+            }
+        } else if (method.equals("OPTIONS")) {
+            // allow vs. access-control-allow-methods
+            doOptions(request, response);
         }
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         LOGGER.info("Handling GET at " + request.getPathInfo());
-
-        response.setCharacterEncoding("UTF-8");
 
         if (getResourceFromPath(request.getPathInfo()).equals("engines")) {
             if (request.getParameter("id") != null) {
@@ -69,7 +185,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                         EnginesBean enginesBean = new EnginesBean();
                         enginesBean.setEngines(Arrays.asList(engine));
                         request.setAttribute("model", enginesBean);
-                        request.getRequestDispatcher("/WEB-INF/views/engines.jsp").forward(request, response); // TODO This requires the preceeding slash, but if missing, there's no 404 reported
+                        request.getRequestDispatcher("/WEB-INF/views/engines.jsp").forward(request, response);
                     }
                 } catch (Exception e) {
                     LOGGER.log(Level.SEVERE, "Failed", e);
@@ -127,7 +243,7 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                             photosBean.setPhotos(Arrays.asList(photo));
                             request.setAttribute("model", photosBean);
                             request.getRequestDispatcher("/WEB-INF/views/photos.jsp").forward(request, response);
-                        } else {
+                        } else if (getAccept(request).contains("image/")) {
                             response.setContentType(Files.probeContentType(photoFileStored.toPath()));
                             response.setContentLength((int) photoFileStored.length());
 
@@ -200,7 +316,10 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
                             soundsBean.setSounds(Arrays.asList(sound));
                             request.setAttribute("model", soundsBean);
                             request.getRequestDispatcher("/WEB-INF/views/sounds.jsp").forward(request, response);
-                        } else {
+                        } else { // *.*
+                            String accept = getAccept(request);
+                            accept.length();
+
                             response.setContentType(Files.probeContentType(soundFileStored.toPath()));
                             response.setContentLength((int) soundFileStored.length());
 
@@ -261,273 +380,6 @@ public class GenericHttpWebServiceServlet extends HttpServlet {
 
             request.setAttribute("serviceDescriptionText", httpWebServiceMapper.getServiceDescription());
             request.getRequestDispatcher("/WEB-INF/views/describe.jsp").forward(request, response);
-        }
-    }
-
-    private static String getAccept(HttpServletRequest request) {
-        String acceptHeader = request.getHeader("accept");
-        if (acceptHeader != null) {
-            return request.getHeader("accept");
-        } else {
-            return "";
-        }
-    }
-
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        LOGGER.info("Handling POST at " + request.getPathInfo());
-
-        String customVerb = getCustomVerb(request.getPathInfo());
-
-        if (customVerb.isEmpty()) {
-            if (getResourceFromPath(request.getPathInfo()).equals("engines")) {
-                try {
-                    Engine engine = new Engine();
-                    engine.setName(request.getParameter("engine.name"));
-                    engine.setCylinders(Integer.parseInt(request.getParameter("engine.cylinders")));
-                    engine.setThrottleSetting(Integer.parseInt(request.getParameter("engine.throttleSetting")));
-
-                    int id = this.httpWebService.createEngines(engine);
-
-                    if (getAccept(request).contains("application/json")) {
-                        response.setContentType("application/json");
-                        Gson gson = new Gson();
-                        String idJson = gson.toJson(id);
-
-                        response.setStatus(HttpServletResponse.SC_CREATED);
-                        PrintWriter write = response.getWriter();
-                        write.print(idJson);
-                        write.flush();
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("location", "/generichttpws/engines?id=" + id);
-                    }
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed", e);
-                    response.setStatus(HttpServletResponse.SC_CONFLICT);
-                    response.setHeader("access-control-expose-headers", "x-error-message");
-                    response.setHeader("x-error-message", e.getMessage());
-                }
-            } else if (getResourceFromPath(request.getPathInfo()).equals("photos") || getResourceFromPath(request.getPathInfo()).equals("sounds")) {
-                Map<String, String[]> parameterMap = new HashMap<>(request.getParameterMap());
-
-                for (Part part : request.getParts()) {
-                    String[] fileNames = {part.getSubmittedFileName()};
-
-                    String[] priorFileNames = parameterMap.putIfAbsent(part.getName(), fileNames);
-                    if (priorFileNames != null) {
-                        String[] mergedFileNames = Arrays.copyOf(priorFileNames, priorFileNames.length + 1);
-                        System.arraycopy(fileNames, 0, mergedFileNames, priorFileNames.length, 1);
-
-                        parameterMap.put(part.getName(), mergedFileNames);
-                    }
-                }
-
-                Object handledResponse = httpWebServiceMapper.handleInvocation(request.getMethod(), getResourceFromPath(request.getPathInfo()), parameterMap);
-
-                try {
-                    for (Part part : request.getParts()) {
-                        if (part.getSubmittedFileName() != null) {
-                            part.write(part.getSubmittedFileName());
-                        }
-                    }
-
-                    if (getAccept(request).contains("application/json")) {
-                        response.setContentType("application/json");
-                        Gson gson = new Gson();
-                        String idJson = gson.toJson(handledResponse);
-
-                        response.setStatus(HttpServletResponse.SC_CREATED);
-                        PrintWriter write = response.getWriter();
-                        write.print(idJson);
-                        write.flush();
-                    } else {
-                        String resourceKeyName = httpWebServiceMapper.getResourceKeyName(getResourceFromPath(request.getPathInfo()));
-
-                        if (resourceKeyName != null) {
-                            response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                            response.setHeader("location", request.getRequestURI() + '?' + resourceKeyName + '=' + handledResponse.toString());
-                        } else {
-                            response.setStatus(HttpServletResponse.SC_CREATED);
-                        }
-                    }
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed", e);
-                    response.setStatus(HttpServletResponse.SC_CONFLICT);
-                    response.setHeader("access-control-expose-headers", "x-error-message");
-                    response.setHeader("x-error-message", e.getMessage());
-                }
-            }
-        } else if (customVerb.equals("restart") || customVerb.equals("stop")) {
-            if (getResourceFromPath(request.getPathInfo()).equals("engines")) {
-                // handle custom verb "restartEngines" at POST /engines/restart
-                try {
-                    if (customVerb.equals("restart")) {
-                        this.httpWebService.restartEngines(new Integer(request.getParameter("id")));
-                    } else if (customVerb.equals("stop")) {
-                        this.httpWebService.stopEngines(new Integer(request.getParameter("id")));
-                    }
-
-                    if (getAccept(request).contains("application/json")) {
-                        response.setContentType("application/json");
-                        response.setStatus(HttpServletResponse.SC_OK);
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("location", "/generichttpws/engines?id=" + request.getParameter("id"));
-                    }
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed", e);
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    response.setHeader("access-control-expose-headers", "x-error-message");
-                    response.setHeader("x-error-message", e.getMessage());
-                }
-            } else {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                response.setHeader("access-control-expose-headers", "x-error-message");
-                response.setHeader("x-error-message", "Verb not supported: " + customVerb);
-            }
-        } else if (customVerb.equals("play")) {
-            if (getResourceFromPath(request.getPathInfo()).equals("sounds")) {
-                try {
-                    this.httpWebService.playSounds(request.getParameter("name"));
-
-                    if (getAccept(request).contains("application/json")) {
-                        response.setContentType("application/json");
-                        response.setStatus(HttpServletResponse.SC_OK);
-                    } else {
-                        response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                        response.setHeader("location", "/generichttpwsclient.jsp");
-                    }
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed", e);
-                    response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-                    response.setHeader("access-control-expose-headers", "x-error-message");
-                    response.setHeader("x-error-message", e.getMessage());
-                }
-            }
-        } else if (customVerb.equals("race")) {
-            if (getResourceFromPath(request.getPathInfo()).equals("trucks")) {
-                try {
-                    Truck truck1 = new Truck();
-                    truck1.setName(request.getParameter("truck1.name"));
-                    truck1.setEngineId(Integer.parseInt(request.getParameter("truck1.engineId")));
-
-                    Truck truck2 = new Truck();
-                    truck2.setName(request.getParameter("truck2.name"));
-                    truck2.setEngineId(Integer.parseInt(request.getParameter("truck2.engineId")));
-
-                    int truckNameCompareResult = this.httpWebService.raceTrucks(truck1, truck2);
-
-                    if (getAccept(request).contains("application/json")) {
-                        response.setContentType("application/json");
-                        Gson gson = new Gson();
-                        String idJson = gson.toJson(truckNameCompareResult);
-
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        PrintWriter write = response.getWriter();
-                        write.print(idJson);
-                        write.flush();
-                    } else if (getAccept(request).contains("text/html")) {
-                        response.setContentType("text/html");
-
-                        response.setStatus(HttpServletResponse.SC_OK);
-                        PrintWriter write = response.getWriter();
-                        write.print("Lexicographical difference between truck names: " + truckNameCompareResult);
-                        write.flush();
-                    }
-                } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, "Failed", e);
-                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                    response.setHeader("access-control-expose-headers", "x-error-message");
-                    response.setHeader("x-error-message", e.getMessage());
-                }
-            }
-        } else {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            response.setHeader("access-control-expose-headers", "x-error-message");
-            response.setHeader("x-error-message", "Verb not supported: " + customVerb);
-        }
-    }
-
-    protected void doPut(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        LOGGER.info("Handling PUT at " + request.getPathInfo());
-
-        // TODO Generic HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
-
-        try {
-            Engine engine = new Engine();
-            engine.setId(Integer.parseInt(request.getParameter("engine.id")));
-            engine.setName(request.getParameter("engine.name"));
-            engine.setCylinders(Integer.parseInt(request.getParameter("engine.cylinders")));
-            engine.setThrottleSetting(Integer.parseInt(request.getParameter("engine.throttleSetting")));
-
-            int id = this.httpWebService.createOrReplaceEngines(engine);
-
-            if (getAccept(request).contains("application/json")) {
-                response.setContentType("application/json");
-                Gson gson = new Gson();
-                String idJson = gson.toJson(id);
-
-                response.setStatus(HttpServletResponse.SC_CREATED);
-                PrintWriter write = response.getWriter();
-                write.print(idJson);
-                write.flush();
-            } else {
-                response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                response.setHeader("location", "/generichttpws/engines?id=" + request.getParameter("engine.id"));
-            }
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed", e);
-            response.setStatus(HttpServletResponse.SC_CONFLICT);
-            response.setHeader("access-control-expose-headers", "x-error-message");
-            response.setHeader("x-error-message", e.getMessage());
-        }
-    }
-
-    protected void doPatch(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        LOGGER.info("Handling PATCH at " + request.getPathInfo() + " with id " + request.getParameter("engine.id"));
-
-        // TODO Generic HTTP WS Client needs to support PATCH, and servlet needs to handle file uploads in PUT, PATCH (only POST supports it now)
-
-        try {
-            Engine engine = this.httpWebService.getEngines(new Integer(request.getParameter("engine.id")));
-
-            // Do the actual updating to the existing engine
-            //engine.setId(new Integer(request.getParameter("engine.id"))); // Do not change id
-            if (request.getParameter("engine.name") != null)
-                engine.setName(request.getParameter("engine.name"));
-            if (request.getParameter("engine.cylinders") != null)
-                engine.setCylinders(Integer.parseInt(request.getParameter("engine.cylinders")));
-            if (request.getParameter("engine.throttleSetting") != null)
-                engine.setThrottleSetting(Integer.parseInt(request.getParameter("engine.throttleSetting")));
-
-            this.httpWebService.updateEngines(engine);
-        } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, "Failed", e);
-            response.setStatus(HttpServletResponse.SC_CONFLICT);
-            response.setHeader("access-control-expose-headers", "x-error-message");
-            response.setHeader("x-error-message", e.getMessage());
-        }
-    }
-
-    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        LOGGER.info("Handling DELETE at " + request.getPathInfo());
-
-        this.httpWebService.deleteEngines(Integer.parseInt(request.getParameter("id")));
-    }
-
-    protected void doOptions(HttpServletRequest request, HttpServletResponse response) {
-        LOGGER.info("Handling OPTIONS at " + request.getPathInfo());
-
-        // TODO describe the service via HttpWebServiceMapper, meanwhile see doGet
-    }
-
-    private String getCustomVerb(String pathInfo) {
-        String[] pathParts = pathInfo.split("/");
-
-        if (pathParts.length > 2) {
-            return pathParts[2];
-        } else {
-            return "";
         }
     }
 }

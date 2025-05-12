@@ -1,5 +1,6 @@
 package example.services;
 
+import com.weburg.ghowst.NotFoundException;
 import example.domain.Engine;
 import example.domain.Photo;
 import example.domain.Sound;
@@ -55,8 +56,10 @@ public class DefaultHttpWebService implements HttpWebService {
             fis.close();
 
             return engine;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (FileNotFoundException e) {
+            throw new NotFoundException("Engine with id \"" + id + "\" not found.");
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Server problem, could not get Engine.");
         }
     }
 
@@ -78,9 +81,19 @@ public class DefaultHttpWebService implements HttpWebService {
                 fis.close();
             }
 
+            engines.sort((o1, o2) -> {
+                if (o1.getId() < o2.getId()) {
+                    return -1;
+                } else if (o1.getId() > o2.getId()) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            });
+
             return engines;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IOException | ClassNotFoundException e) {
+            throw new RuntimeException("Server problem, could not get Engines.");
         }
     }
 
@@ -100,8 +113,8 @@ public class DefaultHttpWebService implements HttpWebService {
             fos.close();
 
             return engineId;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new RuntimeException("Server problem, Engine not created.");
         }
     }
 
@@ -127,17 +140,19 @@ public class DefaultHttpWebService implements HttpWebService {
             }
 
             return engine.getId();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (FileNotFoundException e) {
+            throw new NotFoundException("Engine with id \"" + engine.getId() + "\" not found.");
+        } catch (IOException e) {
+            throw new RuntimeException("Server problem, Engine with id \"" + engine.getId() + "\" not processed.");
         }
     }
 
-    public void updateEngines(Engine engine) {
+    public int updateEngines(Engine engine) {
         if (engine.getId() == 0) {
             throw new IllegalArgumentException("For update operations, the id must be specified.");
         }
 
-        createOrReplaceEngines(engine); // For simple persistence, reuse other method since replacement happens anyway
+        return createOrReplaceEngines(engine); // For simple persistence, reuse other method since replacement happens anyway
     }
 
     public void deleteEngines(int id) {
@@ -149,22 +164,26 @@ public class DefaultHttpWebService implements HttpWebService {
         }
     }
 
-    public void restartEngines(int id) {
+    public int restartEngines(int id) {
         Engine engine = getEngines(id);
 
         if (!engine.getName().endsWith("Restarted")) {
             engine.setName(engine.getName() + "Restarted");
-            updateEngines(engine);
+            id = updateEngines(engine);
         }
+
+        return id;
     }
 
-    public void stopEngines(int id) {
+    public int stopEngines(int id) {
         Engine engine = getEngines(id);
 
         if (engine.getName().endsWith("Restarted")) {
             engine.setName(engine.getName().substring(0, engine.getName().length() - "Restarted".length()));
-            updateEngines(engine);
+            id = updateEngines(engine);
         }
+
+        return id;
     }
 
     private File[] getEngineFiles() {

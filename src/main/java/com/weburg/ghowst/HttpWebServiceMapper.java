@@ -1,8 +1,10 @@
-package com.weburg.ghost;
+package com.weburg.ghowst;
 
 import org.apache.commons.beanutils.BeanUtils;
+import org.apache.commons.beanutils.ConvertUtils;
 
 import java.beans.*;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.*;
@@ -59,12 +61,27 @@ public class HttpWebServiceMapper {
         return resource;
     }
 
-    public Object handleInvocation(String httpMethod, String httpResource, Map<String, String[]> httpArguments) {
-        String verb;
+    public static String getCustomVerb(String pathInfo) {
+        String[] pathParts = pathInfo.split("/");
+
+        if (pathParts.length > 2) {
+            return pathParts[2];
+        } else {
+            return "";
+        }
+    }
+
+    public Object handleInvocation(String httpMethod, String httpPath, Map<String, String[]> httpArguments) {
+        String verb = "none";
         Object response;
 
+        String resource = getResourceFromPath(httpPath);
+        String customVerb = getCustomVerb(httpPath);
+
         try {
-            if (httpMethod.compareTo("GET") == 0) {
+            if (!customVerb.isEmpty()) {
+                verb = customVerb;
+            } else if (httpMethod.compareTo("GET") == 0) {
                 verb = "get";
             } else if (httpMethod.compareTo("PUT") == 0) {
                 verb = "createOrReplace";
@@ -75,16 +92,10 @@ public class HttpWebServiceMapper {
             } else if (httpMethod.compareTo("DELETE") == 0) {
                 verb = "delete";
             } else {
-                String[] parts = httpResource.split("(?=[A-Z])");
-
-                if (parts.length != 2) {
-                    throw new IllegalArgumentException("The resource " + httpResource + " was not in the expected format.");
-                }
-
-                verb = parts[1].toLowerCase();
+                throw new IllegalArgumentException("The method " + httpMethod + " was not in the expected format.");
             }
 
-            String ucFirstCharOfResourceName = httpResource.substring(0, 1).toUpperCase() + httpResource.substring(1);
+            String ucFirstCharOfResourceName = resource.substring(0, 1).toUpperCase() + resource.substring(1);
             String methodName = verb + ucFirstCharOfResourceName;
 
             // Process HTTP arguments into map
@@ -112,7 +123,7 @@ public class HttpWebServiceMapper {
                 if (customTypes.contains(methodParameterType.getName())) {
                     methodArgument = methodParameterType.getDeclaredConstructor().newInstance();
 
-                    BeanInfo beanInfo = Introspector.getBeanInfo(methodParameterType); // type.getTypeName().replace("[", "").replace("]", "")
+                    BeanInfo beanInfo = Introspector.getBeanInfo(methodParameterType);
 
                     PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
 
@@ -121,7 +132,7 @@ public class HttpWebServiceMapper {
                         BeanUtils.setProperty(methodArgument, descriptor.getName(), httpObject.get(descriptor.getName()));
                     }
                 } else {
-                    methodArgument = methodParameterType.getConstructor(String.class).newInstance(httpObjectList.get(httpObjectNames[i]));
+                    methodArgument = ConvertUtils.convert(httpObjectList.get(httpObjectNames[i]), methodParameterType);
                 }
 
                 methodArguments[i] = methodArgument;
@@ -130,12 +141,10 @@ public class HttpWebServiceMapper {
             response = method.invoke(this.httpWebService, methodArguments);
 
             return response;
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e); // TODO custom RuntimeException
-        } catch (IllegalArgumentException e) {
-            throw new RuntimeException(e); // TODO custom RuntimeException
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | IntrospectionException | RuntimeException e) {
+            throw new IllegalArgumentException("Request invalid for action " + verb + " on resource " + resource + ". Check action, resource, and parameters for correctness.", e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e.getCause());
         }
     }
 
