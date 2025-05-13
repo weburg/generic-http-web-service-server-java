@@ -223,12 +223,12 @@ public class DefaultHttpWebService implements HttpWebService {
     public Photo getPhotos(String name) {
         Photo photo = new Photo();
 
-        File localPhotoFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
-        if (!localPhotoFile.exists() || !localPhotoFile.isFile()) {
+        File photoFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
+        if (!photoFile.exists() || !photoFile.isFile()) {
             throw new NotFoundException("Photo \"" + name + "\" not found.");
         }
 
-        photo.setPhotoFile(localPhotoFile);
+        photo.setPhotoFile(photoFile);
 
         return photo;
     }
@@ -291,13 +291,13 @@ public class DefaultHttpWebService implements HttpWebService {
     public Sound getSounds(String name) {
         Sound sound = new Sound();
 
-        File localSoundFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
+        File soundFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
 
-        if (!localSoundFile.isFile()) {
+        if (!soundFile.exists() || !soundFile.isFile()) {
             throw new NotFoundException("Sound \"" + name + "\" not found.");
         }
 
-        sound.setSoundFile(localSoundFile);
+        sound.setSoundFile(soundFile);
 
         return sound;
     }
@@ -322,16 +322,16 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public void playSounds(String name) {
+        File soundFile = getSounds(name).getSoundFile();
+
         try {
             Clip sound = AudioSystem.getClip();
 
-            sound.open(AudioSystem.getAudioInputStream(new File(this.dataFilePath + System.getProperty("file.separator") + name)));
+            sound.open(AudioSystem.getAudioInputStream(soundFile));
 
             sound.start();
-        } catch (LineUnavailableException | UnsupportedAudioFileException e) {
+        } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
             throw new RuntimeException(e);
-        } catch (IOException e) {
-            throw new NotFoundException("Sound \"" + name + "\" not found.");
         }
     }
 
