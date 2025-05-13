@@ -331,15 +331,26 @@ public class DefaultHttpWebService implements HttpWebService {
         }
     }
 
-    public int raceTrucks(Truck truck1, Truck truck2) {
-        /* This method is just to demo and test parsing two objects in same
-        call. It just returns an int, as we want to test whether we can
-        differentiate names.
-         */
+    public String raceTrucks(Truck truck1, Truck truck2) {
+        // This method is just to demo and test parsing two objects in same call.
+
+        Engine engine1 = getEngines(truck1.getEngineId());
+        Engine engine2 = getEngines(truck2.getEngineId());
 
         LOGGER.info("Got trucks: " + truck1.getName() + " and " + truck2.getName());
         LOGGER.info("Engines: " + getEngines(truck1.getEngineId()).getName() + " and " + getEngines(truck2.getEngineId()).getName());
 
-        return truck1.getName().compareTo(truck2.getName());
+        StringBuilder sb = new StringBuilder();
+        sb.append("The ").append(truck1.getName()).append(" and the ").append(truck2.getName()).append(" trucks race! ");
+
+        if (engine1.getCylinders() > engine2.getCylinders() && engine1.getThrottleSetting() > engine2.getThrottleSetting()) {
+            sb.append("The ").append(truck1.getName()).append(" wins!");
+        } else if (engine2.getCylinders() > engine1.getCylinders() && engine2.getThrottleSetting() > engine1.getThrottleSetting()) {
+            sb.append("The ").append(truck2.getName()).append(" wins!");
+        } else {
+            sb.append("The race is too close to call! It's a virtual tie.");
+        }
+
+        return sb.toString();
     }
 }

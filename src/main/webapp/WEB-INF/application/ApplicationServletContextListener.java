@@ -46,10 +46,10 @@ public class ApplicationServletContextListener implements ServletContextListener
         }
 
         DefaultHttpWebService httpWebService = new DefaultHttpWebService(dataFilePath);
-        ServletRegistration.Dynamic genericHttpWebServiceServletRegistration = event.getServletContext()
-                .addServlet("GenericHttpWebServiceServlet", new GenericHttpWebServiceServlet(httpWebService));
-        genericHttpWebServiceServletRegistration.addMapping("/generichttpws/*", "/generichttpws");
-        genericHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
+        ServletRegistration.Dynamic exampleHttpWebServiceServletRegistration = event.getServletContext()
+                .addServlet("ExampleHttpWebServiceServlet", new ExampleHttpWebServiceServlet(httpWebService));
+        exampleHttpWebServiceServletRegistration.addMapping("/generichttpws/*", "/generichttpws");
+        exampleHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
 
         event.getServletContext().addServlet("SpaWebServiceServlet", new SpaWebServiceServlet()).addMapping("/spahttpws");
     }

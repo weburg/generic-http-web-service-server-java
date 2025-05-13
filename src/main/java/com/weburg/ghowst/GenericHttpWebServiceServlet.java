@@ -1,0 +1,158 @@
+package com.weburg.ghowst;
+
+import example.services.HttpWebService;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.Part;
+
+import java.io.*;
+import java.nio.file.Files;
+import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+public abstract class GenericHttpWebServiceServlet extends HttpServlet {
+    private final HttpWebService httpWebService;
+    protected HttpWebServiceMapper httpWebServiceMapper;
+
+    private static final Logger LOGGER = Logger.getLogger(GenericHttpWebServiceServlet.class.getName());
+
+    public GenericHttpWebServiceServlet(HttpWebService httpWebService) {
+        this.httpWebService = httpWebService;
+        this.httpWebServiceMapper = new HttpWebServiceMapper(this.httpWebService);
+    }
+
+    protected static String getAccept(HttpServletRequest request) {
+        String acceptHeader = request.getHeader("accept");
+        if (acceptHeader != null) {
+            return request.getHeader("accept");
+        } else {
+            return "";
+        }
+    }
+
+    protected final void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        String method = request.getMethod();
+
+        if (method.equals("GET")) {
+            // Pre-processing for GET requests
+            // Reimplemented portions of original service
+
+            long lastModified = getLastModified(request);
+            if (lastModified == -1) {
+                // servlet doesn't support if-modified-since, no reason
+                // to go through further expensive logic
+            } else {
+                long ifModifiedSince;
+                try {
+                    ifModifiedSince = request.getDateHeader("If-Modified-Since");
+                } catch (IllegalArgumentException iae) {
+                    // Invalid date header - proceed as if none was set
+                    ifModifiedSince = -1;
+                }
+                if (ifModifiedSince < (lastModified / 1000 * 1000)) {
+                    // If the servlet mod time is later, call doGet()
+                    // Round down to the nearest second for a proper compare
+                    // A ifModifiedSince of -1 will always be less
+                    if (!response.containsHeader("Last-Modified") && lastModified >= 0) {
+                        response.setDateHeader("Last-Modified", lastModified);
+                    }
+                } else {
+                    response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
+                    return;
+                }
+            }
+
+            response.setCharacterEncoding("UTF-8");
+
+            if (request.getPathInfo() == null) {
+                // At the root, default to showing usage
+                request.setAttribute("serviceDescriptionText", httpWebServiceMapper.getServiceDescription());
+                request.getRequestDispatcher("/WEB-INF/views/describe.jsp").forward(request, response);
+                return;
+            }
+        }
+
+        LOGGER.info("Handling " + method + " at " + request.getPathInfo());
+
+        Map<String, String[]> parameterMap = new HashMap<>(request.getParameterMap());
+
+        String contentType = request.getContentType();
+
+        if (contentType != null && contentType.startsWith("multipart/form-data")) { // vs. application/x-www-form-urlencoded
+            for (Part part : request.getParts()) {
+                String[] fileNames = {part.getSubmittedFileName()};
+
+                String[] priorFileNames = parameterMap.putIfAbsent(part.getName(), fileNames);
+                if (priorFileNames != null) {
+                    String[] mergedFileNames = Arrays.copyOf(priorFileNames, priorFileNames.length + 1);
+                    System.arraycopy(fileNames, 0, mergedFileNames, priorFileNames.length, 1);
+
+                    parameterMap.put(part.getName(), mergedFileNames);
+                }
+            }
+        }
+
+        try {
+            Object handledResponse = httpWebServiceMapper.handleInvocation(request.getMethod(), request.getPathInfo(), parameterMap);
+            request.setAttribute("handledResponse", handledResponse);
+
+            if (contentType != null && contentType.startsWith("multipart/form-data")) {
+                for (Part part : request.getParts()) {
+                    if (part.getSubmittedFileName() != null) {
+                        part.write(part.getSubmittedFileName());
+                    }
+                }
+            }
+
+            if (method.equals("GET")) {
+                doGet(request, response);
+            } else {
+                doNonGet(request, response);
+            }
+        } catch (RuntimeException e) {
+            LOGGER.log(Level.SEVERE, "Failed", e);
+            response.setHeader("access-control-expose-headers", "x-error-message");
+
+            if (e instanceof NotFoundException || e.getCause() instanceof NotFoundException) {
+                response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                response.setHeader("x-error-message", (e instanceof NotFoundException ? e.getMessage() : e.getCause().getMessage()));
+            } else if (e instanceof IllegalArgumentException || e.getCause() instanceof IllegalArgumentException) {
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                response.setHeader("x-error-message", (e instanceof IllegalArgumentException ? e.getMessage() : e.getCause().getMessage()));
+            } else {
+                response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+                response.setHeader("x-error-message", "An internal server error occurred.");
+            }
+        } finally {
+            if (contentType != null && contentType.startsWith("multipart/form-data")) {
+                for (Part part : request.getParts()) {
+                    if (part.getSubmittedFileName() != null) {
+                        part.delete();
+                    }
+                }
+            }
+        }
+    }
+
+    protected abstract void doNonGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException;
+
+    protected static void respondWithStream(HttpServletResponse response, File file) throws IOException {
+        response.setContentType(Files.probeContentType(file.toPath()));
+        response.setContentLength((int) file.length());
+
+        FileInputStream in = new FileInputStream(file);
+        OutputStream out = response.getOutputStream();
+
+        // Copy the contents of the file to the output stream
+        byte[] buf = new byte[1024];
+        int count = 0;
+        while ((count = in.read(buf)) >= 0) {
+            out.write(buf, 0, count);
+        }
+        out.close();
+        in.close();
+    }
+}
