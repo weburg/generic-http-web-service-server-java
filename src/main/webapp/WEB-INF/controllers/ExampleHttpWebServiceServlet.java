@@ -47,8 +47,15 @@ public class ExampleHttpWebServiceServlet extends GenericHttpWebServiceServlet {
             // Non-GET may have a subresource e.g. custom verb, so remove it to get URI to the parent resource
 
             String customVerb = getCustomVerb(request.getPathInfo());
+            String requestUri;
+            if (customVerb != "") {
+                requestUri = request.getRequestURI().replace('/' + customVerb, "");
+            } else {
+                requestUri = request.getRequestURI();
+            }
+
             response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-            response.setHeader("location", request.getRequestURI().replace('/' + customVerb, "") + '?' + resourceKeyName + '=' + handledResponse);
+            response.setHeader("location", requestUri + '?' + resourceKeyName + '=' + handledResponse);
         } else if (handledResponse != null) {
             if (getResourceFromPath(request.getPathInfo()).equals("trucks")) {
                 if (getAccept(request).contains("text/html")) {

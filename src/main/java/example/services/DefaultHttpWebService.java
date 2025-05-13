@@ -8,6 +8,8 @@ import example.domain.Truck;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
+import javax.sound.sampled.LineUnavailableException;
+import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -223,7 +225,7 @@ public class DefaultHttpWebService implements HttpWebService {
 
         File localPhotoFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
         if (!localPhotoFile.exists() || !localPhotoFile.isFile()) {
-            throw new RuntimeException("File not found");
+            throw new NotFoundException("Photo \"" + name + "\" not found.");
         }
 
         photo.setPhotoFile(localPhotoFile);
@@ -326,8 +328,10 @@ public class DefaultHttpWebService implements HttpWebService {
             sound.open(AudioSystem.getAudioInputStream(new File(this.dataFilePath + System.getProperty("file.separator") + name)));
 
             sound.start();
-        } catch (Exception e) {
+        } catch (LineUnavailableException | UnsupportedAudioFileException e) {
             throw new RuntimeException(e);
+        } catch (IOException e) {
+            throw new NotFoundException("Sound \"" + name + "\" not found.");
         }
     }
 

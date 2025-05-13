@@ -175,20 +175,26 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
 
     protected abstract void doDescribe(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 
-    protected static void respondWithStream(HttpServletResponse response, File file) throws IOException {
-        response.setContentType(Files.probeContentType(file.toPath()));
-        response.setContentLength((int) file.length());
+    protected static void respondWithStream(HttpServletResponse response, File file) {
+        try {
+            response.setContentType(Files.probeContentType(file.toPath()));
+            response.setContentLength((int) file.length());
 
-        FileInputStream in = new FileInputStream(file);
-        OutputStream out = response.getOutputStream();
+            FileInputStream in = new FileInputStream(file);
+            OutputStream out = response.getOutputStream();
 
-        // Copy the contents of the file to the output stream
-        byte[] buf = new byte[1024];
-        int count = 0;
-        while ((count = in.read(buf)) >= 0) {
-            out.write(buf, 0, count);
+            // Copy the contents of the file to the output stream
+            byte[] buf = new byte[1024];
+            int count = 0;
+            while ((count = in.read(buf)) >= 0) {
+                out.write(buf, 0, count);
+            }
+            out.close();
+            in.close();
+        } catch (FileNotFoundException e) {
+            throw new NotFoundException("The resource with name \"" + file.getName() + "\" was not found.");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
-        out.close();
-        in.close();
     }
 }
