@@ -65,7 +65,7 @@ public class HttpWebServiceMapper {
         String[] pathParts = pathInfo.split("/");
 
         if (pathParts.length > 2) {
-            return pathParts[2];
+            return pathParts[pathParts.length - 1];
         } else {
             return "";
         }

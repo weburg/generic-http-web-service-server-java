@@ -1,5 +1,6 @@
 package com.weburg.ghowst;
 
+import com.google.gson.Gson;
 import example.services.HttpWebService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -69,13 +70,12 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
 
             if (request.getPathInfo() == null) {
                 // At the root, default to showing usage
-                request.setAttribute("serviceDescriptionText", httpWebServiceMapper.getServiceDescription());
-                request.getRequestDispatcher("/WEB-INF/views/describe.jsp").forward(request, response);
+                doDescribe(request, response);
                 return;
             }
         }
 
-        LOGGER.info("Handling " + method + " at " + request.getPathInfo());
+        LOGGER.fine("Handling " + method + " at " + request.getPathInfo());
 
         Map<String, String[]> parameterMap = new HashMap<>(request.getParameterMap());
 
@@ -108,9 +108,43 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
             }
 
             if (method.equals("GET")) {
-                doGet(request, response);
+                if (getAccept(request).contains("application/json")) {
+                    if (handledResponse != null) {
+                        response.setStatus(HttpServletResponse.SC_OK);
+
+                        Gson gson = new Gson();
+                        String idJson = gson.toJson(handledResponse);
+
+                        PrintWriter write = response.getWriter();
+                        write.print(idJson);
+                        write.flush();
+                    }
+                } else {
+                    doGet(request, response);
+                }
             } else {
-                doNonGet(request, response);
+                if (getAccept(request).contains("application/json")) {
+                    response.setContentType("application/json");
+
+                    if (handledResponse != null) {
+                        // Creation generally just returns an identifier
+
+                        response.setStatus(HttpServletResponse.SC_CREATED);
+
+                        Gson gson = new Gson();
+                        String idJson = gson.toJson(handledResponse);
+
+                        PrintWriter write = response.getWriter();
+                        write.print(idJson);
+                        write.flush();
+                    } else {
+                        // Otherwise, void may be gotten (ephemeral)
+
+                        response.setStatus(HttpServletResponse.SC_OK);
+                    }
+                } else {
+                    doNonGet(request, response);
+                }
             }
         } catch (RuntimeException e) {
             LOGGER.log(Level.SEVERE, "Failed", e);
@@ -138,6 +172,8 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
     }
 
     protected abstract void doNonGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException;
+
+    protected abstract void doDescribe(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 
     protected static void respondWithStream(HttpServletResponse response, File file) throws IOException {
         response.setContentType(Files.probeContentType(file.toPath()));

@@ -1,23 +1,21 @@
-import beans.EnginesBean;
-import beans.PhotosBean;
-import beans.SoundsBean;
-import beans.TrucksBean;
-import com.google.gson.Gson;
 import com.weburg.ghowst.GenericHttpWebServiceServlet;
-import example.domain.Engine;
 import example.domain.Photo;
 import example.domain.Sound;
 import example.services.HttpWebService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.apache.commons.beanutils.BeanUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.weburg.ghowst.HttpWebServiceMapper.getCustomVerb;
 import static com.weburg.ghowst.HttpWebServiceMapper.getResourceFromPath;
 
 public class ExampleHttpWebServiceServlet extends GenericHttpWebServiceServlet {
@@ -28,111 +26,75 @@ public class ExampleHttpWebServiceServlet extends GenericHttpWebServiceServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Object handledResponse = request.getAttribute("handledResponse");
 
-        if (getAccept(request).contains("application/json")) {
-            if (handledResponse != null) {
-                response.setStatus(HttpServletResponse.SC_OK);
-
-                Gson gson = new Gson();
-                String idJson = gson.toJson(handledResponse);
-
-                PrintWriter write = response.getWriter();
-                write.print(idJson);
-                write.flush();
-            }
+        if (getResourceFromPath(request.getPathInfo()).equals("photos") && getAccept(request).contains("image/") && !getAccept(request).contains("text/html")) {
+            File photoFileStored = ((Photo) handledResponse).getPhotoFile();
+            respondWithStream(response, photoFileStored);
+        } else if (getResourceFromPath(request.getPathInfo()).equals("sounds") && !getAccept(request).contains("text/html")) { // Accept: *.*
+            File soundFileStored = ((Sound) handledResponse).getSoundFile();
+            respondWithStream(response, soundFileStored);
         } else {
-            if (getResourceFromPath(request.getPathInfo()).equals("engines")) {
-                if (!(handledResponse instanceof List)) {
-                    handledResponse = Arrays.asList(handledResponse);
-                }
-
-                EnginesBean enginesBean = new EnginesBean();
-                enginesBean.setEngines((List<Engine>) handledResponse);
-                request.setAttribute("model", enginesBean);
-                request.getRequestDispatcher("/WEB-INF/views/engines.jsp").forward(request, response);
-            } else if (getResourceFromPath(request.getPathInfo()).equals("photos")) {
-                if (getAccept(request).contains("text/html")) {
-                    if (!(handledResponse instanceof List)) {
-                        handledResponse = Arrays.asList(handledResponse);
-                    }
-
-                    PhotosBean photosBean = new PhotosBean();
-                    photosBean.setPhotos((List<Photo>) handledResponse);
-                    request.setAttribute("model", photosBean);
-                    request.getRequestDispatcher("/WEB-INF/views/photos.jsp").forward(request, response);
-                } else if (getAccept(request).contains("image/")) {
-                    File photoFileStored = ((Photo) handledResponse).getPhotoFile();
-
-                    respondWithStream(response, photoFileStored);
-                }
-            } else if (getResourceFromPath(request.getPathInfo()).equals("sounds")) {
-                if (getAccept(request).contains("text/html")) {
-                    if (!(handledResponse instanceof List)) {
-                        handledResponse = Arrays.asList(handledResponse);
-                    }
-
-                    SoundsBean soundsBean = new SoundsBean();
-                    soundsBean.setSounds((List<Sound>) handledResponse);
-                    request.setAttribute("model", soundsBean);
-                    request.getRequestDispatcher("/WEB-INF/views/sounds.jsp").forward(request, response);
-                } else { // *.*
-                    File soundFileStored = ((Sound) handledResponse).getSoundFile();
-
-                    respondWithStream(response, soundFileStored);
-                }
-            }
+            String resource = getResourceFromPath(request.getPathInfo());
+            respondWithResource(request, response, handledResponse, resource, resource);
         }
     }
 
     public void doNonGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Object handledResponse = request.getAttribute("handledResponse");
 
-        if (getAccept(request).contains("application/json")) {
-            // Programmatic responses
+        String resourceKeyName = httpWebServiceMapper.getResourceKeyName(getResourceFromPath(request.getPathInfo()));
 
-            response.setContentType("application/json");
+        if (handledResponse != null && resourceKeyName != null) {
+            // Non-GET may have a subresource e.g. custom verb, so remove it to get URI to the parent resource
 
-            if (handledResponse != null) {
-                // Creation generally just returns an identifier
-
-                response.setStatus(HttpServletResponse.SC_CREATED);
-
-                Gson gson = new Gson();
-                String idJson = gson.toJson(handledResponse);
-
-                PrintWriter write = response.getWriter();
-                write.print(idJson);
-                write.flush();
-            } else {
-                // Otherwise, void may be gotten (ephemeral)
-
-                response.setStatus(HttpServletResponse.SC_OK);
-            }
-        } else {
-            // Browser-oriented responses
-
-            String resourceKeyName = httpWebServiceMapper.getResourceKeyName(getResourceFromPath(request.getPathInfo()));
-
-            if (handledResponse != null && resourceKeyName != null) {
-                response.setStatus(HttpServletResponse.SC_SEE_OTHER);
-                response.setHeader("location", request.getRequestURI() + '?' + resourceKeyName + '=' + handledResponse);
-            } else if (handledResponse != null) {
-                if (getResourceFromPath(request.getPathInfo()).equals("trucks")) {
-                    if (getAccept(request).contains("text/html")) {
-                        TrucksBean trucksBean = new TrucksBean();
-                        trucksBean.setResult((String) handledResponse);
-                        request.setAttribute("model", trucksBean);
-                        request.getRequestDispatcher("/WEB-INF/views/trucks.jsp").forward(request, response);
-                    }
-                } else {
-                    response.setStatus(HttpServletResponse.SC_OK);
-                    PrintWriter write = response.getWriter();
-                    write.print(handledResponse);
-                    write.flush();
+            String customVerb = getCustomVerb(request.getPathInfo());
+            response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+            response.setHeader("location", request.getRequestURI().replace('/' + customVerb, "") + '?' + resourceKeyName + '=' + handledResponse);
+        } else if (handledResponse != null) {
+            if (getResourceFromPath(request.getPathInfo()).equals("trucks")) {
+                if (getAccept(request).contains("text/html")) {
+                    respondWithResource(request, response, handledResponse, getResourceFromPath(request.getPathInfo()), "result");
                 }
             } else {
-                response.setHeader("location", "/generichttpwsclient.jsp");
-                response.setStatus(HttpServletResponse.SC_SEE_OTHER);
+                response.setStatus(HttpServletResponse.SC_OK);
+                PrintWriter write = response.getWriter();
+                write.print(handledResponse);
+                write.flush();
             }
+        } else {
+            response.setHeader("location", "/generichttpwsclient.jsp");
+            response.setStatus(HttpServletResponse.SC_SEE_OTHER);
         }
+    }
+
+    protected void respondWithResource(HttpServletRequest request, HttpServletResponse response, Object handledResponse, String resource, String beanFieldName) throws ServletException, IOException {
+        try {
+            String resourceTitleCase = resource.substring(0, 1).toUpperCase() + resource.substring(1);
+            Class beanClass = Class.forName("beans." + resourceTitleCase + "Bean");
+            Object bean = beanClass.getConstructor().newInstance();
+
+            try {
+                Field field = bean.getClass().getDeclaredField(beanFieldName);
+                if (field.getType() == List.class && !(handledResponse instanceof List)) {
+                    handledResponse = Arrays.asList(handledResponse);
+                }
+            } catch (NoSuchFieldException e) {
+                // Don't tamper with it
+            }
+
+            try {
+                BeanUtils.setProperty(bean, beanFieldName, handledResponse);
+            } catch (IllegalAccessException | InvocationTargetException e) {
+                throw new IllegalArgumentException(e);
+            }
+            request.setAttribute("model", bean);
+            request.getRequestDispatcher("/WEB-INF/views/" + resource + ".jsp").forward(request, response);
+        } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected void doDescribe(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        request.setAttribute("serviceDescriptionText", httpWebServiceMapper.getServiceDescription());
+        request.getRequestDispatcher("/WEB-INF/views/describe.jsp").forward(request, response);
     }
 }
