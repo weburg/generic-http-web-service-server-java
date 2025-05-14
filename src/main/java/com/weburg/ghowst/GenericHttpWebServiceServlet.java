@@ -37,6 +37,11 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
     protected final void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String method = request.getMethod();
 
+        if (method.equals("OPTIONS")) {
+            doOptions(request, response);
+            return;
+        }
+
         if (method.equals("GET")) {
             // Pre-processing for GET requests
             // Reimplemented portions of original service
@@ -83,14 +88,16 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
 
         if (contentType != null && contentType.startsWith("multipart/form-data")) { // vs. application/x-www-form-urlencoded
             for (Part part : request.getParts()) {
-                String[] fileNames = {part.getSubmittedFileName()};
+                if (part.getSubmittedFileName() != null) {
+                    String[] fileNames = {part.getSubmittedFileName()};
 
-                String[] priorFileNames = parameterMap.putIfAbsent(part.getName(), fileNames);
-                if (priorFileNames != null) {
-                    String[] mergedFileNames = Arrays.copyOf(priorFileNames, priorFileNames.length + 1);
-                    System.arraycopy(fileNames, 0, mergedFileNames, priorFileNames.length, 1);
+                    String[] priorFileNames = parameterMap.putIfAbsent(part.getName(), fileNames);
+                    if (priorFileNames != null) {
+                        String[] mergedFileNames = Arrays.copyOf(priorFileNames, priorFileNames.length + 1);
+                        System.arraycopy(fileNames, 0, mergedFileNames, priorFileNames.length, 1);
 
-                    parameterMap.put(part.getName(), mergedFileNames);
+                        parameterMap.put(part.getName(), mergedFileNames);
+                    }
                 }
             }
         }

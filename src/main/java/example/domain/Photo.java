@@ -36,9 +36,9 @@ public class Photo implements Serializable {
         this.name = photoFile.getName();
 
         try {
-            File captionFile = new File(this.photoFile + ".txt");
+            File captionFile = new File(photoFile.getAbsolutePath() + ".txt");
 
-            if (getCaption().isEmpty() && captionFile.exists() && captionFile.isFile()) {
+            if ((getCaption() == null || getCaption().isEmpty()) && captionFile.exists() && captionFile.isFile()) {
                 setCaption(FileUtils.readFileToString(captionFile));
             }
         } catch (IOException e) {
