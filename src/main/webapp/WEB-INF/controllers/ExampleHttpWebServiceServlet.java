@@ -68,7 +68,7 @@ public class ExampleHttpWebServiceServlet extends GenericHttpWebServiceServlet {
                 write.flush();
             }
         } else {
-            response.setHeader("location", "/generichttpwsclient.jsp");
+            response.setHeader("location", "/htmlclient");
             response.setStatus(HttpServletResponse.SC_SEE_OTHER);
         }
     }

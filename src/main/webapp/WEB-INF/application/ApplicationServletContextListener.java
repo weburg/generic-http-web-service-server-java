@@ -19,6 +19,9 @@ public class ApplicationServletContextListener implements ServletContextListener
         event.getServletContext().addFilter("CorsFilter", new CorsFilter())
                 .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
 
+        event.getServletContext().addFilter("FormMemoryFilter", new FormMemoryFilter())
+                .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/generichttpws/*");
+
         Engine engine = new Engine();
         engine.setName("Hemi");
         engine.setCylinders(12);
@@ -51,6 +54,8 @@ public class ApplicationServletContextListener implements ServletContextListener
         exampleHttpWebServiceServletRegistration.addMapping("/generichttpws/*", "/generichttpws");
         exampleHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
 
+        event.getServletContext().addServlet("htmlClient", new HtmlClientServlet()).addMapping("/htmlclient");
+        
         event.getServletContext().addServlet("SpaWebServiceServlet", new SpaWebServiceServlet()).addMapping("/spahttpws");
     }
 
