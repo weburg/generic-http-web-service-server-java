@@ -1,6 +1,7 @@
 package com.weburg.ghowst;
 
 import com.google.gson.Gson;
+import com.weburg.ghowst.HttpWebServiceMapper.HttpMethod;
 import example.services.HttpWebService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -10,7 +11,9 @@ import jakarta.servlet.http.Part;
 
 import java.io.*;
 import java.nio.file.Files;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -20,9 +23,9 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
 
     private static final Logger LOGGER = Logger.getLogger(GenericHttpWebServiceServlet.class.getName());
 
-    public GenericHttpWebServiceServlet(HttpWebService httpWebService) {
+    public GenericHttpWebServiceServlet(HttpWebService httpWebService, String uri) {
         this.httpWebService = httpWebService;
-        this.httpWebServiceMapper = new HttpWebServiceMapper(this.httpWebService);
+        this.httpWebServiceMapper = new HttpWebServiceMapper(this.httpWebService, uri);
     }
 
     protected static String getAccept(HttpServletRequest request) {
@@ -37,12 +40,12 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
     protected final void service(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String method = request.getMethod();
 
-        if (method.equals("OPTIONS")) {
+        if (method.equals(HttpMethod.OPTIONS.name())) {
             doOptions(request, response);
             return;
         }
 
-        if (method.equals("GET")) {
+        if (method.equals(HttpMethod.GET.name())) {
             // Pre-processing for GET requests
             // Reimplemented portions of original service
 
@@ -114,7 +117,7 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
                 }
             }
 
-            if (method.equals("GET")) {
+            if (method.equals(HttpMethod.GET.name())) {
                 if (getAccept(request).contains("application/json")) {
                     if (handledResponse != null) {
                         response.setStatus(HttpServletResponse.SC_OK);

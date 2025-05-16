@@ -15,12 +15,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
-import static com.weburg.ghowst.HttpWebServiceMapper.getCustomVerb;
+import static com.weburg.ghowst.HttpWebServiceMapper.getCustomVerbFromPath;
 import static com.weburg.ghowst.HttpWebServiceMapper.getResourceFromPath;
 
 public class ExampleHttpWebServiceServlet extends GenericHttpWebServiceServlet {
-    public ExampleHttpWebServiceServlet(HttpWebService httpWebService) {
-        super(httpWebService);
+    public ExampleHttpWebServiceServlet(HttpWebService httpWebService, String uri) {
+        super(httpWebService, uri);
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
@@ -46,7 +46,7 @@ public class ExampleHttpWebServiceServlet extends GenericHttpWebServiceServlet {
         if (handledResponse != null && resourceKeyName != null) {
             // Non-GET may have a subresource e.g. custom verb, so remove it to get URI to the parent resource
 
-            String customVerb = getCustomVerb(request.getPathInfo());
+            String customVerb = getCustomVerbFromPath(request.getPathInfo());
             String requestUri;
             if (customVerb != "") {
                 requestUri = request.getRequestURI().replace('/' + customVerb, "");

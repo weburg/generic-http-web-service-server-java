@@ -4,10 +4,15 @@ import example.domain.Engine;
 import example.domain.Photo;
 import example.domain.Sound;
 import example.domain.Truck;
+import jdk.jfr.Description;
+import jdk.jfr.Name;
 
 import java.util.List;
 
+@Name("Generic HTTP Web Service")
+@Description("An example service showing the power of GHoWSt")
 public interface HttpWebService {
+    @Description("Gets a list of Engines based on the id")
     Engine getEngines(int id);
 
     List<Engine> getEngines();
