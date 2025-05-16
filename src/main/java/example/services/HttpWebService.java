@@ -1,5 +1,6 @@
 package example.services;
 
+import com.weburg.ghowst.DescriptionInOut;
 import example.domain.Engine;
 import example.domain.Photo;
 import example.domain.Sound;
@@ -17,7 +18,8 @@ public interface HttpWebService {
 
     List<Engine> getEngines();
 
-    int createEngines(Engine engine);
+    @Description("Create a new engine")
+    @DescriptionInOut("The id of the created engine") int createEngines(@DescriptionInOut("The engine to create") Engine engine);
 
     int createOrReplaceEngines(Engine engine);
 

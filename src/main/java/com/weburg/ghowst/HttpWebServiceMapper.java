@@ -6,9 +6,7 @@ import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConvertUtils;
 
 import java.beans.*;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Parameter;
+import java.lang.reflect.*;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -33,7 +31,7 @@ public class HttpWebServiceMapper {
     }
 
     public enum HttpMethod {
-        GET, PUT, POST, PATCH, DELETE, OPTIONS
+        GET, POST, PUT, PATCH, DELETE, OPTIONS
     }
 
     static class WebService {
@@ -54,12 +52,12 @@ public class HttpWebServiceMapper {
             static class MethodParameter {
                 public String name;
                 public String type;
-                //public String description;
+                public String description;
             }
 
             static class MethodReturn {
                 public String type;
-                //public String description;
+                public String description;
             }
         }
 
@@ -77,7 +75,6 @@ public class HttpWebServiceMapper {
 
         static class Resource {
             public String name;
-            //public String description;
             public String uri;
             public Set<HttpMethod> allowMethods;
         }
@@ -298,6 +295,7 @@ public class HttpWebServiceMapper {
         return nestedMap;
     }
 
+    // Classes
     static String getDescription(Class annotationTarget) {
         String annotationValue = "";
 
@@ -310,11 +308,38 @@ public class HttpWebServiceMapper {
         return annotationValue;
     }
 
+    // Methods
     static String getDescription(Method annotationTarget) {
         String annotationValue = "";
 
         try {
-            annotationValue = ((Description)annotationTarget.getDeclaredAnnotation(Description.class)).value();
+            annotationValue = annotationTarget.getDeclaredAnnotation(Description.class).value();
+        } catch (Exception e) {
+            // Ignore, no annotation found
+        }
+
+        return annotationValue;
+    }
+
+    // Return
+    static String getDescriptionInOut(AnnotatedType annotationTarget) {
+        String annotationValue = "";
+
+        try {
+            annotationValue = annotationTarget.getDeclaredAnnotation(DescriptionInOut.class).value();
+        } catch (Exception e) {
+            // Ignore, no annotation found
+        }
+
+        return annotationValue;
+    }
+
+    // Parameter
+    static String getDescriptionInOut(Parameter annotationTarget) {
+        String annotationValue = "";
+
+        try {
+            annotationValue = annotationTarget.getDeclaredAnnotation(DescriptionInOut.class).value();
         } catch (Exception e) {
             // Ignore, no annotation found
         }
@@ -380,6 +405,7 @@ public class HttpWebServiceMapper {
             serviceMethod.returns = new WebService.ServiceMethod.MethodReturn();
             String genericReturnType = methodsSorted.get(methodKey).getGenericReturnType().getTypeName();
             serviceMethod.returns.type = simplifyName(genericReturnType);
+            serviceMethod.returns.description = getDescriptionInOut(methodsSorted.get(methodKey).getAnnotatedReturnType());
             serviceMethod.name = methodsSorted.get(methodKey).getName();
             serviceMethod.description = getDescription(methodsSorted.get(methodKey));
 
@@ -391,6 +417,7 @@ public class HttpWebServiceMapper {
             for (int i = 0; i < parameters.length; i++) {
                 WebService.ServiceMethod.MethodParameter methodParameter = new WebService.ServiceMethod.MethodParameter();
                 methodParameter.name = parameters[i].getName();
+                methodParameter.description = getDescriptionInOut(parameters[i]);
                 methodParameter.type = simplifyName(parameters[i].getType().getCanonicalName());
                 serviceMethod.parameters.add(methodParameter);
             }
@@ -480,10 +507,10 @@ public class HttpWebServiceMapper {
             serviceDescription.append("Method: " + serviceMethod.name + (!serviceMethod.description.isEmpty() ? " - " + serviceMethod.description : "")).append(System.getProperty("line.separator"));
 
             for (WebService.ServiceMethod.MethodParameter methodParameter : serviceMethod.parameters) {
-                serviceDescription.append("    Parameter: " + methodParameter.name + ", Type: " + methodParameter.type).append(System.getProperty("line.separator"));
+                serviceDescription.append("    Parameter: " + methodParameter.name + ", Type: " + methodParameter.type + (!methodParameter.description.isEmpty() ? " - " + methodParameter.description : "")).append(System.getProperty("line.separator"));
             }
 
-            serviceDescription.append("    Returns: " + serviceMethod.returns.type).append(System.getProperty("line.separator"));
+            serviceDescription.append("    Returns: " + serviceMethod.returns.type + (!serviceMethod.returns.description.isEmpty() ? " - " + serviceMethod.returns.description : "")).append(System.getProperty("line.separator"));
 
             serviceDescription.append(System.getProperty("line.separator"));
         }
