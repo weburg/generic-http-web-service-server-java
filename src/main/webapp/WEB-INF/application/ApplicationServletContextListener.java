@@ -24,7 +24,7 @@ public class ApplicationServletContextListener implements ServletContextListener
 
         Engine engine = new Engine();
         engine.setName("Hemi");
-        engine.setCylinders(12);
+        engine.setCylinders(8);
 
         event.getServletContext().addServlet("IndexServlet", new IndexServlet(engine)).addMapping("/index");
 
@@ -56,8 +56,6 @@ public class ApplicationServletContextListener implements ServletContextListener
         exampleHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
 
         event.getServletContext().addServlet("htmlClient", new HtmlClientServlet()).addMapping("/htmlclient");
-        
-        event.getServletContext().addServlet("SpaWebServiceServlet", new SpaWebServiceServlet()).addMapping("/spahttpws");
     }
 
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
