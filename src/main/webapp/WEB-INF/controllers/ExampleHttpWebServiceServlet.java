@@ -19,22 +19,33 @@ import static com.weburg.ghowst.HttpWebServiceMapper.getCustomVerbFromPath;
 import static com.weburg.ghowst.HttpWebServiceMapper.getResourceFromPath;
 
 public class ExampleHttpWebServiceServlet extends GenericHttpWebServiceServlet {
-    public ExampleHttpWebServiceServlet(HttpWebService httpWebService, String uri) {
-        super(httpWebService, uri);
+    public ExampleHttpWebServiceServlet(HttpWebService httpWebService, String uriPath) {
+        super(httpWebService, uriPath);
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
         Object handledResponse = request.getAttribute("handledResponse");
 
-        if (getResourceFromPath(request.getPathInfo()).equals("photos") && getAccept(request).contains("image/") && !getAccept(request).contains("text/html")) {
-            File photoFileStored = ((Photo) handledResponse).getPhotoFile();
-            respondWithStream(response, photoFileStored);
-        } else if (getResourceFromPath(request.getPathInfo()).equals("sounds") && !getAccept(request).contains("text/html")) { // Accept: *.*
-            File soundFileStored = ((Sound) handledResponse).getSoundFile();
-            respondWithStream(response, soundFileStored);
+        if (handledResponse != null) {
+            if (getResourceFromPath(request.getPathInfo()).equals("photos") && getAccept(request).contains("image/") && !getAccept(request).contains("text/html")) {
+                File photoFileStored = ((Photo) handledResponse).getPhotoFile();
+                respondWithStream(response, photoFileStored);
+            } else if (getResourceFromPath(request.getPathInfo()).equals("sounds") && !getAccept(request).contains("text/html")) { // Accept: *.*
+                File soundFileStored = ((Sound) handledResponse).getSoundFile();
+                respondWithStream(response, soundFileStored);
+            } else {
+                String resource = getResourceFromPath(request.getPathInfo());
+                respondWithResource(request, response, handledResponse, resource, resource);
+            }
         } else {
-            String resource = getResourceFromPath(request.getPathInfo());
-            respondWithResource(request, response, handledResponse, resource, resource);
+            /*
+            The root of the service, no work to do. If this was the root of the site, we could show a homepage here.
+            However, we'll just redirect to the site's root for simplicity. The caller would have had to add the ?ahttpi
+            query string to see the service description, if that's what they wanted.
+             */
+
+            response.setHeader("location", "/");
+            response.setStatus(HttpServletResponse.SC_SEE_OTHER);
         }
     }
 

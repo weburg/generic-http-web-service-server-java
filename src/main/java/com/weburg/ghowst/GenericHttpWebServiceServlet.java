@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 public abstract class GenericHttpWebServiceServlet extends HttpServlet {
     private final HttpWebService httpWebService;
@@ -77,8 +78,26 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
             response.setCharacterEncoding("UTF-8");
 
             if (request.getPathInfo() == null) {
-                // At the root, default to showing usage
-                doDescribe(request, response);
+                if (request.getParameter("ahttpi") != null) {
+                    if (getAccept(request).contains("application/json")) {
+                        response.setContentType("application/json");
+
+                        response.setStatus(HttpServletResponse.SC_OK);
+
+                        Gson gson = new Gson();
+                        String webServiceMetadataJson = gson.toJson(httpWebServiceMapper.getWebServiceMetadata());
+
+                        PrintWriter write = response.getWriter();
+                        write.print(webServiceMetadataJson);
+                        write.flush();
+                    } else {
+                        // Defer to child servlet for whatever formatting is supported
+                        doDescribe(request, response);
+                    }
+                }
+
+                // Nothing to do, delegate to the child servlet
+                doGet(request, response);
                 return;
             }
         }
@@ -119,6 +138,8 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
 
             if (method.equals(HttpMethod.GET.name())) {
                 if (getAccept(request).contains("application/json")) {
+                    response.setContentType("application/json");
+
                     if (handledResponse != null) {
                         response.setStatus(HttpServletResponse.SC_OK);
 
@@ -177,6 +198,17 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
                         part.delete();
                     }
                 }
+            }
+        }
+    }
+
+    protected void doOptions(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpWebServiceMapper.WebService webServiceMetadata = this.httpWebServiceMapper.getWebServiceMetadata();
+
+        for (HttpWebServiceMapper.WebService.Resource resource : webServiceMetadata.resources) {
+            if (request.getPathInfo() != null && request.getPathInfo().equals(resource.uriPath)) {
+                response.setHeader("access-control-allow-methods", resource.allowMethods.stream().map(Enum::name).collect(Collectors.joining(", ")));
+                break;
             }
         }
     }

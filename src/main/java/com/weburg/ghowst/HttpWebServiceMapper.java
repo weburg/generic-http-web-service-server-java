@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 public class HttpWebServiceMapper {
     private Object webService;
     private Class webServiceClass;
-    private String uri;
+    private String webServiceUriBasePath;
     private WebService webServiceMetadata = new WebService();
 
     private Map<String, List<Class>> methodMap = new TreeMap<>();
@@ -23,10 +23,10 @@ public class HttpWebServiceMapper {
 
     private static final Logger LOGGER = Logger.getLogger(HttpWebServiceMapper.class.getName());
 
-    public HttpWebServiceMapper(Object webService, String uri) {
+    public HttpWebServiceMapper(Object webService, String webServiceUriBasePath) {
         this.webService = webService;
         this.webServiceClass = webService.getClass().getInterfaces()[0];
-        this.uri = uri;
+        this.webServiceUriBasePath = webServiceUriBasePath;
         this.serviceDescription = this.describeService(); // Populate before any invocations are made
     }
 
@@ -37,8 +37,8 @@ public class HttpWebServiceMapper {
     static class WebService {
         public String name;
         public String description;
-        public String uri;
-        public Set<ServiceMethod> methods;
+        public String uriBasePath;
+        public Set<ServiceMethod> serviceMethods;
         public Set<CustomType> customTypes;
         public Set<Resource> resources;
 
@@ -47,7 +47,8 @@ public class HttpWebServiceMapper {
             public String description;
             public Set<MethodParameter> parameters;
             public MethodReturn returns;
-            public String uri;
+            public String uriPath;
+            public HttpMethod httpMethod;
 
             static class MethodParameter {
                 public String name;
@@ -75,13 +76,17 @@ public class HttpWebServiceMapper {
 
         static class Resource {
             public String name;
-            public String uri;
+            public String uriPath;
             public Set<HttpMethod> allowMethods;
         }
     }
 
     public String getServiceDescription() {
         return this.serviceDescription;
+    }
+
+    public WebService getWebServiceMetadata() {
+        return this.webServiceMetadata;
     }
 
     public String getResourceKeyName(String resourceKey) {
@@ -362,7 +367,7 @@ public class HttpWebServiceMapper {
     private String describeService() {
         this.webServiceMetadata.name = getName(this.webServiceClass);
         this.webServiceMetadata.description = getDescription(this.webServiceClass);
-        this.webServiceMetadata.uri = this.uri;
+        this.webServiceMetadata.uriBasePath = this.webServiceUriBasePath;
 
         // Gather data, order and contextually correct sorting is important
 
@@ -398,19 +403,20 @@ public class HttpWebServiceMapper {
 
         // Gather remaining data in proper sort order and build service data structure
 
-        this.webServiceMetadata.methods = new LinkedHashSet<>();
+        this.webServiceMetadata.serviceMethods = new LinkedHashSet<>();
         for (String methodKey : methodsSorted.keySet()) {
             WebService.ServiceMethod serviceMethod = new WebService.ServiceMethod();
 
+            serviceMethod.name = methodsSorted.get(methodKey).getName();
+            serviceMethod.description = getDescription(methodsSorted.get(methodKey));
             serviceMethod.returns = new WebService.ServiceMethod.MethodReturn();
             String genericReturnType = methodsSorted.get(methodKey).getGenericReturnType().getTypeName();
             serviceMethod.returns.type = simplifyName(genericReturnType);
             serviceMethod.returns.description = getDescriptionInOut(methodsSorted.get(methodKey).getAnnotatedReturnType());
-            serviceMethod.name = methodsSorted.get(methodKey).getName();
-            serviceMethod.description = getDescription(methodsSorted.get(methodKey));
 
             String customVerb = getCustomVerbFromMethod(serviceMethod.name);
-            serviceMethod.uri = "/" + getResourceFromMethod(serviceMethod.name + (!customVerb.isEmpty() ? "/" + customVerb : ""));
+            serviceMethod.uriPath = "/" + getResourceFromMethod(serviceMethod.name + (!customVerb.isEmpty() ? "/" + customVerb : ""));
+            serviceMethod.httpMethod = getHttpMethodFromServiceMethodName(serviceMethod.name);
 
             serviceMethod.parameters = new LinkedHashSet<>();
             Parameter[] parameters = methodsSorted.get(methodKey).getParameters();
@@ -422,7 +428,7 @@ public class HttpWebServiceMapper {
                 serviceMethod.parameters.add(methodParameter);
             }
 
-            this.webServiceMetadata.methods.add(serviceMethod);
+            this.webServiceMetadata.serviceMethods.add(serviceMethod);
 
             StringBuilder methodSignature = new StringBuilder();
             methodSignature.append(serviceMethod.name + '(');
@@ -474,23 +480,28 @@ public class HttpWebServiceMapper {
 
         Map<String, Set<HttpMethod>> resourceAllowMethodsMap = new HashMap<>();
 
-        for (WebService.ServiceMethod method : this.webServiceMetadata.methods) {
+        for (WebService.ServiceMethod method : this.webServiceMetadata.serviceMethods) {
             WebService.Resource resource;
 
-            if (resourceAllowMethodsMap.get(getResourceFromMethod(method.name)) == null) {
+            String fullyQualifiedResourceName = getResourceFromMethod(method.name);
+            if (!getCustomVerbFromMethod(method.name).isEmpty()) {
+                fullyQualifiedResourceName = fullyQualifiedResourceName + "." + getCustomVerbFromMethod(method.name);
+            }
+
+            if (resourceAllowMethodsMap.get(fullyQualifiedResourceName) == null) {
                 resource = new WebService.Resource();
-                resource.name = getResourceFromMethod(method.name);
-                resource.uri = "/" + resource.name;
+                resource.name = fullyQualifiedResourceName;
+                resource.uriPath = "/" + getResourceFromMethod(method.name) + (!getCustomVerbFromMethod(method.name).isEmpty() ? '/' + getCustomVerbFromMethod(method.name) : "");
 
                 Set<HttpMethod> allowMethods = new TreeSet<>();
                 allowMethods.add(getHttpMethodFromServiceMethodName(method.name));
-                resourceAllowMethodsMap.putIfAbsent(getResourceFromMethod(method.name), allowMethods);
+                resourceAllowMethodsMap.putIfAbsent(fullyQualifiedResourceName, allowMethods);
 
                 resource.allowMethods = allowMethods;
 
                 resources.add(resource);
             } else {
-                Set<HttpMethod> httpOptions = resourceAllowMethodsMap.get(getResourceFromMethod(method.name));
+                Set<HttpMethod> httpOptions = resourceAllowMethodsMap.get(fullyQualifiedResourceName);
                 httpOptions.add(getHttpMethodFromServiceMethodName(method.name));
             }
         }
@@ -503,7 +514,7 @@ public class HttpWebServiceMapper {
 
         serviceDescription.append(System.getProperty("line.separator"));
 
-        for (WebService.ServiceMethod serviceMethod : this.webServiceMetadata.methods) {
+        for (WebService.ServiceMethod serviceMethod : this.webServiceMetadata.serviceMethods) {
             serviceDescription.append("Method: " + serviceMethod.name + (!serviceMethod.description.isEmpty() ? " - " + serviceMethod.description : "")).append(System.getProperty("line.separator"));
 
             for (WebService.ServiceMethod.MethodParameter methodParameter : serviceMethod.parameters) {
