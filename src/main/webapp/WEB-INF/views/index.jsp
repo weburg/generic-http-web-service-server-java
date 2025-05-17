@@ -8,6 +8,6 @@
 
 <p>Probably, you'll be more interested in one of the links below than anything else on this page.</p>
 
-<p>Test data for this project may involve a <c:out value="${model.engine.name}"/> with <c:out value="${model.engine.cylinders}"/> cylinders</li>. Charge your batteries.
+<p>Test data for this project may involve a <c:out value="${model.engine.name}"/> with <c:out value="${model.engine.cylinders}"/> cylinders. Charge your batteries.
 
 <%@ include file="footer.jsp" %>
