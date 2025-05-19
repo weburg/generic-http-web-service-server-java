@@ -125,6 +125,15 @@
     </fieldset>
 </form>
 
+<c:set var="uri" value="/generichttpws/photos/display"/>
+
+<form action="<c:out value="${uri}"/>" method="post">
+    <fieldset>
+        <label><span>Photo: </span><input type="text" name="name" value="<c:out value="${form[uri].name[0]}"/>" size="10"></label>
+        <button type="submit">Display on server</button>
+    </fieldset>
+</form>
+
 <h2>Trucks</h2>
 
 <c:set var="uri" value="/generichttpws/trucks/race"/>
@@ -138,6 +147,16 @@
         <label><span>T2 engine id: </span><input type="text" name="truck2.engineId" value="<c:out value="${form[uri]['truck2.engineId'][0]}"/>" size="10"></label><br>
         <br>
         <button type="submit">Race</button>
+    </fieldset>
+</form>
+
+<h2>Lights</h2>
+
+<c:set var="uri" value="/generichttpws/keyboards/light"/>
+
+<form action="<c:out value="${uri}"/>" method="post">
+    <fieldset>
+        Keyboard and mouse: <button type="submit">Light on server</button>
     </fieldset>
 </form>
 

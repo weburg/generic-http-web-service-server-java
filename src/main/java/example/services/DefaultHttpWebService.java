@@ -1,5 +1,6 @@
 package example.services;
 
+import com.weburg.ScratchLogitechSimple;
 import com.weburg.ghowst.NotFoundException;
 import example.domain.Engine;
 import example.domain.Photo;
@@ -14,6 +15,8 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+
+import static com.weburg.ScratchPhotoDisplay.scratchPhotoDisplay;
 
 public class DefaultHttpWebService implements HttpWebService {
     int lastEngineId = 0;
@@ -272,6 +275,17 @@ public class DefaultHttpWebService implements HttpWebService {
         }
     }
 
+    public void displayPhotos(String name) {
+        Photo photo = new Photo();
+        photo.setPhotoFile(new File(this.dataFilePath + System.getProperty("file.separator") + name));
+
+        try {
+            scratchPhotoDisplay(photo);
+        } catch (IOException e) {
+            throw new NotFoundException("Photo \"" + name + "\" not found.");
+        }
+    }
+
     private File[] getSoundFiles() {
         File directory = new File(this.dataFilePath);
 
@@ -356,5 +370,13 @@ public class DefaultHttpWebService implements HttpWebService {
         }
 
         return sb.toString();
+    }
+
+    public void lightKeyboards() {
+        try {
+            ScratchLogitechSimple.main(new String[]{});
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }

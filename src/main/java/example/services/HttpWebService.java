@@ -37,6 +37,8 @@ public interface HttpWebService {
 
     String createPhotos(Photo photo);
 
+    void displayPhotos(String name);
+
     Sound getSounds(String name);
 
     List<Sound> getSounds();
@@ -46,4 +48,6 @@ public interface HttpWebService {
     void playSounds(String name);
 
     String raceTrucks(Truck truck1, Truck truck2);
+
+    void lightKeyboards();
 }

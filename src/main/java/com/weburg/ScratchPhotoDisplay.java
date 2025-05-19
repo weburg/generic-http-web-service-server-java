@@ -1,6 +1,6 @@
 package com.weburg;
 
-import com.weburg.domain.Photo;
+import example.domain.Photo;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;

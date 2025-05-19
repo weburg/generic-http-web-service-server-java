@@ -57,8 +57,6 @@ public class ApplicationServletContextListener implements ServletContextListener
 
         event.getServletContext().addServlet("htmlClient", new HtmlClientServlet()).addMapping("/htmlclient");
         
-        event.getServletContext().addServlet("SpaWebServiceServlet", new SpaWebServiceServlet()).addMapping("/spahttpws");
-
         event.getServletContext().addServlet("ViewCaptureServlet", new ViewCaptureServlet()).addMapping("/viewcapture");
     }
 
