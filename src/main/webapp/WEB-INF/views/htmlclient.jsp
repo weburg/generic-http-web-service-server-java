@@ -46,6 +46,26 @@
     </fieldset>
 </form>
 
+<h2>Lights</h2>
+
+<c:set var="uri" value="/generichttpws/keyboards/light"/>
+
+<form action="<c:out value="${uri}"/>" method="post">
+    <fieldset>
+        <label><span>Color: </span><input type="color" name="color" value="<c:out value="${form[uri]['color'][0]}"/>"></label><br>
+        <br>
+        <button type="submit">Apply to server keyboard</button>
+    </fieldset>
+</form>
+
+<c:set var="uri" value="/generichttpws/keyboards/restore"/>
+
+<form action="<c:out value="${uri}"/>" method="post">
+    <fieldset>
+        <button type="submit">Restore server keyboard</button>
+    </fieldset>
+</form>
+
 <h2>Engines</h2>
 
 <c:set var="uri" value="/generichttpws/engines"/>
@@ -147,16 +167,6 @@
         <label><span>T2 engine id: </span><input type="text" name="truck2.engineId" value="<c:out value="${form[uri]['truck2.engineId'][0]}"/>" size="10"></label><br>
         <br>
         <button type="submit">Race</button>
-    </fieldset>
-</form>
-
-<h2>Lights</h2>
-
-<c:set var="uri" value="/generichttpws/keyboards/light"/>
-
-<form action="<c:out value="${uri}"/>" method="post">
-    <fieldset>
-        Keyboard and mouse: <button type="submit">Light on server</button>
     </fieldset>
 </form>
 

@@ -49,5 +49,7 @@ public interface HttpWebService {
 
     String raceTrucks(Truck truck1, Truck truck2);
 
-    void lightKeyboards();
+    void lightKeyboards(String color);
+
+    void restoreKeyboards();
 }

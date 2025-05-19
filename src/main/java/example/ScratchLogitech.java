@@ -1,4 +1,4 @@
-package com.weburg;
+package example;
 
 import com.logitech.gaming.LogiLED;
 

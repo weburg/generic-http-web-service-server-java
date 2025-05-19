@@ -1,6 +1,6 @@
 package example.services;
 
-import com.weburg.ScratchLogitechSimple;
+import example.ScratchLogitechSimple;
 import com.weburg.ghowst.NotFoundException;
 import example.domain.Engine;
 import example.domain.Photo;
@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static com.weburg.ScratchPhotoDisplay.scratchPhotoDisplay;
+import static example.ScratchPhotoDisplay.scratchPhotoDisplay;
 
 public class DefaultHttpWebService implements HttpWebService {
     int lastEngineId = 0;
@@ -372,9 +372,29 @@ public class DefaultHttpWebService implements HttpWebService {
         return sb.toString();
     }
 
-    public void lightKeyboards() {
+    public void lightKeyboards(String color) {
+
+        color = color.replace("#", "");
+
+        int red = Integer.valueOf(color.substring(0, 2), 16);
+        int green = Integer.valueOf(color.substring(2, 4), 16);
+        int blue = Integer.valueOf(color.substring(4, 6), 16);
+
         try {
-            ScratchLogitechSimple.main(new String[]{});
+            ScratchLogitechSimple.setColor(red, green, blue);
+
+            //ScratchLogitechSimple.main(new String[]{});
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
+    public void restoreKeyboards() {
+        try {
+            ScratchLogitechSimple.resetColor();
+
+            //ScratchLogitechSimple.main(new String[]{});
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
