@@ -1,6 +1,6 @@
 import beans.IndexBean;
-import com.weburg.domain.Engine;
 
+import example.domain.Engine;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,6 +19,6 @@ public class IndexServlet extends HttpServlet {
         indexBean.setEngine(engine);
         request.setAttribute("model", indexBean);
 
-        request.getRequestDispatcher("/WEB-INF/views/index.jsp").forward(request, response); // TODO preceeding slash not required here, why? Include anyway.
+        request.getRequestDispatcher("/WEB-INF/views/index.jsp").forward(request, response);
     }
 }

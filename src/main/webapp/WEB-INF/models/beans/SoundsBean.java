@@ -1,6 +1,6 @@
 package beans;
 
-import com.weburg.domain.Sound;
+import example.domain.Sound;
 
 import java.io.Serializable;
 import java.util.ArrayList;

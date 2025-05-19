@@ -1,6 +1,6 @@
 package beans;
 
-import com.weburg.domain.Engine;
+import example.domain.Engine;
 
 import java.io.Serializable;
 
@@ -21,7 +21,7 @@ public class IndexBean implements Serializable {
 
     // Below is how we could force an invalid state if the class requires constructor arguments.
     /*
-    public Engine() {
+    public IndexBean() {
         throw new IllegalStateException("This class requires constructor arguments.");
     }
     */

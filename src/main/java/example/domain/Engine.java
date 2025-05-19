@@ -1,15 +1,21 @@
-package com.weburg.domain;
+package example.domain;
 
+import java.beans.BeanProperty;
+import java.beans.JavaBean;
 import java.io.Serializable;
 
+@JavaBean(description = "Used as an example resource and something that can really move a project along")
 public class Engine implements Serializable {
     public Engine() {}
 
-    private int id;
-    private String name = "Pentastar";
-    private int cylinders = 6;
+    private static final long serialVersionUID = 1L;
+
+    private int id = 0;
+    private String name = "";
+    private int cylinders = 0;
     private int throttleSetting = 0;
 
+    @BeanProperty(description = "The unique id of the engine")
     public int getId() {
         return this.id;
     }

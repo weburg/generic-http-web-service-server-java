@@ -1,6 +1,6 @@
-<%@ page import="com.weburg.domain.Engine" %>
+<%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <jsp:useBean id="model" class="beans.EnginesBean" scope="request"/>
-<jsp:include page="/WEB-INF/views/header.jsp">
+<jsp:include page="header.jsp">
     <jsp:param name="title" value="HTML Generic HTTP WS Client - Engines"/>
 </jsp:include>
 
@@ -14,14 +14,14 @@
         </tr>
     </thead>
     <tbody>
-    <% for (Engine engine : model.getEngines()) { %>
+    <c:forEach var="engine" items="${model.engines}">
         <tr>
-            <td><a href="${pageContext.request.contextPath}/generichttpws/engines?id=<%= engine.getId() %>"><%= engine.getId() %></a></td>
-            <td><%= engine.getName() %></td>
-            <td><%= engine.getCylinders() %></td>
-            <td><%= engine.getThrottleSetting() %></td>
+            <td><a href="${pageContext.request.contextPath}/generichttpws/engines?id=<c:out value="${engine.id}"/>"><c:out value="${engine.id}"/></a></td>
+            <td><c:out value="${engine.name}"/></td>
+            <td><c:out value="${engine.cylinders}"/></td>
+            <td><c:out value="${engine.throttleSetting}"/></td>
         </tr>
-    <% } %>
+    </c:forEach>
     </tbody>
 </table>
 

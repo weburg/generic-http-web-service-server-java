@@ -1,6 +1,5 @@
-import com.weburg.domain.Engine;
-import com.weburg.services.DefaultHttpWebService;
-
+import example.domain.Engine;
+import example.services.DefaultHttpWebService;
 import jakarta.servlet.*;
 
 import java.io.File;
@@ -20,8 +19,12 @@ public class ApplicationServletContextListener implements ServletContextListener
         event.getServletContext().addFilter("CorsFilter", new CorsFilter())
                 .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/*");
 
+        event.getServletContext().addFilter("FormMemoryFilter", new FormMemoryFilter())
+                .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/generichttpws/*");
+
         Engine engine = new Engine();
-        engine.setCylinders(14);
+        engine.setName("Hemi");
+        engine.setCylinders(12);
 
         event.getServletContext().addServlet("IndexServlet", new IndexServlet(engine)).addMapping("/index");
 
@@ -46,11 +49,14 @@ public class ApplicationServletContextListener implements ServletContextListener
         }
 
         DefaultHttpWebService httpWebService = new DefaultHttpWebService(dataFilePath);
-        ServletRegistration.Dynamic genericHttpWebServiceServletRegistration = event.getServletContext()
-                .addServlet("GenericHttpWebServiceServlet", new GenericHttpWebServiceServlet(httpWebService));
-        genericHttpWebServiceServletRegistration.addMapping("/generichttpws/*", "/generichttpws");
-        genericHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
+        String httpWebServiceUriPath = "/generichttpws";
+        ServletRegistration.Dynamic exampleHttpWebServiceServletRegistration = event.getServletContext()
+                .addServlet("ExampleHttpWebServiceServlet", new ExampleHttpWebServiceServlet(httpWebService, httpWebServiceUriPath));
+        exampleHttpWebServiceServletRegistration.addMapping(httpWebServiceUriPath + "/*", httpWebServiceUriPath);
+        exampleHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
 
+        event.getServletContext().addServlet("htmlClient", new HtmlClientServlet()).addMapping("/htmlclient");
+        
         event.getServletContext().addServlet("SpaWebServiceServlet", new SpaWebServiceServlet()).addMapping("/spahttpws");
 
         event.getServletContext().addServlet("ViewCaptureServlet", new ViewCaptureServlet()).addMapping("/viewcapture");

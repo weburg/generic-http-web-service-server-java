@@ -1,4 +1,4 @@
-package com.weburg.domain;
+package example.domain;
 
 import org.apache.commons.io.FileUtils;
 
@@ -9,9 +9,11 @@ import java.io.Serializable;
 public class Photo implements Serializable {
     public Photo() {}
 
-    private String name;
+    private static final long serialVersionUID = 1L;
+
+    private String name = "";
     private String caption = "";
-    private transient File photoFile;
+    private transient File photoFile = new File("");
 
     public String getName() {
         return name;
@@ -34,9 +36,9 @@ public class Photo implements Serializable {
         this.name = photoFile.getName();
 
         try {
-            File captionFile = new File(this.photoFile + ".txt");
+            File captionFile = new File(photoFile.getAbsolutePath() + ".txt");
 
-            if (getCaption().isEmpty() && captionFile.exists() && captionFile.isFile()) {
+            if ((getCaption() == null || getCaption().isEmpty()) && captionFile.exists() && captionFile.isFile()) {
                 setCaption(FileUtils.readFileToString(captionFile));
             }
         } catch (IOException e) {
