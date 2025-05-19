@@ -8,9 +8,6 @@
 
 <p>Probably, you'll be more interested in one of the links below than anything else on this page.</p>
 
-<p>But first, an example engine provided by a JSP bean!</p>
-<ul>
-    <li><c:out value="${model.engine.name}"/> w/ <c:out value="${model.engine.cylinders}"/> cylinders</li>
-</ul>
+<p>Test data for this project may involve a <c:out value="${model.engine.name}"/> with <c:out value="${model.engine.cylinders}"/> cylinders. Charge your batteries.
 
 <%@ include file="footer.jsp" %>
