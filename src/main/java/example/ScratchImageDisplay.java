@@ -1,6 +1,6 @@
 package example;
 
-import example.domain.Photo;
+import example.domain.Image;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -9,22 +9,22 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 
-public class ScratchPhotoDisplay {
+public class ScratchImageDisplay {
     public static void main(String args[]) throws IOException
     {
-        Photo photo = new Photo();
-        photo.setPhotoFile(new File(args[0]));
-        scratchPhotoDisplay(photo);
+        Image Image = new Image();
+        Image.setImageFile(new File(args[0]));
+        scratchImageDisplay(Image);
     }
 
-    public static void scratchPhotoDisplay(Photo photo) throws IOException
+    public static void scratchImageDisplay(Image Image) throws IOException
     {
-        BufferedImage img = ImageIO.read(photo.getPhotoFile());
+        BufferedImage img = ImageIO.read(Image.getImageFile());
         ImageIcon icon = new ImageIcon(img);
         JFrame frame = new JFrame();
         frame.setLayout(new FlowLayout());
         frame.setSize(800,600);
-        frame.setTitle(photo.getCaption());
+        frame.setTitle(Image.getCaption());
         frame.getContentPane().setBackground(new Color(0,0,0));
         frame.setLocationRelativeTo(null);
         JLabel lbl = new JLabel();

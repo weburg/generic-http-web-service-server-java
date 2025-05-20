@@ -17,7 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 
-import static example.ScratchPhotoDisplay.scratchPhotoDisplay;
+import static example.ScratchImageDisplay.scratchImageDisplay;
 
 public class DefaultHttpWebService implements HttpWebService {
     int lastEngineId = 0;
@@ -193,6 +193,17 @@ public class DefaultHttpWebService implements HttpWebService {
             return image.getImageFile().getName();
         } catch (Exception e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    public void displayImages(String name) {
+        Image image = new Image();
+        image.setImageFile(new File(this.dataFilePath + System.getProperty("file.separator") + name));
+
+        try {
+            scratchImageDisplay(image);
+        } catch (IOException e) {
+            throw new NotFoundException("Image \"" + name + "\" not found.");
         }
     }
 

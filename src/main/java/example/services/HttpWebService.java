@@ -24,6 +24,8 @@ public interface HttpWebService {
 
     String createImages(Image image);
 
+    void displayImages(String name);
+
     Video getVideos(String name);
 
     List<Video> getVideos();

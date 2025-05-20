@@ -121,7 +121,7 @@
 
 <form action="<c:out value="${uri}"/>" method="post">
     <fieldset>
-        <label><span>Color: </span><input type="color" name="color" value="<c:out value="${form[uri]['color'][0]}"/>"></label><br>
+        <label><span>Color: </span><input type="color" name="color" value="<c:out value="${model.formData[uri]['color'][0]}"/>"></label><br>
         <br>
         <button type="submit">Apply to server keyboard</button>
     </fieldset>
