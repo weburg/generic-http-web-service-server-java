@@ -1,6 +1,7 @@
 package example.services;
 
 import com.weburg.ghowst.NotFoundException;
+import example.SupportedMimeTypes;
 import example.domain.Engine;
 import example.domain.Photo;
 import example.domain.Sound;
@@ -11,6 +12,8 @@ import javax.sound.sampled.Clip;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
@@ -255,9 +258,18 @@ public class DefaultHttpWebService implements HttpWebService {
         having already written it to disk in the server's normal http file
         upload location. Ideally, the file would be written in a holding
         location, checked in here, and then moved by the service method. For
-        now, this setup works and is simple, but lacks checking and
-        transactional integrity.
+        now, this setup works and is simple, but lacks transactional integrity.
          */
+
+        try {
+            String mimeType = Files.probeContentType(Path.of(photo.getPhotoFile().getAbsolutePath()));
+
+            if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.IMAGE, mimeType)) {
+                throw new IllegalArgumentException("Unsupported mime type for file \"" + photo.getPhotoFile().getName() + "\": " + mimeType);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
 
         try {
             // Write caption
@@ -318,6 +330,16 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createSounds(Sound sound) {
+        try {
+            String mimeType = Files.probeContentType(Path.of(sound.getSoundFile().getAbsolutePath()));
+
+            if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.AUDIO, mimeType)) {
+                throw new IllegalArgumentException("Unsupported mime type for file \"" + sound.getSoundFile().getName() + "\": " + mimeType);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         return sound.getSoundFile().getName();
     }
 

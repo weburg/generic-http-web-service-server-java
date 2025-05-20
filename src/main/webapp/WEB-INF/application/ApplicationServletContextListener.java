@@ -1,5 +1,6 @@
 import example.domain.Engine;
 import example.services.DefaultHttpWebService;
+import example.services.HttpWebService;
 import jakarta.servlet.*;
 
 import java.io.File;
@@ -48,14 +49,14 @@ public class ApplicationServletContextListener implements ServletContextListener
             throw new RuntimeException(e);
         }
 
-        DefaultHttpWebService httpWebService = new DefaultHttpWebService(dataFilePath);
+        HttpWebService httpWebService = new DefaultHttpWebService(dataFilePath);
         String httpWebServiceUriPath = "/generichttpws";
         ServletRegistration.Dynamic exampleHttpWebServiceServletRegistration = event.getServletContext()
                 .addServlet("ExampleHttpWebServiceServlet", new ExampleHttpWebServiceServlet(httpWebService, httpWebServiceUriPath));
         exampleHttpWebServiceServletRegistration.addMapping(httpWebServiceUriPath + "/*", httpWebServiceUriPath);
         exampleHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
 
-        event.getServletContext().addServlet("htmlClient", new HtmlClientServlet()).addMapping("/htmlclient");
+        event.getServletContext().addServlet("htmlClient", new HtmlClientServlet(httpWebService)).addMapping("/htmlclient");
     }
 
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
