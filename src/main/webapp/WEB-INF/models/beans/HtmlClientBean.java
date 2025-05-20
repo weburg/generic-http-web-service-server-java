@@ -12,8 +12,8 @@ public class HtmlClientBean implements Serializable {
     private Object formData = new Object();
     private List<Sound> sounds = new ArrayList<>();
     private String audioTypesList = "";
-    private String videoTypesList = "";
     private String imageTypesList = "";
+    private String videoTypesList = "";
 
     public Object getFormData() {
         return formData;
@@ -31,6 +31,14 @@ public class HtmlClientBean implements Serializable {
         this.sounds = sounds;
     }
 
+    public String getAudioTypesList() {
+        return audioTypesList;
+    }
+
+    public void setAudioTypesList(String audioTypesList) {
+        this.audioTypesList = audioTypesList;
+    }
+
     public String getImageTypesList() {
         return imageTypesList;
     }
@@ -45,13 +53,5 @@ public class HtmlClientBean implements Serializable {
 
     public void setVideoTypesList(String videoTypesList) {
         this.videoTypesList = videoTypesList;
-    }
-
-    public String getAudioTypesList() {
-        return audioTypesList;
-    }
-
-    public void setAudioTypesList(String audioTypesList) {
-        this.audioTypesList = audioTypesList;
     }
 }

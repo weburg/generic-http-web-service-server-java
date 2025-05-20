@@ -3,9 +3,10 @@ package example.services;
 import com.weburg.ghowst.NotFoundException;
 import example.SupportedMimeTypes;
 import example.domain.Engine;
-import example.domain.Photo;
+import example.domain.Image;
 import example.domain.Sound;
 import example.domain.Truck;
+import org.apache.commons.io.FilenameUtils;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -43,10 +44,6 @@ public class DefaultHttpWebService implements HttpWebService {
         }
 
         this.lastEngineId = maxEngineId;
-    }
-
-    public String getDataFilePath() {
-        return dataFilePath;
     }
 
     public Engine getEngines(int id) {
@@ -207,89 +204,12 @@ public class DefaultHttpWebService implements HttpWebService {
         return engineFiles;
     }
 
-    private File[] getPhotoFiles() {
-        File directory = new File(this.dataFilePath);
-
-        File photoFiles[] = directory.listFiles(
-                (dir, name) -> {
-                    if (name.toLowerCase().endsWith(".gif") || name.toLowerCase().endsWith(".jpg") || name.toLowerCase().endsWith(".jpeg") || name.toLowerCase().endsWith(".png")) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-        );
-
-        return photoFiles;
-    }
-
-    public Photo getPhotos(String name) {
-        Photo photo = new Photo();
-
-        File photoFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
-        if (!photoFile.exists() || !photoFile.isFile()) {
-            throw new NotFoundException("Photo \"" + name + "\" not found.");
-        }
-
-        photo.setPhotoFile(photoFile);
-
-        return photo;
-    }
-
-    public List<Photo> getPhotos() {
-        ArrayList<Photo> photos = new ArrayList<>();
-
-        File[] photoFiles = getPhotoFiles();
-
-        for (File photoFile : photoFiles) {
-            Photo photo = new Photo();
-            photo.setPhotoFile(photoFile);
-
-            photos.add(photo);
-        }
-
-        return photos;
-    }
-
-    public String createPhotos(Photo photo) {
-        /* The Web server implementation determines whether the photo's file is
-        written by now or not, or after this call (assuming no exceptions are
-        thrown from here). There is currently no way to read the file without
-        having already written it to disk in the server's normal http file
-        upload location. Ideally, the file would be written in a holding
-        location, checked in here, and then moved by the service method. For
-        now, this setup works and is simple, but lacks transactional integrity.
-         */
-
-        try {
-            String mimeType = Files.probeContentType(Path.of(photo.getPhotoFile().getAbsolutePath()));
-
-            if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.IMAGE, mimeType)) {
-                throw new IllegalArgumentException("Unsupported mime type for file \"" + photo.getPhotoFile().getName() + "\": " + mimeType);
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            // Write caption
-            FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
-                    + photo.getPhotoFile().getName() + ".txt");
-            fos.write(photo.getCaption().getBytes());
-            fos.close();
-
-            return photo.getPhotoFile().getName();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private File[] getSoundFiles() {
+        private File[] getSoundFiles() {
         File directory = new File(this.dataFilePath);
 
         File soundFiles[] = directory.listFiles(
                 (dir, name) -> {
-                    if (name.toLowerCase().endsWith(".wav")) {
+                    if (SupportedMimeTypes.getExtensions(SupportedMimeTypes.MimeTypes.AUDIO).contains(FilenameUtils.getExtension(name.toLowerCase()))) {
                         return true;
                     } else {
                         return false;
@@ -353,6 +273,83 @@ public class DefaultHttpWebService implements HttpWebService {
 
             sound.start();
         } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private File[] getImageFiles() {
+        File directory = new File(this.dataFilePath);
+
+        File imageFiles[] = directory.listFiles(
+                (dir, name) -> {
+                    if (SupportedMimeTypes.getExtensions(SupportedMimeTypes.MimeTypes.IMAGE).contains(FilenameUtils.getExtension(name.toLowerCase()))) {
+                        return true;
+                    } else {
+                        return false;
+                    }
+                }
+        );
+
+        return imageFiles;
+    }
+
+    public Image getImages(String name) {
+        Image image = new Image();
+
+        File imageFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
+        if (!imageFile.exists() || !imageFile.isFile()) {
+            throw new NotFoundException("Image \"" + name + "\" not found.");
+        }
+
+        image.setImageFile(imageFile);
+
+        return image;
+    }
+
+    public List<Image> getImages() {
+        ArrayList<Image> images = new ArrayList<>();
+
+        File[] imageFiles = getImageFiles();
+
+        for (File imageFile : imageFiles) {
+            Image image = new Image();
+            image.setImageFile(imageFile);
+
+            images.add(image);
+        }
+
+        return images;
+    }
+
+    public String createImages(Image image) {
+        /* The Web server implementation determines whether the image's file is
+        written by now or not, or after this call (assuming no exceptions are
+        thrown from here). There is currently no way to read the file without
+        having already written it to disk in the server's normal http file
+        upload location. Ideally, the file would be written in a holding
+        location, checked in here, and then moved by the service method. For
+        now, this setup works and is simple, but lacks transactional integrity.
+         */
+
+        try {
+            String mimeType = Files.probeContentType(Path.of(image.getImageFile().getAbsolutePath()));
+
+            if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.IMAGE, mimeType)) {
+                throw new IllegalArgumentException("Unsupported mime type for file \"" + image.getImageFile().getName() + "\": " + mimeType);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            // Write caption
+            FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
+                    + image.getImageFile().getName() + ".txt");
+            fos.write(image.getCaption().getBytes());
+            fos.close();
+
+            return image.getImageFile().getName();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
     }

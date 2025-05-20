@@ -27,9 +27,9 @@
 ### Capabilities
 
 - Server allows creating, updating, reading, listing, and deleting example
-  Engine and Photo resources. Creating, reading, listing, and playing Sound
+  Engine and Image resources. Creating, reading, listing, and playing Sound
   resources on the server and in a browser is also possible.
-- Engine resource is an object with string and numeric data, while Photo and
+- Engine resource is an object with string and numeric data, while Image and
   Sound resources show binary file upload abilities through HTML based file
   uploads and viewing/playing resources.
 

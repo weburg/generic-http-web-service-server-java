@@ -2,7 +2,7 @@ package example.services;
 
 import com.weburg.ghowst.DescriptionInOut;
 import example.domain.Engine;
-import example.domain.Photo;
+import example.domain.Image;
 import example.domain.Sound;
 import example.domain.Truck;
 import jdk.jfr.Description;
@@ -31,12 +31,6 @@ public interface HttpWebService {
 
     int stopEngines(int id);
 
-    Photo getPhotos(String name);
-
-    List<Photo> getPhotos();
-
-    String createPhotos(Photo photo);
-
     Sound getSounds(String name);
 
     List<Sound> getSounds();
@@ -44,6 +38,12 @@ public interface HttpWebService {
     String createSounds(Sound sound);
 
     void playSounds(String name);
+
+    Image getImages(String name);
+
+    List<Image> getImages();
+
+    String createImages(Image image);
 
     String raceTrucks(Truck truck1, Truck truck2);
 }

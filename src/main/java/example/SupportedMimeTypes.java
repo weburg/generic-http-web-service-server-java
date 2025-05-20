@@ -1,22 +1,44 @@
 package example;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SupportedMimeTypes {
     public enum MimeTypes {
-        IMAGE, AUDIO, VIDEO, TEXT, APPLICATION;
+        AUDIO, IMAGE, VIDEO, TEXT, APPLICATION;
 
         public String toString() {
             return name().toLowerCase();
         }
     }
 
-    static Map<MimeTypes, List<String>> mimeTypes = new LinkedHashMap<>();
+    private static Map<MimeTypes, List<String>> mimeTypes = new LinkedHashMap<>();
+
+    private static Map<MimeTypes, List<String>> extensions = new HashMap<>();
+
+    public static List<String> getExtensions(MimeTypes mimeType) {
+        return extensions.get(mimeType);
+    }
 
     static {
+        mimeTypes.put(MimeTypes.AUDIO, Arrays.asList(
+                "audio/mp4",
+                "audio/webm",
+                "audio/acc",
+                "audio/mpeg",
+                "audio/wav",
+                "audio/ogg"
+        ));
+
+        extensions.put(MimeTypes.AUDIO, Arrays.asList(
+                "mp4",
+                "webm",
+                "acc",
+                "mpeg",
+                "wav",
+                "ogg",
+                "flac"
+        ));
+
         mimeTypes.put(MimeTypes.IMAGE, Arrays.asList(
                 "image/jpeg",
                 "image/gif",
@@ -27,13 +49,15 @@ public class SupportedMimeTypes {
                 "image/svg+xml"
         ));
 
-        mimeTypes.put(MimeTypes.AUDIO, Arrays.asList(
-                "audio/mp4",
-                "audio/webm",
-                "audio/acc",
-                "audio/mpeg",
-                "audio/wav",
-                "audio/ogg"
+        extensions.put(MimeTypes.IMAGE, Arrays.asList(
+                "jpg",
+                "jpeg",
+                "gif",
+                "png",
+                "apng",
+                "avif",
+                "webp",
+                "svg"
         ));
 
         mimeTypes.put(MimeTypes.VIDEO, Arrays.asList(
@@ -42,13 +66,29 @@ public class SupportedMimeTypes {
                 "video/ogg"
         ));
 
+        extensions.put(MimeTypes.VIDEO, Arrays.asList(
+                "mp4",
+                "webm",
+                "ogg"
+        ));
+
         mimeTypes.put(MimeTypes.TEXT, Arrays.asList(
                 "text/html",
                 "text/plain"
         ));
 
+        extensions.put(MimeTypes.TEXT, Arrays.asList(
+                "htm",
+                "html",
+                "txt"
+        ));
+
         mimeTypes.put(MimeTypes.APPLICATION, Arrays.asList(
                 "application/json"
+        ));
+
+        extensions.put(MimeTypes.APPLICATION, Arrays.asList(
+                "json"
         ));
     }
 

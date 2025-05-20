@@ -49,6 +49,34 @@
     </fieldset>
 </form>
 
+<h2>Images</h2>
+
+<c:set var="uri" value="/generichttpws/images"/>
+
+<form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
+    <fieldset>
+        <legend>New image</legend>
+        <label><span>Caption: </span><input type="text" name="image.caption" value="<c:out value="${model.formData[uri]['image.caption'][0]}"/>" size="10"></label><br>
+        <label><span>Image: </span><input type="file" name="image.imageFile" value="" size="10" accept="${model.imageTypesList}"></label><br>
+        <br>
+        <button type="submit">Create</button>
+    </fieldset>
+</form>
+
+<form action="<c:out value="${uri}"/>" method="get">
+    <fieldset>
+        <legend>Get image</legend>
+        <label><span>Name: </span><input type="text" name="name" value="<c:out value="${model.formData[uri].name[0]}"/>" size="10"></label>
+        <button type="submit">Get</button>
+    </fieldset>
+</form>
+
+<form action="<c:out value="${uri}"/>" method="get">
+    <fieldset>
+        <button type="submit">Get all images</button>
+    </fieldset>
+</form>
+
 <h2>Engines</h2>
 
 <c:set var="uri" value="/generichttpws/engines"/>
@@ -97,34 +125,6 @@
         <legend>Stop engine</legend>
         <label><span>Id: </span><input type="text" name="id" value="<c:out value="${model.formData[uri].id[0]}"/>" size="10"></label>
         <button type="submit">Stop</button>
-    </fieldset>
-</form>
-
-<h2>Photos</h2>
-
-<c:set var="uri" value="/generichttpws/photos"/>
-
-<form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
-    <fieldset>
-        <legend>New photo</legend>
-        <label><span>Caption: </span><input type="text" name="photo.caption" value="<c:out value="${model.formData[uri]['photo.caption'][0]}"/>" size="10"></label><br>
-        <label><span>Photo: </span><input type="file" name="photo.photoFile" value="" size="10" accept="${model.imageTypesList}"></label><br>
-        <br>
-        <button type="submit">Create</button>
-    </fieldset>
-</form>
-
-<form action="<c:out value="${uri}"/>" method="get">
-    <fieldset>
-        <legend>Get photo</legend>
-        <label><span>Photo: </span><input type="text" name="name" value="<c:out value="${model.formData[uri].name[0]}"/>" size="10"></label>
-        <button type="submit">Get</button>
-    </fieldset>
-</form>
-
-<form action="<c:out value="${uri}"/>" method="get">
-    <fieldset>
-        <button type="submit">Get all photos</button>
     </fieldset>
 </form>
 
