@@ -1,5 +1,5 @@
-<%@ page contentType="text/html;charset=UTF-8" language="java" %>
-<jsp:useBean id="engine" class="com.weburg.domain.Engine" scope="request"/>
+<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<jsp:useBean id="engine" class="example.domain.Engine" scope="request"/>
 <html>
 <head>
     <title>Standalone jsp</title>
@@ -11,7 +11,7 @@
 
     <p>Engine</p>
     <ul>
-        <li><%= engine.getName() %> w/ <%= engine.getCylinders() %> cylinders</li>
+        <li>${(not empty engine.name ? engine.name : "Unnamed")} w/ ${engine.cylinders} cylinders</li>
     </ul>
 
     <%@ include file="WEB-INF/views/footer.jsp" %>
