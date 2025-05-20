@@ -30,10 +30,10 @@ public class SupportedMimeTypes {
         ));
 
         extensions.put(MimeTypes.AUDIO, Arrays.asList(
-                "mp4",
+                "m4a",
                 "webm",
                 "acc",
-                "mpeg",
+                "mp3",
                 "wav",
                 "ogg",
                 "flac"
@@ -69,7 +69,7 @@ public class SupportedMimeTypes {
         extensions.put(MimeTypes.VIDEO, Arrays.asList(
                 "mp4",
                 "webm",
-                "ogg"
+                "ogv"
         ));
 
         mimeTypes.put(MimeTypes.TEXT, Arrays.asList(

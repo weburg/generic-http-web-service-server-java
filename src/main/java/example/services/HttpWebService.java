@@ -1,10 +1,7 @@
 package example.services;
 
 import com.weburg.ghowst.DescriptionInOut;
-import example.domain.Engine;
-import example.domain.Image;
-import example.domain.Sound;
-import example.domain.Truck;
+import example.domain.*;
 import jdk.jfr.Description;
 import jdk.jfr.Name;
 
@@ -13,6 +10,26 @@ import java.util.List;
 @Name("Generic HTTP Web Service")
 @Description("An example service showing the power of GHoWSt")
 public interface HttpWebService {
+    Sound getSounds(String name);
+
+    List<Sound> getSounds();
+
+    String createSounds(Sound sound);
+
+    void playSounds(String name);
+
+    Image getImages(String name);
+
+    List<Image> getImages();
+
+    String createImages(Image image);
+
+    Video getVideos(String name);
+
+    List<Video> getVideos();
+
+    String createVideos(Video video);
+
     @Description("Gets a list of Engines based on the id")
     Engine getEngines(int id);
 
@@ -30,20 +47,6 @@ public interface HttpWebService {
     int restartEngines(int id);
 
     int stopEngines(int id);
-
-    Sound getSounds(String name);
-
-    List<Sound> getSounds();
-
-    String createSounds(Sound sound);
-
-    void playSounds(String name);
-
-    Image getImages(String name);
-
-    List<Image> getImages();
-
-    String createImages(Image image);
 
     String raceTrucks(Truck truck1, Truck truck2);
 }

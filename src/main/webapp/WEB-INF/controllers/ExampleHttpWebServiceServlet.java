@@ -1,6 +1,7 @@
 import com.weburg.ghowst.GenericHttpWebServiceServlet;
 import example.domain.Image;
 import example.domain.Sound;
+import example.domain.Video;
 import example.services.HttpWebService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -26,12 +27,15 @@ public class ExampleHttpWebServiceServlet extends GenericHttpWebServiceServlet {
         Object handledResponse = request.getAttribute("handledResponse");
 
         if (handledResponse != null) {
-            if (getResourceFromPath(request.getPathInfo()).equals("images") && getAccept(request).contains("image/") && !getAccept(request).contains("text/html")) {
-                File imageFileStored = ((Image) handledResponse).getImageFile();
-                respondWithStream(response, imageFileStored);
-            } else if (getResourceFromPath(request.getPathInfo()).equals("sounds") && !getAccept(request).contains("text/html")) { // Accept: *.*
+            if (getResourceFromPath(request.getPathInfo()).equals("sounds") && !getAccept(request).contains("text/html")) { // Accept: *.*
                 File soundFileStored = ((Sound) handledResponse).getSoundFile();
                 respondWithStream(response, soundFileStored);
+            } else if (getResourceFromPath(request.getPathInfo()).equals("images") && getAccept(request).contains("image/") && !getAccept(request).contains("text/html")) {
+                File imageFileStored = ((Image) handledResponse).getImageFile();
+                respondWithStream(response, imageFileStored);
+            } else if (getResourceFromPath(request.getPathInfo()).equals("videos") && !getAccept(request).contains("text/html")) {
+                File videoFileStored = ((Video) handledResponse).getVideoFile();
+                respondWithStream(response, videoFileStored);
             } else {
                 String resource = getResourceFromPath(request.getPathInfo());
                 respondWithResource(request, response, handledResponse, resource, resource);

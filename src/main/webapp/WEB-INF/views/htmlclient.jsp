@@ -77,6 +77,34 @@
     </fieldset>
 </form>
 
+<h2>Videos</h2>
+
+<c:set var="uri" value="/generichttpws/videos"/>
+
+<form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
+    <fieldset>
+        <legend>New video</legend>
+        <label><span>Caption: </span><input type="text" name="video.caption" value="<c:out value="${model.formData[uri]['video.caption'][0]}"/>" size="10"></label><br>
+        <label><span>Video: </span><input type="file" name="video.videoFile" value="" size="10" accept="${model.videoTypesList}"></label><br>
+        <br>
+        <button type="submit">Create</button>
+    </fieldset>
+</form>
+
+<form action="<c:out value="${uri}"/>" method="get">
+    <fieldset>
+        <legend>Get video</legend>
+        <label><span>Name: </span><input type="text" name="name" value="<c:out value="${model.formData[uri].name[0]}"/>" size="10"></label>
+        <button type="submit">Get</button>
+    </fieldset>
+</form>
+
+<form action="<c:out value="${uri}"/>" method="get">
+    <fieldset>
+        <button type="submit">Get all videos</button>
+    </fieldset>
+</form>
+
 <h2>Engines</h2>
 
 <c:set var="uri" value="/generichttpws/engines"/>
