@@ -55,6 +55,21 @@
             <artifactId>commons-beanutils</artifactId>
             <version>1.10.1</version>
         </dependency>
+
+        <!-- An audio focused metadata library -->
+        <dependency>
+            <groupId>net.jthink</groupId>
+            <artifactId>jaudiotagger</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+
+        <!-- An audio, image, and video focused metadata library -->
+        <dependency>
+            <groupId>com.drewnoakes</groupId>
+            <artifactId>metadata-extractor</artifactId>
+            <version>2.19.0</version>
+        </dependency>
+
         <dependency>
             <groupId>com.logitech</groupId>
             <artifactId>logiled</artifactId>

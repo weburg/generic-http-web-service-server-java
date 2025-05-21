@@ -1,10 +1,20 @@
 package example.services;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.imaging.ImageProcessingException;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.Tag;
 import example.ScratchLogitechSimple;
 import com.weburg.ghowst.NotFoundException;
 import example.SupportedMimeTypes;
 import example.domain.*;
 import org.apache.commons.io.FilenameUtils;
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.TagField;
+import org.jaudiotagger.tag.TagTextField;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -13,8 +23,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static example.ScratchImageDisplay.scratchImageDisplay;
@@ -44,6 +53,39 @@ public class DefaultHttpWebService implements HttpWebService {
         }
 
         this.lastEngineId = maxEngineId;
+    }
+
+    private static String getCaptionFromMediaFile(File mediaFile, SupportedMimeTypes.MimeTypes mimeType) {
+        String caption = "";
+
+        if (mimeType.equals(SupportedMimeTypes.MimeTypes.AUDIO)) {
+            try {
+                AudioFile f = AudioFileIO.read(mediaFile);
+                org.jaudiotagger.tag.Tag tag = f.getTag();
+                TagTextField tf = (TagTextField) tag.getFirstField(FieldKey.TITLE);
+                caption = tf.getContent().trim();
+            } catch (Exception e) {
+                // It was worth a shot, let it be blank
+            }
+        } else if (mimeType.equals(SupportedMimeTypes.MimeTypes.IMAGE) || mimeType.equals(SupportedMimeTypes.MimeTypes.VIDEO)) {
+            try {
+                Metadata md = ImageMetadataReader.readMetadata(mediaFile);
+
+                for (Directory directory : md.getDirectories()) {
+                    for (Tag tag : directory.getTags()) {
+                        if (tag.getTagName().equals("Title") || tag.getTagName().equals("Caption") ||
+                                tag.getTagName().equals("Description") || tag.getTagName().equals("Image Description")
+                                || tag.getTagName().equals("Video Description")) {
+                            return tag.getDescription().trim();
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                // It was worth a shot, let it be blank
+            }
+        }
+
+        return caption;
     }
 
     private File[] getSoundFiles() {
@@ -92,6 +134,8 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createSounds(Sound sound) {
+        sound.setSoundFile(new File(this.dataFilePath + System.getProperty("file.separator") + sound.getSoundFile().getName()));
+
         try {
             String mimeType = Files.probeContentType(Path.of(sound.getSoundFile().getAbsolutePath()));
 
@@ -100,6 +144,26 @@ public class DefaultHttpWebService implements HttpWebService {
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+
+        String caption = "";
+
+        if (!sound.getCaption().isEmpty()) {
+            caption = sound.getCaption();
+        } else {
+            caption = getCaptionFromMediaFile(sound.getSoundFile(), SupportedMimeTypes.MimeTypes.AUDIO);
+        }
+
+        if (!caption.isEmpty()) {
+            try {
+                // Write caption
+                FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
+                        + sound.getSoundFile().getName() + ".txt");
+                fos.write(caption.getBytes());
+                fos.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return sound.getSoundFile().getName();
@@ -164,6 +228,8 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createImages(Image image) {
+        image.setImageFile(new File(this.dataFilePath + System.getProperty("file.separator") + image.getImageFile().getName()));
+
         /* The Web server implementation determines whether the image's file is
         written by now or not, or after this call (assuming no exceptions are
         thrown from here). There is currently no way to read the file without
@@ -183,17 +249,27 @@ public class DefaultHttpWebService implements HttpWebService {
             throw new RuntimeException(e);
         }
 
-        try {
-            // Write caption
-            FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
-                    + image.getImageFile().getName() + ".txt");
-            fos.write(image.getCaption().getBytes());
-            fos.close();
+        String caption = "";
 
-            return image.getImageFile().getName();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (!image.getCaption().isEmpty()) {
+            caption = image.getCaption();
+        } else {
+            caption = getCaptionFromMediaFile(image.getImageFile(), SupportedMimeTypes.MimeTypes.IMAGE);
         }
+
+        if (!caption.isEmpty()) {
+            try {
+                // Write caption
+                FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
+                        + image.getImageFile().getName() + ".txt");
+                fos.write(caption.getBytes());
+                fos.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return image.getImageFile().getName();
     }
 
     public void displayImages(String name) {
@@ -252,6 +328,8 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createVideos(Video video) {
+        video.setVideoFile(new File(this.dataFilePath + System.getProperty("file.separator") + video.getVideoFile().getName()));
+
          try {
             String mimeType = Files.probeContentType(Path.of(video.getVideoFile().getAbsolutePath()));
 
@@ -262,17 +340,27 @@ public class DefaultHttpWebService implements HttpWebService {
             throw new RuntimeException(e);
         }
 
-        try {
-            // Write caption
-            FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
-                    + video.getVideoFile().getName() + ".txt");
-            fos.write(video.getCaption().getBytes());
-            fos.close();
+        String caption = "";
 
-            return video.getVideoFile().getName();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (!video.getCaption().isEmpty()) {
+            caption = video.getCaption();
+        } else {
+            caption = getCaptionFromMediaFile(video.getVideoFile(), SupportedMimeTypes.MimeTypes.VIDEO);
         }
+
+        if (!caption.isEmpty()) {
+            try {
+                // Write caption
+                FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
+                        + video.getVideoFile().getName() + ".txt");
+                fos.write(caption.getBytes());
+                fos.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return video.getVideoFile().getName();
     }
 
     public Engine getEngines(int id) {
@@ -481,6 +569,55 @@ public class DefaultHttpWebService implements HttpWebService {
             //ScratchLogitechSimple.main(new String[]{});
         } catch (InterruptedException e) {
             e.printStackTrace();
+        }
+    }
+
+    static public void main(String[] args) {
+        final String dataPath = System.getProperty("user.home") + System.getProperty("file.separator") + ".HttpWebService";
+
+        HttpWebService ws = new DefaultHttpWebService(dataPath);
+        Map<String, String> results = new LinkedHashMap<>();
+
+        List<Sound> sounds = ws.getSounds();
+        for (Sound sound : sounds) {
+            String caption = getCaptionFromMediaFile(sound.getSoundFile(), SupportedMimeTypes.MimeTypes.AUDIO);
+
+            if (!caption.isEmpty()) {
+                results.put(sound.getSoundFile().getName(), caption);
+            }
+        }
+
+        List<Image> images = ws.getImages();
+        for (Image image : images) {
+            String caption = getCaptionFromMediaFile(image.getImageFile(), SupportedMimeTypes.MimeTypes.IMAGE);
+
+            if (!caption.isEmpty()) {
+                results.put(image.getImageFile().getName(), caption);
+            }
+        }
+
+        List<Video> videos = ws.getVideos();
+        for (Video video : videos) {
+            String caption = getCaptionFromMediaFile(video.getVideoFile(), SupportedMimeTypes.MimeTypes.VIDEO);
+
+            if (!caption.isEmpty()) {
+                results.put(video.getVideoFile().getName(), caption);
+            }
+        }
+
+        System.out.println("Results");
+
+        for (String fileName : results.keySet()) {
+            System.out.println(fileName + ": " + results.get(fileName));
+
+            try {
+                FileOutputStream fos = new FileOutputStream(dataPath + System.getProperty("file.separator")
+                        + fileName + ".txt");
+                fos.write(results.get(fileName).getBytes());
+                fos.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }

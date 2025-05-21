@@ -125,9 +125,12 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
         }
 
         try {
-            Object handledResponse = httpWebServiceMapper.handleInvocation(request.getMethod(), request.getPathInfo(), parameterMap);
-            request.setAttribute("handledResponse", handledResponse);
-
+            /*
+            Write the files eagerly so the service can read them directly.
+            Ideally, we would do cleanup if the service failed or not write the
+            files to the final active directory, but rather, a holding directory
+            but the name of the temp file isn't known. Will need to revisit.
+             */
             if (contentType != null && contentType.startsWith("multipart/form-data")) {
                 for (Part part : request.getParts()) {
                     if (part.getSubmittedFileName() != null) {
@@ -135,6 +138,9 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
                     }
                 }
             }
+
+            Object handledResponse = httpWebServiceMapper.handleInvocation(request.getMethod(), request.getPathInfo(), parameterMap);
+            request.setAttribute("handledResponse", handledResponse);
 
             if (method.equals(HttpMethod.GET.name())) {
                 if (getAccept(request).contains("application/json")) {

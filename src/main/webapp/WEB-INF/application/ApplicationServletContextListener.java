@@ -13,6 +13,7 @@ import java.util.logging.Logger;
 
 public class ApplicationServletContextListener implements ServletContextListener {
     private static final Logger LOGGER = Logger.getLogger(ApplicationServletContextListener.class.getName());
+    private static final String DATAFILEPATH = System.getProperty("user.home") + System.getProperty("file.separator") + ".HttpWebService";
 
     public void contextInitialized(ServletContextEvent event) {
         LOGGER.info("Context listener has kicked off!");
@@ -29,9 +30,7 @@ public class ApplicationServletContextListener implements ServletContextListener
 
         event.getServletContext().addServlet("IndexServlet", new IndexServlet(engine)).addMapping("/index");
 
-        String dataFilePath = System.getProperty("user.home") + System.getProperty("file.separator") + ".HttpWebService";
-
-        File directory = new File(dataFilePath);
+        File directory = new File(DATAFILEPATH);
 
         if (!directory.exists()) {
             directory.mkdirs();
@@ -43,18 +42,18 @@ public class ApplicationServletContextListener implements ServletContextListener
 
         try {
             for (String resourceFileName : resourceFileNames) {
-                Files.copy(this.getClass().getClassLoader().getResourceAsStream(resourceFileName), new File(dataFilePath + System.getProperty("file.separator") + resourceFileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
+                Files.copy(this.getClass().getClassLoader().getResourceAsStream(resourceFileName), new File(DATAFILEPATH + System.getProperty("file.separator") + resourceFileName).toPath(), StandardCopyOption.REPLACE_EXISTING);
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        HttpWebService httpWebService = new DefaultHttpWebService(dataFilePath);
+        HttpWebService httpWebService = new DefaultHttpWebService(DATAFILEPATH);
         String httpWebServiceUriPath = "/generichttpws";
         ServletRegistration.Dynamic exampleHttpWebServiceServletRegistration = event.getServletContext()
                 .addServlet("ExampleHttpWebServiceServlet", new ExampleHttpWebServiceServlet(httpWebService, httpWebServiceUriPath));
         exampleHttpWebServiceServletRegistration.addMapping(httpWebServiceUriPath + "/*", httpWebServiceUriPath);
-        exampleHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(dataFilePath));
+        exampleHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(DATAFILEPATH));
 
         event.getServletContext().addServlet("htmlClient", new HtmlClientServlet(httpWebService)).addMapping("/htmlclient");
 
