@@ -45,7 +45,7 @@
 <form action="<c:out value="${uri}"/>" method="post">
     <fieldset>
         <legend>Play sound</legend>
-        <label><span>Name: </span><select name="name"><c:forEach var="sound" items="${model.sounds}"><option value="<c:out value="${sound.name}"/>"<c:if test="${sound.name == model.formData[uri].name[0]}"> selected</c:if>><c:out value="${sound.name}"/></option></c:forEach></select></label>
+        <label><span>Name: </span><select name="name"><c:forEach var="sound" items="${model.sounds}"><option value="<c:out value="${sound.name}"/>"<c:if test="${sound.name == model.formData[uri].name[0]}"> selected</c:if>><c:out value="${not empty sound.caption ? sound.caption : sound.name}"/></option></c:forEach></select></label>
         <button type="submit">Play on server</button>
     </fieldset>
 </form>

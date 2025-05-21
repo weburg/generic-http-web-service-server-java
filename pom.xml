@@ -70,6 +70,14 @@
             <version>2.19.0</version>
         </dependency>
 
+        <!-- Heavy library for metadata, skipping for now, MP4 tricky
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        -->
+
         <dependency>
             <groupId>com.logitech</groupId>
             <artifactId>logiled</artifactId>

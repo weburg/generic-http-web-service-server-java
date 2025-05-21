@@ -1,19 +1,17 @@
 package example.services;
 
 import com.drew.imaging.ImageMetadataReader;
-import com.drew.imaging.ImageProcessingException;
 import com.drew.metadata.Directory;
 import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
-import example.ScratchLogitechSimple;
 import com.weburg.ghowst.NotFoundException;
+import example.ScratchLogitechSimple;
 import example.SupportedMimeTypes;
 import example.domain.*;
 import org.apache.commons.io.FilenameUtils;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
-import org.jaudiotagger.tag.TagField;
 import org.jaudiotagger.tag.TagTextField;
 
 import javax.sound.sampled.AudioSystem;
@@ -23,7 +21,10 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import static example.ScratchImageDisplay.scratchImageDisplay;
