@@ -62,12 +62,14 @@ public class SupportedMimeTypes {
 
         mimeTypes.put(MimeTypes.VIDEO, Arrays.asList(
                 "video/mp4",
+                "video/quicktime", // Modern times means these are basically mp4
                 "video/webm",
                 "video/ogg"
         ));
 
         extensions.put(MimeTypes.VIDEO, Arrays.asList(
                 "mp4",
+                "mov",
                 "webm",
                 "ogv"
         ));

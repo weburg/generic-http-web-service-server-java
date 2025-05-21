@@ -9,6 +9,13 @@ import example.ScratchLogitechSimple;
 import example.SupportedMimeTypes;
 import example.domain.*;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.mp4.MP4Parser;
+import org.apache.tika.sax.BodyContentHandler;
 import org.jaudiotagger.audio.AudioFile;
 import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
@@ -28,6 +35,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import static example.ScratchImageDisplay.scratchImageDisplay;
+import static org.apache.tika.metadata.TikaCoreProperties.RESOURCE_NAME_KEY;
 
 public class DefaultHttpWebService implements HttpWebService {
     int lastEngineId = 0;
@@ -45,7 +53,6 @@ public class DefaultHttpWebService implements HttpWebService {
         int maxEngineId = 0;
 
         for (File engineFile : engineFiles) {
-            System.out.println(engineFile.getName());
             int engineId = Integer.parseInt(engineFile.getName().substring(engineFile.getName().indexOf("_") + 1,
                     engineFile.getName().indexOf(".ser")));
             if (engineId > maxEngineId) {
@@ -81,6 +88,32 @@ public class DefaultHttpWebService implements HttpWebService {
                         }
                     }
                 }
+
+                TikaConfig config = TikaConfig.getDefaultConfig();
+                Detector detector = config.getDetector();
+
+                TikaInputStream stream = TikaInputStream.get(mediaFile);
+
+                org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
+                metadata.add(RESOURCE_NAME_KEY, mediaFile.getName());
+                MediaType mediaType = detector.detect(stream, metadata);
+
+                if (mediaType.toString().equals("video/mp4") || mediaType.toString().equals("video/quicktime")) {
+                    BodyContentHandler handler = new BodyContentHandler();
+                    FileInputStream inputstream = new FileInputStream(mediaFile);
+                    ParseContext pcontext = new ParseContext();
+
+                    MP4Parser MP4Parser = new MP4Parser();
+                    MP4Parser.parse(inputstream, handler, metadata, pcontext);
+                    inputstream.close();
+
+                    String title = metadata.get("dc:title");
+                    if (title != null && !title.isEmpty()) {
+                        return title.trim();
+                    }
+                }
+
+                stream.close();
             } catch (Exception e) {
                 // It was worth a shot, let it be blank
             }
