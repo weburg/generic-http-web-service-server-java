@@ -32,11 +32,12 @@ public class SupportedMimeTypes {
 
         extensions.put(MimeTypes.AUDIO, Arrays.asList(
                 "m4a",
-                "webm",
+                "weba",
                 "acc",
                 "mp3",
                 "wav",
                 "ogg",
+                "oga",
                 "flac",
                 "opus"
         ));
@@ -75,8 +76,10 @@ public class SupportedMimeTypes {
 
         extensions.put(MimeTypes.VIDEO, Arrays.asList(
                 "mp4",
+                "m4v",
                 "mov",
                 "webm",
+                "ogm",
                 "ogv"
         ));
 
@@ -106,6 +109,21 @@ public class SupportedMimeTypes {
             return "";
         } else {
             return String.join(",", subtypes);
+        }
+    }
+
+    public static String getExtensionsAsCommaSeparatedString(MimeTypes type) {
+        List<String> extensions = getExtensions(type);
+
+        if (extensions == null) {
+            return "";
+        } else {
+            List<String> dottedExtensions = new ArrayList<>();
+            for (String extension : extensions) {
+                dottedExtensions.add('.' + extension);
+            }
+
+            return String.join(",", dottedExtensions);
         }
     }
 
