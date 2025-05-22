@@ -26,7 +26,8 @@ public class SupportedMimeTypes {
                 "audio/acc",
                 "audio/mpeg",
                 "audio/wav",
-                "audio/ogg"
+                "audio/ogg",
+                "audio/x-flac"
         ));
 
         extensions.put(MimeTypes.AUDIO, Arrays.asList(
@@ -36,7 +37,8 @@ public class SupportedMimeTypes {
                 "mp3",
                 "wav",
                 "ogg",
-                "flac"
+                "flac",
+                "opus"
         ));
 
         mimeTypes.put(MimeTypes.IMAGE, Arrays.asList(

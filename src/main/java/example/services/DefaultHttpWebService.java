@@ -63,65 +63,6 @@ public class DefaultHttpWebService implements HttpWebService {
         this.lastEngineId = maxEngineId;
     }
 
-    private static String getCaptionFromMediaFile(File mediaFile, SupportedMimeTypes.MimeTypes mimeType) {
-        String caption = "";
-
-        if (mimeType.equals(SupportedMimeTypes.MimeTypes.AUDIO)) {
-            try {
-                AudioFile f = AudioFileIO.read(mediaFile);
-                org.jaudiotagger.tag.Tag tag = f.getTag();
-                TagTextField tf = (TagTextField) tag.getFirstField(FieldKey.TITLE);
-                caption = tf.getContent().trim();
-            } catch (Exception e) {
-                // It was worth a shot, let it be blank
-            }
-        } else if (mimeType.equals(SupportedMimeTypes.MimeTypes.IMAGE) || mimeType.equals(SupportedMimeTypes.MimeTypes.VIDEO)) {
-            try {
-                Metadata md = ImageMetadataReader.readMetadata(mediaFile);
-
-                for (Directory directory : md.getDirectories()) {
-                    for (Tag tag : directory.getTags()) {
-                        if (tag.getTagName().equals("Title") || tag.getTagName().equals("Caption") ||
-                                tag.getTagName().equals("Description") || tag.getTagName().equals("Image Description")
-                                || tag.getTagName().equals("Video Description")) {
-                            return tag.getDescription().trim();
-                        }
-                    }
-                }
-
-                TikaConfig config = TikaConfig.getDefaultConfig();
-                Detector detector = config.getDetector();
-
-                TikaInputStream stream = TikaInputStream.get(mediaFile);
-
-                org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
-                metadata.add(RESOURCE_NAME_KEY, mediaFile.getName());
-                MediaType mediaType = detector.detect(stream, metadata);
-
-                if (mediaType.toString().equals("video/mp4") || mediaType.toString().equals("video/quicktime")) {
-                    BodyContentHandler handler = new BodyContentHandler();
-                    FileInputStream inputstream = new FileInputStream(mediaFile);
-                    ParseContext pcontext = new ParseContext();
-
-                    MP4Parser MP4Parser = new MP4Parser();
-                    MP4Parser.parse(inputstream, handler, metadata, pcontext);
-                    inputstream.close();
-
-                    String title = metadata.get("dc:title");
-                    if (title != null && !title.isEmpty()) {
-                        return title.trim();
-                    }
-                }
-
-                stream.close();
-            } catch (Exception e) {
-                // It was worth a shot, let it be blank
-            }
-        }
-
-        return caption;
-    }
-
     private File[] getSoundFiles() {
         File directory = new File(this.dataFilePath);
 
@@ -604,6 +545,65 @@ public class DefaultHttpWebService implements HttpWebService {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+
+        private static String getCaptionFromMediaFile(File mediaFile, SupportedMimeTypes.MimeTypes mimeType) {
+        String caption = "";
+
+        if (mimeType.equals(SupportedMimeTypes.MimeTypes.AUDIO)) {
+            try {
+                AudioFile f = AudioFileIO.read(mediaFile);
+                org.jaudiotagger.tag.Tag tag = f.getTag();
+                TagTextField tf = (TagTextField) tag.getFirstField(FieldKey.TITLE);
+                caption = tf.getContent().trim();
+            } catch (Exception e) {
+                // It was worth a shot, let it be blank
+            }
+        } else if (mimeType.equals(SupportedMimeTypes.MimeTypes.IMAGE) || mimeType.equals(SupportedMimeTypes.MimeTypes.VIDEO)) {
+            try {
+                Metadata md = ImageMetadataReader.readMetadata(mediaFile);
+
+                for (Directory directory : md.getDirectories()) {
+                    for (Tag tag : directory.getTags()) {
+                        if (tag.getTagName().equals("Title") || tag.getTagName().equals("Caption") || tag.getTagName().equals("Caption/Abstract") ||
+                                tag.getTagName().equals("Description") || tag.getTagName().equals("Image Description")
+                                || tag.getTagName().equals("Video Description")) {
+                            return tag.getDescription().trim();
+                        }
+                    }
+                }
+
+                TikaConfig config = TikaConfig.getDefaultConfig();
+                Detector detector = config.getDetector();
+
+                TikaInputStream stream = TikaInputStream.get(mediaFile);
+
+                org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
+                metadata.add(RESOURCE_NAME_KEY, mediaFile.getName());
+                MediaType mediaType = detector.detect(stream, metadata);
+
+                if (mediaType.toString().equals("video/mp4") || mediaType.toString().equals("video/quicktime")) {
+                    BodyContentHandler handler = new BodyContentHandler();
+                    FileInputStream inputstream = new FileInputStream(mediaFile);
+                    ParseContext pcontext = new ParseContext();
+
+                    MP4Parser MP4Parser = new MP4Parser();
+                    MP4Parser.parse(inputstream, handler, metadata, pcontext);
+                    inputstream.close();
+
+                    String title = metadata.get("dc:title");
+                    if (title != null && !title.isEmpty()) {
+                        return title.trim();
+                    }
+                }
+
+                stream.close();
+            } catch (Exception e) {
+                // It was worth a shot, let it be blank
+            }
+        }
+
+        return caption;
     }
 
     static public void main(String[] args) {
