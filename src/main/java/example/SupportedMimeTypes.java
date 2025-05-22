@@ -54,12 +54,16 @@ public class SupportedMimeTypes {
         extensions.put(MimeTypes.IMAGE, Arrays.asList(
                 "jpg",
                 "jpeg",
+                "jfif",
+                "pjp",
+                "pjpeg",
                 "gif",
                 "png",
                 "apng",
                 "avif",
                 "webp",
-                "svg"
+                "svg",
+                "svgz"
         ));
 
         mimeTypes.put(MimeTypes.VIDEO, Arrays.asList(
@@ -117,6 +121,20 @@ public class SupportedMimeTypes {
         }
 
         if (mimeTypes.containsKey(requiredType) && mimeTypes.get(requiredType).contains(mimeTypeSubtype)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean isSupportedExtension(MimeTypes requiredType, String fileName) {
+        String[] parts = fileName.split("\\.");
+
+        if (parts.length < 2) {
+            return false;
+        }
+
+        if (getExtensions(requiredType).contains(parts[parts.length - 1].toLowerCase())) {
             return true;
         } else {
             return false;

@@ -116,6 +116,8 @@ public class DefaultHttpWebService implements HttpWebService {
 
             if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.AUDIO, mimeType)) {
                 throw new IllegalArgumentException("Unsupported mime type for file \"" + sound.getSoundFile().getName() + "\": " + mimeType);
+            } else if (!SupportedMimeTypes.isSupportedExtension(SupportedMimeTypes.MimeTypes.AUDIO, sound.getSoundFile().getName())) {
+                throw new IllegalArgumentException("Mime type for file is supported but the extension is not for the file \"" + sound.getSoundFile().getName());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -219,6 +221,8 @@ public class DefaultHttpWebService implements HttpWebService {
 
             if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.IMAGE, mimeType)) {
                 throw new IllegalArgumentException("Unsupported mime type for file \"" + image.getImageFile().getName() + "\": " + mimeType);
+            } else if (!SupportedMimeTypes.isSupportedExtension(SupportedMimeTypes.MimeTypes.IMAGE, image.getImageFile().getName())) {
+                throw new IllegalArgumentException("Mime type for file is supported but the extension is not for the file \"" + image.getImageFile().getName());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -310,6 +314,8 @@ public class DefaultHttpWebService implements HttpWebService {
 
             if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.VIDEO, mimeType)) {
                 throw new IllegalArgumentException("Unsupported mime type for file \"" + video.getVideoFile().getName() + "\": " + mimeType);
+            } else if (!SupportedMimeTypes.isSupportedExtension(SupportedMimeTypes.MimeTypes.VIDEO, video.getVideoFile().getName())) {
+                throw new IllegalArgumentException("Mime type for file is supported but the extension is not for the file \"" + video.getVideoFile().getName());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -547,7 +553,7 @@ public class DefaultHttpWebService implements HttpWebService {
         }
     }
 
-        private static String getCaptionFromMediaFile(File mediaFile, SupportedMimeTypes.MimeTypes mimeType) {
+    private static String getCaptionFromMediaFile(File mediaFile, SupportedMimeTypes.MimeTypes mimeType) {
         String caption = "";
 
         if (mimeType.equals(SupportedMimeTypes.MimeTypes.AUDIO)) {
