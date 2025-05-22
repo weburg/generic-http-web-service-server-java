@@ -11,6 +11,7 @@
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
     <fieldset>
         <legend>New sound</legend>
+        <label><span>Caption: </span><input type="text" name="sound.caption" value="<c:out value="${model.formData[uri]['sound.caption'][0]}"/>" size="10"> (optional)</label><br>
         <label><span>Sound: </span><input type="file" name="sound.soundFile" value="" size="10" accept="${model.audioTypesList}"></label><br>
         <br>
         <button type="submit">Create</button>
@@ -44,7 +45,7 @@
 <form action="<c:out value="${uri}"/>" method="post">
     <fieldset>
         <legend>Play sound</legend>
-        <label><span>Name: </span><select name="name"><c:forEach var="sound" items="${model.sounds}"><option value="<c:out value="${sound.name}"/>"<c:if test="${sound.name == model.formData[uri].name[0]}"> selected</c:if>><c:out value="${sound.name}"/></option></c:forEach></select></label>
+        <label><span>Name: </span><select name="name"><c:forEach var="sound" items="${model.sounds}"><option value="<c:out value="${sound.name}"/>"<c:if test="${sound.name == model.formData[uri].name[0]}"> selected</c:if>><c:out value="${not empty sound.caption ? sound.caption : sound.name}"/></option></c:forEach></select></label>
         <button type="submit">Play on server</button>
     </fieldset>
 </form>
@@ -56,7 +57,7 @@
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
     <fieldset>
         <legend>New image</legend>
-        <label><span>Caption: </span><input type="text" name="image.caption" value="<c:out value="${model.formData[uri]['image.caption'][0]}"/>" size="10"></label><br>
+        <label><span>Caption: </span><input type="text" name="image.caption" value="<c:out value="${model.formData[uri]['image.caption'][0]}"/>" size="10"> (optional)</label><br>
         <label><span>Image: </span><input type="file" name="image.imageFile" value="" size="10" accept="${model.imageTypesList}"></label><br>
         <br>
         <button type="submit">Create</button>
@@ -84,7 +85,7 @@
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
     <fieldset>
         <legend>New video</legend>
-        <label><span>Caption: </span><input type="text" name="video.caption" value="<c:out value="${model.formData[uri]['video.caption'][0]}"/>" size="10"></label><br>
+        <label><span>Caption: </span><input type="text" name="video.caption" value="<c:out value="${model.formData[uri]['video.caption'][0]}"/>" size="10"> (optional)</label><br>
         <label><span>Video: </span><input type="file" name="video.videoFile" value="" size="10" accept="${model.videoTypesList}"></label><br>
         <br>
         <button type="submit">Create</button>

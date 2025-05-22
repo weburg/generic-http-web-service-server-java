@@ -1,9 +1,24 @@
 package example.services;
 
+import com.drew.imaging.ImageMetadataReader;
+import com.drew.metadata.Directory;
+import com.drew.metadata.Metadata;
+import com.drew.metadata.Tag;
 import com.weburg.ghowst.NotFoundException;
 import example.SupportedMimeTypes;
 import example.domain.*;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.tika.config.TikaConfig;
+import org.apache.tika.detect.Detector;
+import org.apache.tika.io.TikaInputStream;
+import org.apache.tika.mime.MediaType;
+import org.apache.tika.parser.ParseContext;
+import org.apache.tika.parser.mp4.MP4Parser;
+import org.apache.tika.sax.BodyContentHandler;
+import org.jaudiotagger.audio.AudioFile;
+import org.jaudiotagger.audio.AudioFileIO;
+import org.jaudiotagger.tag.FieldKey;
+import org.jaudiotagger.tag.TagTextField;
 
 import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.Clip;
@@ -13,8 +28,12 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
+
+import static org.apache.tika.metadata.TikaCoreProperties.RESOURCE_NAME_KEY;
 
 public class DefaultHttpWebService implements HttpWebService {
     int lastEngineId = 0;
@@ -32,7 +51,6 @@ public class DefaultHttpWebService implements HttpWebService {
         int maxEngineId = 0;
 
         for (File engineFile : engineFiles) {
-            System.out.println(engineFile.getName());
             int engineId = Integer.parseInt(engineFile.getName().substring(engineFile.getName().indexOf("_") + 1,
                     engineFile.getName().indexOf(".ser")));
             if (engineId > maxEngineId) {
@@ -89,14 +107,38 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createSounds(Sound sound) {
+        sound.setSoundFile(new File(this.dataFilePath + System.getProperty("file.separator") + sound.getSoundFile().getName()));
+
         try {
             String mimeType = Files.probeContentType(Path.of(sound.getSoundFile().getAbsolutePath()));
 
             if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.AUDIO, mimeType)) {
                 throw new IllegalArgumentException("Unsupported mime type for file \"" + sound.getSoundFile().getName() + "\": " + mimeType);
+            } else if (!SupportedMimeTypes.isSupportedExtension(SupportedMimeTypes.MimeTypes.AUDIO, sound.getSoundFile().getName())) {
+                throw new IllegalArgumentException("Mime type for file is supported but the extension is not for the file \"" + sound.getSoundFile().getName());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+
+        String caption = "";
+
+        if (!sound.getCaption().isEmpty()) {
+            caption = sound.getCaption();
+        } else {
+            caption = getCaptionFromMediaFile(sound.getSoundFile(), SupportedMimeTypes.MimeTypes.AUDIO);
+        }
+
+        if (!caption.isEmpty()) {
+            try {
+                // Write caption
+                FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
+                        + sound.getSoundFile().getName() + ".txt");
+                fos.write(caption.getBytes());
+                fos.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return sound.getSoundFile().getName();
@@ -161,6 +203,8 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createImages(Image image) {
+        image.setImageFile(new File(this.dataFilePath + System.getProperty("file.separator") + image.getImageFile().getName()));
+
         /* The Web server implementation determines whether the image's file is
         written by now or not, or after this call (assuming no exceptions are
         thrown from here). There is currently no way to read the file without
@@ -175,22 +219,34 @@ public class DefaultHttpWebService implements HttpWebService {
 
             if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.IMAGE, mimeType)) {
                 throw new IllegalArgumentException("Unsupported mime type for file \"" + image.getImageFile().getName() + "\": " + mimeType);
+            } else if (!SupportedMimeTypes.isSupportedExtension(SupportedMimeTypes.MimeTypes.IMAGE, image.getImageFile().getName())) {
+                throw new IllegalArgumentException("Mime type for file is supported but the extension is not for the file \"" + image.getImageFile().getName());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        try {
-            // Write caption
-            FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
-                    + image.getImageFile().getName() + ".txt");
-            fos.write(image.getCaption().getBytes());
-            fos.close();
+        String caption = "";
 
-            return image.getImageFile().getName();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (!image.getCaption().isEmpty()) {
+            caption = image.getCaption();
+        } else {
+            caption = getCaptionFromMediaFile(image.getImageFile(), SupportedMimeTypes.MimeTypes.IMAGE);
         }
+
+        if (!caption.isEmpty()) {
+            try {
+                // Write caption
+                FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
+                        + image.getImageFile().getName() + ".txt");
+                fos.write(caption.getBytes());
+                fos.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return image.getImageFile().getName();
     }
 
     private File[] getVideoFiles() {
@@ -238,27 +294,41 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createVideos(Video video) {
+        video.setVideoFile(new File(this.dataFilePath + System.getProperty("file.separator") + video.getVideoFile().getName()));
+
          try {
             String mimeType = Files.probeContentType(Path.of(video.getVideoFile().getAbsolutePath()));
 
             if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.VIDEO, mimeType)) {
                 throw new IllegalArgumentException("Unsupported mime type for file \"" + video.getVideoFile().getName() + "\": " + mimeType);
+            } else if (!SupportedMimeTypes.isSupportedExtension(SupportedMimeTypes.MimeTypes.VIDEO, video.getVideoFile().getName())) {
+                throw new IllegalArgumentException("Mime type for file is supported but the extension is not for the file \"" + video.getVideoFile().getName());
             }
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
-        try {
-            // Write caption
-            FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
-                    + video.getVideoFile().getName() + ".txt");
-            fos.write(video.getCaption().getBytes());
-            fos.close();
+        String caption = "";
 
-            return video.getVideoFile().getName();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (!video.getCaption().isEmpty()) {
+            caption = video.getCaption();
+        } else {
+            caption = getCaptionFromMediaFile(video.getVideoFile(), SupportedMimeTypes.MimeTypes.VIDEO);
         }
+
+        if (!caption.isEmpty()) {
+            try {
+                // Write caption
+                FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
+                        + video.getVideoFile().getName() + ".txt");
+                fos.write(caption.getBytes());
+                fos.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return video.getVideoFile().getName();
     }
 
     public Engine getEngines(int id) {
@@ -440,5 +510,113 @@ public class DefaultHttpWebService implements HttpWebService {
         }
 
         return sb.toString();
+    }
+
+    private static String getCaptionFromMediaFile(File mediaFile, SupportedMimeTypes.MimeTypes mimeType) {
+        String caption = "";
+
+        if (mimeType.equals(SupportedMimeTypes.MimeTypes.AUDIO)) {
+            try {
+                AudioFile f = AudioFileIO.read(mediaFile);
+                org.jaudiotagger.tag.Tag tag = f.getTag();
+                TagTextField tf = (TagTextField) tag.getFirstField(FieldKey.TITLE);
+                caption = tf.getContent().trim();
+            } catch (Exception e) {
+                // It was worth a shot, let it be blank
+            }
+        } else if (mimeType.equals(SupportedMimeTypes.MimeTypes.IMAGE) || mimeType.equals(SupportedMimeTypes.MimeTypes.VIDEO)) {
+            try {
+                Metadata md = ImageMetadataReader.readMetadata(mediaFile);
+
+                for (Directory directory : md.getDirectories()) {
+                    for (Tag tag : directory.getTags()) {
+                        if (tag.getTagName().equals("Title") || tag.getTagName().equals("Caption") || tag.getTagName().equals("Caption/Abstract") ||
+                                tag.getTagName().equals("Description") || tag.getTagName().equals("Image Description")
+                                || tag.getTagName().equals("Video Description")) {
+                            return tag.getDescription().trim();
+                        }
+                    }
+                }
+
+                TikaConfig config = TikaConfig.getDefaultConfig();
+                Detector detector = config.getDetector();
+
+                TikaInputStream stream = TikaInputStream.get(mediaFile);
+
+                org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
+                metadata.add(RESOURCE_NAME_KEY, mediaFile.getName());
+                MediaType mediaType = detector.detect(stream, metadata);
+
+                if (mediaType.toString().equals("video/mp4") || mediaType.toString().equals("video/quicktime")) {
+                    BodyContentHandler handler = new BodyContentHandler();
+                    FileInputStream inputstream = new FileInputStream(mediaFile);
+                    ParseContext pcontext = new ParseContext();
+
+                    MP4Parser MP4Parser = new MP4Parser();
+                    MP4Parser.parse(inputstream, handler, metadata, pcontext);
+                    inputstream.close();
+
+                    String title = metadata.get("dc:title");
+                    if (title != null && !title.isEmpty()) {
+                        return title.trim();
+                    }
+                }
+
+                stream.close();
+            } catch (Exception e) {
+                // It was worth a shot, let it be blank
+            }
+        }
+
+        return caption;
+    }
+
+    static public void main(String[] args) {
+        final String dataPath = System.getProperty("user.home") + System.getProperty("file.separator") + ".HttpWebService";
+
+        HttpWebService ws = new DefaultHttpWebService(dataPath);
+        Map<String, String> results = new LinkedHashMap<>();
+
+        List<Sound> sounds = ws.getSounds();
+        for (Sound sound : sounds) {
+            String caption = getCaptionFromMediaFile(sound.getSoundFile(), SupportedMimeTypes.MimeTypes.AUDIO);
+
+            if (!caption.isEmpty()) {
+                results.put(sound.getSoundFile().getName(), caption);
+            }
+        }
+
+        List<Image> images = ws.getImages();
+        for (Image image : images) {
+            String caption = getCaptionFromMediaFile(image.getImageFile(), SupportedMimeTypes.MimeTypes.IMAGE);
+
+            if (!caption.isEmpty()) {
+                results.put(image.getImageFile().getName(), caption);
+            }
+        }
+
+        List<Video> videos = ws.getVideos();
+        for (Video video : videos) {
+            String caption = getCaptionFromMediaFile(video.getVideoFile(), SupportedMimeTypes.MimeTypes.VIDEO);
+
+            if (!caption.isEmpty()) {
+                results.put(video.getVideoFile().getName(), caption);
+            }
+        }
+
+        System.out.println("Results");
+
+        for (String fileName : results.keySet()) {
+            System.out.println(fileName + ": " + results.get(fileName));
+
+            try {
+                FileOutputStream fos = new FileOutputStream(dataPath + System.getProperty("file.separator")
+                        + fileName + ".txt");
+                fos.write(results.get(fileName).getBytes());
+                fos.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
     }
 }

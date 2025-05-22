@@ -26,17 +26,20 @@ public class SupportedMimeTypes {
                 "audio/acc",
                 "audio/mpeg",
                 "audio/wav",
-                "audio/ogg"
+                "audio/ogg",
+                "audio/x-flac"
         ));
 
         extensions.put(MimeTypes.AUDIO, Arrays.asList(
                 "m4a",
-                "webm",
+                "weba",
                 "acc",
                 "mp3",
                 "wav",
                 "ogg",
-                "flac"
+                "oga",
+                "flac",
+                "opus"
         ));
 
         mimeTypes.put(MimeTypes.IMAGE, Arrays.asList(
@@ -52,23 +55,31 @@ public class SupportedMimeTypes {
         extensions.put(MimeTypes.IMAGE, Arrays.asList(
                 "jpg",
                 "jpeg",
+                "jfif",
+                "pjp",
+                "pjpeg",
                 "gif",
                 "png",
                 "apng",
                 "avif",
                 "webp",
-                "svg"
+                "svg",
+                "svgz"
         ));
 
         mimeTypes.put(MimeTypes.VIDEO, Arrays.asList(
                 "video/mp4",
+                "video/quicktime", // Modern times means these are basically mp4
                 "video/webm",
                 "video/ogg"
         ));
 
         extensions.put(MimeTypes.VIDEO, Arrays.asList(
                 "mp4",
+                "m4v",
+                "mov",
                 "webm",
+                "ogm",
                 "ogv"
         ));
 
@@ -101,6 +112,21 @@ public class SupportedMimeTypes {
         }
     }
 
+    public static String getExtensionsAsCommaSeparatedString(MimeTypes type) {
+        List<String> extensions = getExtensions(type);
+
+        if (extensions == null) {
+            return "";
+        } else {
+            List<String> dottedExtensions = new ArrayList<>();
+            for (String extension : extensions) {
+                dottedExtensions.add('.' + extension);
+            }
+
+            return String.join(",", dottedExtensions);
+        }
+    }
+
     public static boolean isSupportedMimeType(MimeTypes requiredType, String mimeTypeSubtype) {
         if (mimeTypeSubtype == null) {
             return false;
@@ -113,6 +139,20 @@ public class SupportedMimeTypes {
         }
 
         if (mimeTypes.containsKey(requiredType) && mimeTypes.get(requiredType).contains(mimeTypeSubtype)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static boolean isSupportedExtension(MimeTypes requiredType, String fileName) {
+        String[] parts = fileName.split("\\.");
+
+        if (parts.length < 2) {
+            return false;
+        }
+
+        if (getExtensions(requiredType).contains(parts[parts.length - 1].toLowerCase())) {
             return true;
         } else {
             return false;
