@@ -1,6 +1,6 @@
 import beans.HtmlClientBean;
 import example.SupportedMimeTypes;
-import example.services.HttpWebService;
+import example.services.ExampleService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -9,10 +9,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 class HtmlClientServlet extends HttpServlet {
-    private HttpWebService httpWebService;
+    private ExampleService exampleService;
 
-    public HtmlClientServlet(HttpWebService httpWebService) {
-        this.httpWebService = httpWebService;
+    public HtmlClientServlet(ExampleService exampleService) {
+        this.exampleService = exampleService;
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -20,7 +20,7 @@ class HtmlClientServlet extends HttpServlet {
 
         HtmlClientBean model = new HtmlClientBean();
         model.setFormData(formData);
-        model.setSounds(this.httpWebService.getSounds());
+        model.setSounds(this.exampleService.getSounds());
         model.setAudioTypesList(SupportedMimeTypes.getSubtypesAsCommaSeparatedString(SupportedMimeTypes.MimeTypes.AUDIO));
         model.setVideoTypesList(SupportedMimeTypes.getSubtypesAsCommaSeparatedString(SupportedMimeTypes.MimeTypes.VIDEO));
         model.setImageTypesList(SupportedMimeTypes.getSubtypesAsCommaSeparatedString(SupportedMimeTypes.MimeTypes.IMAGE));

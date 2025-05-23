@@ -195,7 +195,7 @@ public class HttpWebServiceMapper {
         }
     }
 
-    public Object handleInvocation(String httpMethod, String httpPath, Map<String, String[]> httpArguments) {
+    public Object handleInvocation(String httpMethod, String httpPath, Map<String, Object[]> httpArguments) {
         String verb = "none";
         Object response;
 
@@ -272,7 +272,7 @@ public class HttpWebServiceMapper {
         }
     }
 
-    private static Map<String, Object> getNestedMap(Map<String, String[]> dotKeyValues) {
+    private static Map<String, Object> getNestedMap(Map<String, Object[]> dotKeyValues) {
         Map<String, Object> nestedMap = new TreeMap<>(); // Needs to be in predictable order
         Map<String, Object> parentNestedMap = nestedMap; // Remember starting position
         for (String dotKey : dotKeyValues.keySet()) {

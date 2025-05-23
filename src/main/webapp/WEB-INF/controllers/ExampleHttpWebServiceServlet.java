@@ -1,8 +1,8 @@
-import com.weburg.ghowst.GenericHttpWebServiceServlet;
+import com.weburg.ghowst.HttpWebServiceServlet;
 import example.domain.Image;
 import example.domain.Sound;
 import example.domain.Video;
-import example.services.HttpWebService;
+import example.services.ExampleService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,9 +18,9 @@ import java.util.*;
 import static com.weburg.ghowst.HttpWebServiceMapper.getCustomVerbFromPath;
 import static com.weburg.ghowst.HttpWebServiceMapper.getResourceFromPath;
 
-public class ExampleHttpWebServiceServlet extends GenericHttpWebServiceServlet {
-    public ExampleHttpWebServiceServlet(HttpWebService httpWebService, String uriPath) {
-        super(httpWebService, uriPath);
+public class ExampleHttpWebServiceServlet extends HttpWebServiceServlet {
+    public ExampleHttpWebServiceServlet(ExampleService exampleService, String uriPath, String uploadTempPath) {
+        super(exampleService, uriPath, uploadTempPath);
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {

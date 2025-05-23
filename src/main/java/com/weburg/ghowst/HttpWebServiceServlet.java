@@ -2,7 +2,7 @@ package com.weburg.ghowst;
 
 import com.google.gson.Gson;
 import com.weburg.ghowst.HttpWebServiceMapper.HttpMethod;
-import example.services.HttpWebService;
+import example.services.ExampleService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,15 +18,17 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-public abstract class GenericHttpWebServiceServlet extends HttpServlet {
-    private final HttpWebService httpWebService;
+public abstract class HttpWebServiceServlet extends HttpServlet {
+    private final ExampleService exampleService;
     protected HttpWebServiceMapper httpWebServiceMapper;
+    protected String uploadTempPath;
 
-    private static final Logger LOGGER = Logger.getLogger(GenericHttpWebServiceServlet.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(HttpWebServiceServlet.class.getName());
 
-    public GenericHttpWebServiceServlet(HttpWebService httpWebService, String uri) {
-        this.httpWebService = httpWebService;
-        this.httpWebServiceMapper = new HttpWebServiceMapper(this.httpWebService, uri);
+    public HttpWebServiceServlet(ExampleService exampleService, String uri, String uploadTempPath) {
+        this.exampleService = exampleService;
+        this.httpWebServiceMapper = new HttpWebServiceMapper(this.exampleService, uri);
+        this.uploadTempPath = uploadTempPath;
     }
 
     protected static String getAccept(HttpServletRequest request) {
@@ -104,33 +106,28 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
 
         LOGGER.fine("Handling " + method + " at " + request.getPathInfo());
 
-        Map<String, String[]> parameterMap = new HashMap<>(request.getParameterMap());
+        Map<String, Object[]> parameterMap = new HashMap<>(request.getParameterMap());
 
         String contentType = request.getContentType();
 
         if (contentType != null && contentType.startsWith("multipart/form-data")) { // vs. application/x-www-form-urlencoded
             for (Part part : request.getParts()) {
                 if (part.getSubmittedFileName() != null) {
-                    String[] fileNames = {part.getSubmittedFileName()};
+                    File[] files = {new File(this.uploadTempPath + System.getProperty("file.separator") + part.getSubmittedFileName())};
 
-                    String[] priorFileNames = parameterMap.putIfAbsent(part.getName(), fileNames);
-                    if (priorFileNames != null) {
-                        String[] mergedFileNames = Arrays.copyOf(priorFileNames, priorFileNames.length + 1);
-                        System.arraycopy(fileNames, 0, mergedFileNames, priorFileNames.length, 1);
+                    File[] priorFiles = (File[]) parameterMap.putIfAbsent(part.getName(), files);
+                    if (priorFiles != null) {
+                        File[] mergedFiles = Arrays.copyOf(priorFiles, priorFiles.length + 1);
+                        System.arraycopy(files, 0, mergedFiles, priorFiles.length, 1);
 
-                        parameterMap.put(part.getName(), mergedFileNames);
+                        parameterMap.put(part.getName(), mergedFiles);
                     }
                 }
             }
         }
 
         try {
-            /*
-            Write the files eagerly so the service can read them directly.
-            Ideally, we would do cleanup if the service failed or not write the
-            files to the final active directory, but rather, a holding directory
-            but the name of the temp file isn't known. Will need to revisit.
-             */
+            // Write the files eagerly so the service can read them directly
             if (contentType != null && contentType.startsWith("multipart/form-data")) {
                 for (Part part : request.getParts()) {
                     if (part.getSubmittedFileName() != null) {
@@ -138,7 +135,17 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
                     }
                 }
             }
+        } catch (IOException e) {
+            if (contentType != null && contentType.startsWith("multipart/form-data")) {
+                for (Part part : request.getParts()) {
+                    if (part.getSubmittedFileName() != null) {
+                        part.delete();
+                    }
+                }
+            }
+        }
 
+        try {
             Object handledResponse = httpWebServiceMapper.handleInvocation(request.getMethod(), request.getPathInfo(), parameterMap);
             request.setAttribute("handledResponse", handledResponse);
 
@@ -201,7 +208,11 @@ public abstract class GenericHttpWebServiceServlet extends HttpServlet {
             if (contentType != null && contentType.startsWith("multipart/form-data")) {
                 for (Part part : request.getParts()) {
                     if (part.getSubmittedFileName() != null) {
-                        part.delete();
+                        try {
+                            Files.deleteIfExists(new File(this.uploadTempPath + System.getProperty("file.separator") + part.getSubmittedFileName()).toPath());
+                        } catch (IOException ex) {
+                            LOGGER.log(Level.SEVERE, "Failed to delete temporary uploaded file: " + part.getSubmittedFileName(), ex);
+                        }
                     }
                 }
             }

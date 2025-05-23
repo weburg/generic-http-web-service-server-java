@@ -27,6 +27,7 @@ import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,13 +36,13 @@ import java.util.logging.Logger;
 
 import static org.apache.tika.metadata.TikaCoreProperties.RESOURCE_NAME_KEY;
 
-public class DefaultHttpWebService implements HttpWebService {
+public class ExampleHttpWebService implements ExampleService {
     int lastEngineId = 0;
     String dataFilePath;
 
-    private static final Logger LOGGER = Logger.getLogger(DefaultHttpWebService.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(ExampleHttpWebService.class.getName());
 
-    public DefaultHttpWebService(String dataFilePath) {
+    public ExampleHttpWebService(String dataFilePath) {
         this.dataFilePath = dataFilePath;
 
         // Set the last engine ID based on existing files
@@ -107,8 +108,6 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createSounds(Sound sound) {
-        sound.setSoundFile(new File(this.dataFilePath + System.getProperty("file.separator") + sound.getSoundFile().getName()));
-
         try {
             String mimeType = Files.probeContentType(Path.of(sound.getSoundFile().getAbsolutePath()));
 
@@ -129,16 +128,29 @@ public class DefaultHttpWebService implements HttpWebService {
             caption = getCaptionFromMediaFile(sound.getSoundFile(), SupportedMimeTypes.MimeTypes.AUDIO);
         }
 
+        File captionFile = new File(this.dataFilePath + System.getProperty("file.separator") + sound.getSoundFile().getName() + ".txt");
         if (!caption.isEmpty()) {
             try {
                 // Write caption
-                FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
-                        + sound.getSoundFile().getName() + ".txt");
+                FileOutputStream fos = new FileOutputStream(captionFile);
                 fos.write(caption.getBytes());
                 fos.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        try {
+            File finalSoundFile = new File(this.dataFilePath + System.getProperty("file.separator") + sound.getSoundFile().getName());
+            Files.copy(sound.getSoundFile().toPath(), finalSoundFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            sound.setSoundFile(finalSoundFile);
+        } catch (IOException e) {
+            try {
+                Files.delete(captionFile.toPath());
+            } catch (IOException e2) {
+                LOGGER.severe("Could not clean up caption file \"" + captionFile.getName() + "\".");
+            }
+            throw new RuntimeException(e);
         }
 
         return sound.getSoundFile().getName();
@@ -203,17 +215,6 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createImages(Image image) {
-        image.setImageFile(new File(this.dataFilePath + System.getProperty("file.separator") + image.getImageFile().getName()));
-
-        /* The Web server implementation determines whether the image's file is
-        written by now or not, or after this call (assuming no exceptions are
-        thrown from here). There is currently no way to read the file without
-        having already written it to disk in the server's normal http file
-        upload location. Ideally, the file would be written in a holding
-        location, checked in here, and then moved by the service method. For
-        now, this setup works and is simple, but lacks transactional integrity.
-         */
-
         try {
             String mimeType = Files.probeContentType(Path.of(image.getImageFile().getAbsolutePath()));
 
@@ -234,16 +235,29 @@ public class DefaultHttpWebService implements HttpWebService {
             caption = getCaptionFromMediaFile(image.getImageFile(), SupportedMimeTypes.MimeTypes.IMAGE);
         }
 
+        File captionFile = new File(this.dataFilePath + System.getProperty("file.separator") + image.getImageFile().getName() + ".txt");
         if (!caption.isEmpty()) {
             try {
                 // Write caption
-                FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
-                        + image.getImageFile().getName() + ".txt");
+                FileOutputStream fos = new FileOutputStream(captionFile);
                 fos.write(caption.getBytes());
                 fos.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        try {
+            File finalImageFile = new File(this.dataFilePath + System.getProperty("file.separator") + image.getImageFile().getName());
+            Files.copy(image.getImageFile().toPath(), finalImageFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            image.setImageFile(finalImageFile);
+        } catch (IOException e) {
+            try {
+                Files.delete(captionFile.toPath());
+            } catch (IOException e2) {
+                LOGGER.severe("Could not clean up caption file \"" + captionFile.getName() + "\".");
+            }
+            throw new RuntimeException(e);
         }
 
         return image.getImageFile().getName();
@@ -294,8 +308,6 @@ public class DefaultHttpWebService implements HttpWebService {
     }
 
     public String createVideos(Video video) {
-        video.setVideoFile(new File(this.dataFilePath + System.getProperty("file.separator") + video.getVideoFile().getName()));
-
          try {
             String mimeType = Files.probeContentType(Path.of(video.getVideoFile().getAbsolutePath()));
 
@@ -316,16 +328,29 @@ public class DefaultHttpWebService implements HttpWebService {
             caption = getCaptionFromMediaFile(video.getVideoFile(), SupportedMimeTypes.MimeTypes.VIDEO);
         }
 
+        File captionFile = new File(this.dataFilePath + System.getProperty("file.separator") + video.getVideoFile().getName() + ".txt");
         if (!caption.isEmpty()) {
             try {
                 // Write caption
-                FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
-                        + video.getVideoFile().getName() + ".txt");
+                FileOutputStream fos = new FileOutputStream(captionFile);
                 fos.write(caption.getBytes());
                 fos.close();
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        try {
+            File finalVideoFile = new File(this.dataFilePath + System.getProperty("file.separator") + video.getVideoFile().getName());
+            Files.copy(video.getVideoFile().toPath(), finalVideoFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            video.setVideoFile(finalVideoFile);
+        } catch (IOException e) {
+            try {
+                Files.delete(captionFile.toPath());
+            } catch (IOException e2) {
+                LOGGER.severe("Could not clean up caption file \"" + captionFile.getName() + "\".");
+            }
+            throw new RuntimeException(e);
         }
 
         return video.getVideoFile().getName();
@@ -530,9 +555,12 @@ public class DefaultHttpWebService implements HttpWebService {
 
                 for (Directory directory : md.getDirectories()) {
                     for (Tag tag : directory.getTags()) {
-                        if (tag.getTagName().equals("Title") || tag.getTagName().equals("Caption") || tag.getTagName().equals("Caption/Abstract") ||
-                                tag.getTagName().equals("Description") || tag.getTagName().equals("Image Description")
+                        if (tag.getTagName().equals("Title") || tag.getTagName().equals("Caption") || tag.getTagName().equals("Caption/Abstract")
+                                || tag.getTagName().equals("Windows XP Title")
+                                || tag.getTagName().equals("Description")
+                                || tag.getTagName().equals("Image Description")
                                 || tag.getTagName().equals("Video Description")) {
+                            System.out.println(tag.getTagName() + ": " + tag.getDescription().trim());
                             return tag.getDescription().trim();
                         }
                     }
@@ -542,27 +570,28 @@ public class DefaultHttpWebService implements HttpWebService {
                 Detector detector = config.getDetector();
 
                 TikaInputStream stream = TikaInputStream.get(mediaFile);
+                FileInputStream inputstream = new FileInputStream(mediaFile);
+                try {
+                    org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
+                    metadata.add(RESOURCE_NAME_KEY, mediaFile.getName());
+                    MediaType mediaType = detector.detect(stream, metadata);
 
-                org.apache.tika.metadata.Metadata metadata = new org.apache.tika.metadata.Metadata();
-                metadata.add(RESOURCE_NAME_KEY, mediaFile.getName());
-                MediaType mediaType = detector.detect(stream, metadata);
+                    if (mediaType.toString().equals("video/mp4") || mediaType.toString().equals("video/quicktime")) {
+                        BodyContentHandler handler = new BodyContentHandler();
 
-                if (mediaType.toString().equals("video/mp4") || mediaType.toString().equals("video/quicktime")) {
-                    BodyContentHandler handler = new BodyContentHandler();
-                    FileInputStream inputstream = new FileInputStream(mediaFile);
-                    ParseContext pcontext = new ParseContext();
+                        ParseContext pcontext = new ParseContext();
+                        MP4Parser MP4Parser = new MP4Parser();
+                        MP4Parser.parse(inputstream, handler, metadata, pcontext);
 
-                    MP4Parser MP4Parser = new MP4Parser();
-                    MP4Parser.parse(inputstream, handler, metadata, pcontext);
-                    inputstream.close();
-
-                    String title = metadata.get("dc:title");
-                    if (title != null && !title.isEmpty()) {
-                        return title.trim();
+                        String title = metadata.get("dc:title");
+                        if (title != null && !title.isEmpty()) {
+                            return title.trim();
+                        }
                     }
+                } finally {
+                    stream.close();
+                    inputstream.close();
                 }
-
-                stream.close();
             } catch (Exception e) {
                 // It was worth a shot, let it be blank
             }
@@ -574,7 +603,7 @@ public class DefaultHttpWebService implements HttpWebService {
     static public void main(String[] args) {
         final String dataPath = System.getProperty("user.home") + System.getProperty("file.separator") + ".HttpWebService";
 
-        HttpWebService ws = new DefaultHttpWebService(dataPath);
+        ExampleService ws = new ExampleHttpWebService(dataPath);
         Map<String, String> results = new LinkedHashMap<>();
 
         List<Sound> sounds = ws.getSounds();

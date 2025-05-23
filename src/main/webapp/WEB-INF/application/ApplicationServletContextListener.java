@@ -1,6 +1,6 @@
 import example.domain.Engine;
-import example.services.DefaultHttpWebService;
-import example.services.HttpWebService;
+import example.services.ExampleHttpWebService;
+import example.services.ExampleService;
 import jakarta.servlet.*;
 
 import java.io.File;
@@ -14,6 +14,7 @@ import java.util.logging.Logger;
 public class ApplicationServletContextListener implements ServletContextListener {
     private static final Logger LOGGER = Logger.getLogger(ApplicationServletContextListener.class.getName());
     private static final String DATAFILEPATH = System.getProperty("user.home") + System.getProperty("file.separator") + ".HttpWebService";
+    private static final String UPLOADTEMPPATH = DATAFILEPATH + System.getProperty("file.separator") + "uploadtemp";
 
     public void contextInitialized(ServletContextEvent event) {
         LOGGER.info("Context listener has kicked off!");
@@ -30,7 +31,7 @@ public class ApplicationServletContextListener implements ServletContextListener
 
         event.getServletContext().addServlet("IndexServlet", new IndexServlet(engine)).addMapping("/index");
 
-        File directory = new File(DATAFILEPATH);
+        File directory = new File(UPLOADTEMPPATH);
 
         if (!directory.exists()) {
             directory.mkdirs();
@@ -48,14 +49,14 @@ public class ApplicationServletContextListener implements ServletContextListener
             throw new RuntimeException(e);
         }
 
-        HttpWebService httpWebService = new DefaultHttpWebService(DATAFILEPATH);
+        ExampleService exampleService = new ExampleHttpWebService(DATAFILEPATH);
         String httpWebServiceUriPath = "/generichttpws";
         ServletRegistration.Dynamic exampleHttpWebServiceServletRegistration = event.getServletContext()
-                .addServlet("ExampleHttpWebServiceServlet", new ExampleHttpWebServiceServlet(httpWebService, httpWebServiceUriPath));
+                .addServlet("ExampleHttpWebServiceServlet", new ExampleHttpWebServiceServlet(exampleService, httpWebServiceUriPath, UPLOADTEMPPATH));
         exampleHttpWebServiceServletRegistration.addMapping(httpWebServiceUriPath + "/*", httpWebServiceUriPath);
-        exampleHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(DATAFILEPATH));
+        exampleHttpWebServiceServletRegistration.setMultipartConfig(new MultipartConfigElement(UPLOADTEMPPATH));
 
-        event.getServletContext().addServlet("htmlClient", new HtmlClientServlet(httpWebService)).addMapping("/htmlclient");
+        event.getServletContext().addServlet("htmlClient", new HtmlClientServlet(exampleService)).addMapping("/htmlclient");
     }
 
     public void contextDestroyed(ServletContextEvent servletContextEvent) {
