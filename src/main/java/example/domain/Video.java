@@ -1,22 +1,24 @@
 package example.domain;
 
-import org.apache.commons.io.FileUtils;
+import example.SupportedMimeTypes;
 
+import java.beans.BeanProperty;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 
-public class Video implements Serializable {
-    public Video() {}
+public class Video extends Multimedia implements Serializable {
+    public Video() {
+        super(SupportedMimeTypes.MimeTypes.VIDEO);
+    }
 
     private static final long serialVersionUID = 1L;
 
-    private String name = "";
-    private String caption = "";
-    private transient File videoFile = new File("");
-
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getCaption() {
@@ -27,22 +29,12 @@ public class Video implements Serializable {
         this.caption = caption;
     }
 
+    @BeanProperty(description = "File to send. Required, but not included in output.")
     public File getVideoFile() {
-        return this.videoFile;
+        return this.mediaFile;
     }
 
-    public void setVideoFile(File videoFile) {
-        this.videoFile = videoFile;
-        this.name = videoFile.getName();
-
-        try {
-            File captionFile = new File(videoFile.getAbsolutePath() + ".txt");
-
-            if ((getCaption() == null || getCaption().isEmpty()) && captionFile.exists() && captionFile.isFile()) {
-                setCaption(FileUtils.readFileToString(captionFile));
-            }
-        } catch (IOException e) {
-            // If file didn't exist, then, let caption be what it was
-        }
+    public void setVideoFile(File imageFile) {
+        setMediaFile(imageFile);
     }
 }

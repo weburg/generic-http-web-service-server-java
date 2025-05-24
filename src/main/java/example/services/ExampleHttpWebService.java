@@ -2,11 +2,12 @@ package example.services;
 
 import com.drew.imaging.ImageMetadataReader;
 import com.drew.metadata.Directory;
-import com.drew.metadata.Metadata;
 import com.drew.metadata.Tag;
 import com.weburg.ghowst.NotFoundException;
 import example.SupportedMimeTypes;
 import example.domain.*;
+import javafx.application.Platform;
+import javafx.scene.media.AudioClip;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.config.TikaConfig;
 import org.apache.tika.detect.Detector;
@@ -20,18 +21,12 @@ import org.jaudiotagger.audio.AudioFileIO;
 import org.jaudiotagger.tag.FieldKey;
 import org.jaudiotagger.tag.TagTextField;
 
-import javax.sound.sampled.AudioSystem;
-import javax.sound.sampled.Clip;
-import javax.sound.sampled.LineUnavailableException;
-import javax.sound.sampled.UnsupportedAudioFileException;
 import java.io.*;
+import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 
 import static org.apache.tika.metadata.TikaCoreProperties.RESOURCE_NAME_KEY;
@@ -60,300 +55,61 @@ public class ExampleHttpWebService implements ExampleService {
         }
 
         this.lastEngineId = maxEngineId;
-    }
 
-    private File[] getSoundFiles() {
-        File directory = new File(this.dataFilePath);
-
-        File soundFiles[] = directory.listFiles(
-                (dir, name) -> {
-                    if (SupportedMimeTypes.getExtensions(SupportedMimeTypes.MimeTypes.AUDIO).contains(FilenameUtils.getExtension(name.toLowerCase()))) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-        );
-
-        return soundFiles;
+        // For playing sounds on the server, start the JavaFX toolkit
+        Platform.startup(new Runnable() {
+            @Override
+            public void run() {
+                // Run, Forrest, run
+            }
+        });
     }
 
     public Sound getSounds(String name) {
-        Sound sound = new Sound();
-
-        File soundFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
-
-        if (!soundFile.exists() || !soundFile.isFile()) {
-            throw new NotFoundException("Sound \"" + name + "\" not found.");
-        }
-
-        sound.setSoundFile(soundFile);
-
-        return sound;
+        return getMultimedias(name, Sound.class);
     }
 
     public List<Sound> getSounds() {
-        ArrayList<Sound> sounds = new ArrayList<>();
-
-        File[] soundFiles = getSoundFiles();
-
-        for (File soundFile : soundFiles) {
-            Sound sound = new Sound();
-            sound.setSoundFile(soundFile);
-
-            sounds.add(sound);
-        }
-
-        return sounds;
+        return getMultimedias(Sound.class);
     }
 
     public String createSounds(Sound sound) {
-        try {
-            String mimeType = Files.probeContentType(Path.of(sound.getSoundFile().getAbsolutePath()));
-
-            if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.AUDIO, mimeType)) {
-                throw new IllegalArgumentException("Unsupported mime type for file \"" + sound.getSoundFile().getName() + "\": " + mimeType);
-            } else if (!SupportedMimeTypes.isSupportedExtension(SupportedMimeTypes.MimeTypes.AUDIO, sound.getSoundFile().getName())) {
-                throw new IllegalArgumentException("Mime type for file is supported but the extension is not for the file \"" + sound.getSoundFile().getName());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        String caption = "";
-
-        if (!sound.getCaption().isEmpty()) {
-            caption = sound.getCaption();
-        } else {
-            caption = getCaptionFromMediaFile(sound.getSoundFile(), SupportedMimeTypes.MimeTypes.AUDIO);
-        }
-
-        File captionFile = new File(this.dataFilePath + System.getProperty("file.separator") + sound.getSoundFile().getName() + ".txt");
-        if (!caption.isEmpty()) {
-            try {
-                // Write caption
-                FileOutputStream fos = new FileOutputStream(captionFile);
-                fos.write(caption.getBytes());
-                fos.close();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        try {
-            File finalSoundFile = new File(this.dataFilePath + System.getProperty("file.separator") + sound.getSoundFile().getName());
-            Files.copy(sound.getSoundFile().toPath(), finalSoundFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            sound.setSoundFile(finalSoundFile);
-        } catch (IOException e) {
-            try {
-                Files.delete(captionFile.toPath());
-            } catch (IOException e2) {
-                LOGGER.severe("Could not clean up caption file \"" + captionFile.getName() + "\".");
-            }
-            throw new RuntimeException(e);
-        }
-
-        return sound.getSoundFile().getName();
+        return createMultimedias(sound);
     }
 
     public void playSounds(String name) {
         File soundFile = getSounds(name).getSoundFile();
 
         try {
-            Clip sound = AudioSystem.getClip();
-
-            sound.open(AudioSystem.getAudioInputStream(soundFile));
-
-            sound.start();
-        } catch (LineUnavailableException | UnsupportedAudioFileException | IOException e) {
+            AudioClip clip = new AudioClip(soundFile.toURI().toURL().toString());
+            clip.play();
+        } catch (MalformedURLException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    private File[] getImageFiles() {
-        File directory = new File(this.dataFilePath);
-
-        File imageFiles[] = directory.listFiles(
-                (dir, name) -> {
-                    if (SupportedMimeTypes.getExtensions(SupportedMimeTypes.MimeTypes.IMAGE).contains(FilenameUtils.getExtension(name.toLowerCase()))) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-        );
-
-        return imageFiles;
     }
 
     public Image getImages(String name) {
-        Image image = new Image();
-
-        File imageFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
-        if (!imageFile.exists() || !imageFile.isFile()) {
-            throw new NotFoundException("Image \"" + name + "\" not found.");
-        }
-
-        image.setImageFile(imageFile);
-
-        return image;
+        return getMultimedias(name, Image.class);
     }
 
     public List<Image> getImages() {
-        ArrayList<Image> images = new ArrayList<>();
-
-        File[] imageFiles = getImageFiles();
-
-        for (File imageFile : imageFiles) {
-            Image image = new Image();
-            image.setImageFile(imageFile);
-
-            images.add(image);
-        }
-
-        return images;
+        return getMultimedias(Image.class);
     }
 
     public String createImages(Image image) {
-        try {
-            String mimeType = Files.probeContentType(Path.of(image.getImageFile().getAbsolutePath()));
-
-            if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.IMAGE, mimeType)) {
-                throw new IllegalArgumentException("Unsupported mime type for file \"" + image.getImageFile().getName() + "\": " + mimeType);
-            } else if (!SupportedMimeTypes.isSupportedExtension(SupportedMimeTypes.MimeTypes.IMAGE, image.getImageFile().getName())) {
-                throw new IllegalArgumentException("Mime type for file is supported but the extension is not for the file \"" + image.getImageFile().getName());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        String caption = "";
-
-        if (!image.getCaption().isEmpty()) {
-            caption = image.getCaption();
-        } else {
-            caption = getCaptionFromMediaFile(image.getImageFile(), SupportedMimeTypes.MimeTypes.IMAGE);
-        }
-
-        File captionFile = new File(this.dataFilePath + System.getProperty("file.separator") + image.getImageFile().getName() + ".txt");
-        if (!caption.isEmpty()) {
-            try {
-                // Write caption
-                FileOutputStream fos = new FileOutputStream(captionFile);
-                fos.write(caption.getBytes());
-                fos.close();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        try {
-            File finalImageFile = new File(this.dataFilePath + System.getProperty("file.separator") + image.getImageFile().getName());
-            Files.copy(image.getImageFile().toPath(), finalImageFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            image.setImageFile(finalImageFile);
-        } catch (IOException e) {
-            try {
-                Files.delete(captionFile.toPath());
-            } catch (IOException e2) {
-                LOGGER.severe("Could not clean up caption file \"" + captionFile.getName() + "\".");
-            }
-            throw new RuntimeException(e);
-        }
-
-        return image.getImageFile().getName();
-    }
-
-    private File[] getVideoFiles() {
-        File directory = new File(this.dataFilePath);
-
-        File videoFiles[] = directory.listFiles(
-                (dir, name) -> {
-                    if (SupportedMimeTypes.getExtensions(SupportedMimeTypes.MimeTypes.VIDEO).contains(FilenameUtils.getExtension(name.toLowerCase()))) {
-                        return true;
-                    } else {
-                        return false;
-                    }
-                }
-        );
-
-        return videoFiles;
+        return createMultimedias(image);
     }
 
     public Video getVideos(String name) {
-        Video video = new Video();
-
-        File videoFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
-        if (!videoFile.exists() || !videoFile.isFile()) {
-            throw new NotFoundException("Video \"" + name + "\" not found.");
-        }
-
-        video.setVideoFile(videoFile);
-
-        return video;
+        return getMultimedias(name, Video.class);
     }
 
     public List<Video> getVideos() {
-        ArrayList<Video> videos = new ArrayList<>();
-
-        File[] videoFiles = getVideoFiles();
-
-        for (File videoFile : videoFiles) {
-            Video video = new Video();
-            video.setVideoFile(videoFile);
-
-            videos.add(video);
-        }
-
-        return videos;
+        return getMultimedias(Video.class);
     }
 
     public String createVideos(Video video) {
-         try {
-            String mimeType = Files.probeContentType(Path.of(video.getVideoFile().getAbsolutePath()));
-
-            if (!SupportedMimeTypes.isSupportedMimeType(SupportedMimeTypes.MimeTypes.VIDEO, mimeType)) {
-                throw new IllegalArgumentException("Unsupported mime type for file \"" + video.getVideoFile().getName() + "\": " + mimeType);
-            } else if (!SupportedMimeTypes.isSupportedExtension(SupportedMimeTypes.MimeTypes.VIDEO, video.getVideoFile().getName())) {
-                throw new IllegalArgumentException("Mime type for file is supported but the extension is not for the file \"" + video.getVideoFile().getName());
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-
-        String caption = "";
-
-        if (!video.getCaption().isEmpty()) {
-            caption = video.getCaption();
-        } else {
-            caption = getCaptionFromMediaFile(video.getVideoFile(), SupportedMimeTypes.MimeTypes.VIDEO);
-        }
-
-        File captionFile = new File(this.dataFilePath + System.getProperty("file.separator") + video.getVideoFile().getName() + ".txt");
-        if (!caption.isEmpty()) {
-            try {
-                // Write caption
-                FileOutputStream fos = new FileOutputStream(captionFile);
-                fos.write(caption.getBytes());
-                fos.close();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
-        try {
-            File finalVideoFile = new File(this.dataFilePath + System.getProperty("file.separator") + video.getVideoFile().getName());
-            Files.copy(video.getVideoFile().toPath(), finalVideoFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-            video.setVideoFile(finalVideoFile);
-        } catch (IOException e) {
-            try {
-                Files.delete(captionFile.toPath());
-            } catch (IOException e2) {
-                LOGGER.severe("Could not clean up caption file \"" + captionFile.getName() + "\".");
-            }
-            throw new RuntimeException(e);
-        }
-
-        return video.getVideoFile().getName();
+        return createMultimedias(video);
     }
 
     public Engine getEngines(int id) {
@@ -537,6 +293,112 @@ public class ExampleHttpWebService implements ExampleService {
         return sb.toString();
     }
 
+    private <T extends Multimedia> File[] getMultimediaFiles(Class<T> clazz) {
+        File directory = new File(this.dataFilePath);
+
+        File mediaFiles[] = directory.listFiles(
+                (dir, name) -> {
+                    try {
+                        if (SupportedMimeTypes.getExtensions(clazz.getDeclaredConstructor().newInstance().getMimeType()).contains(FilenameUtils.getExtension(name.toLowerCase()))) {
+                            return true;
+                        } else {
+                            return false;
+                        }
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+        );
+
+        return mediaFiles;
+    }
+
+    private <T extends Multimedia> T getMultimedias(String name, Class<T> clazz) {
+        try {
+            T multimedia = clazz.getDeclaredConstructor().newInstance();
+
+            File mediaFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
+            if (!mediaFile.exists() || !mediaFile.isFile()) {
+                throw new NotFoundException(clazz.getSimpleName() + " \"" + name + "\" not found.");
+            }
+
+            multimedia.setMediaFile(mediaFile);
+
+            return multimedia;
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private <T extends Multimedia> List<T> getMultimedias(Class<T> clazz) {
+        ArrayList<T> multimedias = new ArrayList<>();
+
+        File[] multimediaFiles = getMultimediaFiles(clazz);
+
+        for (File multimediaFile : multimediaFiles) {
+            try {
+                T multimedia = clazz.getDeclaredConstructor().newInstance();
+
+                multimedia.setMediaFile(multimediaFile);
+
+                multimedias.add(multimedia);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return multimedias;
+    }
+
+    private <T extends Multimedia> String createMultimedias(T multimedia) {
+         try {
+            String mimeType = Files.probeContentType(Path.of(multimedia.getMediaFile().getAbsolutePath()));
+
+            if (!SupportedMimeTypes.isSupportedMimeType(multimedia.getMimeType(), mimeType)) {
+                throw new IllegalArgumentException("Unsupported mime type for file \"" + multimedia.getMediaFile().getName() + "\": " + mimeType);
+            } else if (!SupportedMimeTypes.isSupportedExtension(multimedia.getMimeType(), multimedia.getMediaFile().getName())) {
+                throw new IllegalArgumentException("Mime type for file is supported but the extension is not for the file \"" + multimedia.getMediaFile().getName());
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        String caption = "";
+
+        if (!multimedia.getCaption().isEmpty()) {
+            caption = multimedia.getCaption();
+        } else {
+            caption = getCaptionFromMediaFile(multimedia.getMediaFile(), multimedia.getMimeType());
+        }
+
+        File captionFile = new File(this.dataFilePath + System.getProperty("file.separator") + multimedia.getMediaFile().getName() + ".txt");
+        if (!caption.isEmpty()) {
+            try {
+                // Write caption
+                FileOutputStream fos = new FileOutputStream(captionFile);
+                fos.write(caption.getBytes());
+                fos.close();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        try {
+            File finalMediaFile = new File(this.dataFilePath + System.getProperty("file.separator") + multimedia.getMediaFile().getName());
+            Files.copy(multimedia.getMediaFile().toPath(), finalMediaFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+            multimedia.setMediaFile(finalMediaFile);
+        } catch (IOException e) {
+            try {
+                Files.delete(captionFile.toPath());
+            } catch (IOException e2) {
+                LOGGER.severe("Could not clean up caption file \"" + captionFile.getName() + "\".");
+            }
+            throw new RuntimeException(e);
+        }
+
+        return multimedia.getMediaFile().getName();
+    }
+
     private static String getCaptionFromMediaFile(File mediaFile, SupportedMimeTypes.MimeTypes mimeType) {
         String caption = "";
 
@@ -551,16 +413,20 @@ public class ExampleHttpWebService implements ExampleService {
             }
         } else if (mimeType.equals(SupportedMimeTypes.MimeTypes.IMAGE) || mimeType.equals(SupportedMimeTypes.MimeTypes.VIDEO)) {
             try {
-                Metadata md = ImageMetadataReader.readMetadata(mediaFile);
+                com.drew.metadata.Metadata md = ImageMetadataReader.readMetadata(mediaFile);
 
                 for (Directory directory : md.getDirectories()) {
                     for (Tag tag : directory.getTags()) {
-                        if (tag.getTagName().equals("Title") || tag.getTagName().equals("Caption") || tag.getTagName().equals("Caption/Abstract")
-                                || tag.getTagName().equals("Windows XP Title")
+                        LOGGER.info("Tag \"" + tag.getTagName() + "\" found: " + tag.getDescription().trim());
+                        if (tag.getTagName().equals("Caption")
+                                || tag.getTagName().equals("Caption/Abstract")
                                 || tag.getTagName().equals("Description")
                                 || tag.getTagName().equals("Image Description")
-                                || tag.getTagName().equals("Video Description")) {
-                            System.out.println(tag.getTagName() + ": " + tag.getDescription().trim());
+                                || tag.getTagName().equals("Video Description")
+                                || tag.getTagName().equals("Object Name")
+                                || tag.getTagName().equals("Title")
+                                || tag.getTagName().equals("Windows XP Title")) {
+                            LOGGER.info("Media description resolved by jaudiotagger with tag \"" + tag.getTagName() + "\": " + tag.getDescription().trim());
                             return tag.getDescription().trim();
                         }
                     }
@@ -583,9 +449,13 @@ public class ExampleHttpWebService implements ExampleService {
                         MP4Parser MP4Parser = new MP4Parser();
                         MP4Parser.parse(inputstream, handler, metadata, pcontext);
 
-                        String title = metadata.get("dc:title");
-                        if (title != null && !title.isEmpty()) {
-                            return title.trim();
+                        List<String> tags = Arrays.asList("dc:description", "dc:title");
+                        for (String tag : tags) {
+                            String title = metadata.get(tag);
+                            if (title != null && !title.isEmpty()) {
+                                LOGGER.info("Media description resolved by tika with tag \"" + tag + "\": " + title.trim());
+                                return title.trim();
+                            }
                         }
                     }
                 } finally {

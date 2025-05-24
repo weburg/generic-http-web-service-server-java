@@ -1,47 +1,51 @@
 package example.domain;
 
+import example.SupportedMimeTypes;
 import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Serializable;
 
-// TODO this class isn't used yet because mapper doesn't traverse superclasses
-public abstract class Multimedia implements Serializable {
-    private static final long serialVersionUID = 1L;
-
+public abstract class Multimedia {
     protected String name = "";
-    private String caption = "";
-    private transient File mediaFile = new File("");
+    protected String caption = "";
+    protected transient File mediaFile = new File("");
+    protected transient SupportedMimeTypes.MimeTypes mimeType;
 
-    public String getName() {
-        return name;
+    protected Multimedia(SupportedMimeTypes.MimeTypes mimeType) {
+        this.mimeType = mimeType;
     }
 
-    public String getCaption() {
-        return this.caption;
-    }
+    public abstract String getName();
 
-    public void setCaption(String caption) {
-        this.caption = caption;
-    }
+    public abstract void setName(String name);
 
-    public File getMediaFile() {
+    public abstract String getCaption();
+
+    public abstract void setCaption(String caption);
+
+    public final File getMediaFile() {
         return this.mediaFile;
     }
 
-    public void setMediaFile(File mediaFile) {
-        this.mediaFile = mediaFile;
-        this.name = mediaFile.getName();
+    public final void setMediaFile(File mediaFile) {
+        if (mediaFile != null && (this.name == null || this.name.isEmpty())) {
+            this.mediaFile = mediaFile;
+            this.name = mediaFile.getName();
 
-        try {
-            File captionFile = new File(mediaFile.getAbsolutePath() + ".txt");
+            try {
+                File captionFile = new File(mediaFile.getAbsolutePath() + ".txt");
 
-            if ((getCaption() == null || getCaption().isEmpty()) && captionFile.exists() && captionFile.isFile()) {
-                setCaption(FileUtils.readFileToString(captionFile));
+                if ((getCaption() == null || getCaption().isEmpty()) && captionFile.exists() && captionFile.isFile()) {
+                    setCaption(FileUtils.readFileToString(captionFile));
+                }
+            } catch (IOException e) {
+                // If file didn't exist, then, let caption be what it was
             }
-        } catch (IOException e) {
-            // If file didn't exist, then, let caption be what it was
         }
+    }
+
+    public SupportedMimeTypes.MimeTypes getMimeType() {
+        return this.mimeType;
     }
 }

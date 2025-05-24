@@ -235,12 +235,9 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
     protected abstract void doDescribe(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException;
 
     protected static void respondWithStream(HttpServletResponse response, File file) {
-        try {
+        try (FileInputStream in = new FileInputStream(file); OutputStream out = response.getOutputStream()) {
             response.setContentType(Files.probeContentType(file.toPath()));
             response.setContentLength((int) file.length());
-
-            FileInputStream in = new FileInputStream(file);
-            OutputStream out = response.getOutputStream();
 
             // Copy the contents of the file to the output stream
             byte[] buf = new byte[1024];
@@ -248,8 +245,6 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
             while ((count = in.read(buf)) >= 0) {
                 out.write(buf, 0, count);
             }
-            out.close();
-            in.close();
         } catch (FileNotFoundException e) {
             throw new NotFoundException("The resource with name \"" + file.getName() + "\" was not found.");
         } catch (IOException e) {

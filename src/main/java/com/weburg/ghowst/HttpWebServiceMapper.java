@@ -203,20 +203,26 @@ public class HttpWebServiceMapper {
         String customVerb = getCustomVerbFromPath(httpPath);
 
         try {
-            if (!customVerb.isEmpty()) {
-                verb = customVerb;
-            } else if (httpMethod.compareTo(HttpMethod.GET.name()) == 0) {
+            if (httpMethod.compareTo(HttpMethod.GET.name()) == 0) {
                 verb = "get";
             } else if (httpMethod.compareTo(HttpMethod.PUT.name()) == 0) {
                 verb = "createOrReplace";
             } else if (httpMethod.compareTo(HttpMethod.POST.name()) == 0) {
-                verb = "create";
+                if (customVerb.isEmpty()) {
+                    verb = "create";
+                } else {
+                    verb = customVerb;
+                }
             } else if (httpMethod.compareTo(HttpMethod.PATCH.name()) == 0) {
                 verb = "update";
             } else if (httpMethod.compareTo(HttpMethod.DELETE.name()) == 0) {
                 verb = "delete";
             } else {
                 throw new IllegalArgumentException("The method " + httpMethod + " was not in the expected format.");
+            }
+
+            if (!customVerb.isEmpty() && httpMethod.compareTo(HttpMethod.POST.name()) != 0) {
+                throw new IllegalArgumentException("The method " + httpMethod + " cannot be used with a subresource (" + customVerb + ").");
             }
 
             String ucFirstCharOfResourceName = resource.substring(0, 1).toUpperCase() + resource.substring(1);
@@ -246,8 +252,7 @@ public class HttpWebServiceMapper {
                 Object methodArgument;
                 if (customTypes.contains(methodParameterType.getName())) {
                     methodArgument = methodParameterType.getDeclaredConstructor().newInstance();
-
-                    BeanInfo beanInfo = Introspector.getBeanInfo(methodParameterType);
+                    BeanInfo beanInfo = Introspector.getBeanInfo(methodParameterType, methodParameterType.getSuperclass());
 
                     PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
 
@@ -265,10 +270,12 @@ public class HttpWebServiceMapper {
             response = method.invoke(this.webService, methodArguments);
 
             return response;
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | IntrospectionException | RuntimeException e) {
-            throw new IllegalArgumentException("Request invalid for action " + verb + " on resource " + resource + ". Check action, resource, and parameters for correctness.", e);
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e.getCause());
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | IntrospectionException | RuntimeException e) {
+            throw new IllegalArgumentException("Request invalid for action " + verb + " on resource " + resource + ". Check action, resource, any subresource, and parameters for correctness.", e);
         }
     }
 
@@ -447,7 +454,8 @@ public class HttpWebServiceMapper {
             String type = (String) customTypesIterator.next();
 
             try {
-                BeanInfo beanInfo = Introspector.getBeanInfo(Class.forName(type.replace("[", "").replace("]", "")));
+                Class<?> beanClass = Class.forName(type.replace("[", "").replace("]", ""));
+                BeanInfo beanInfo = Introspector.getBeanInfo(beanClass, beanClass.getSuperclass());
 
                 PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors(); // Alphabetical order
 

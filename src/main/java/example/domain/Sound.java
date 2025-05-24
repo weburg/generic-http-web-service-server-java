@@ -1,22 +1,24 @@
 package example.domain;
 
-import org.apache.commons.io.FileUtils;
+import example.SupportedMimeTypes;
 
+import java.beans.BeanProperty;
 import java.io.File;
-import java.io.IOException;
 import java.io.Serializable;
 
-public class Sound implements Serializable {
-    public Sound() {}
+public class Sound extends Multimedia implements Serializable {
+    public Sound() {
+        super(SupportedMimeTypes.MimeTypes.AUDIO);
+    }
 
     private static final long serialVersionUID = 1L;
 
-    private String name = "";
-    private String caption = "";
-    private transient File soundFile = new File("");
-
     public String getName() {
         return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getCaption() {
@@ -27,22 +29,12 @@ public class Sound implements Serializable {
         this.caption = caption;
     }
 
+    @BeanProperty(description = "File to send. Required, but not included in output.")
     public File getSoundFile() {
-        return this.soundFile;
+        return this.mediaFile;
     }
 
-    public void setSoundFile(File soundFile) {
-        this.soundFile = soundFile;
-        this.name = soundFile.getName();
-
-        try {
-            File captionFile = new File(soundFile.getAbsolutePath() + ".txt");
-
-            if ((getCaption() == null || getCaption().isEmpty()) && captionFile.exists() && captionFile.isFile()) {
-                setCaption(FileUtils.readFileToString(captionFile));
-            }
-        } catch (IOException e) {
-            // If file didn't exist, then, let caption be what it was
-        }
+    public void setSoundFile(File imageFile) {
+        setMediaFile(imageFile);
     }
 }
