@@ -71,6 +71,16 @@ Leave the server running when using the related projects to create content.
 Those projects can run on another machine, or the same machine. Just remember to
 change localhost to the desired server as required.
 
+### Running the tests
+
+To run unit tests only:
+
+`mvn test`
+
+To run unit and integration tests:
+
+`mvn verify`
+
 ### Related projects
 
 Refer to other grouped GHoWSt projects for various clients enabling native and
