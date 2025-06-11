@@ -12,7 +12,7 @@
     <fieldset>
         <legend>New sound</legend>
         <label><span>Caption: </span><input type="text" name="sound.caption" value="<c:out value="${model.formData[uri]['sound.caption'][0]}"/>" size="10"> (optional)</label><br>
-        <label><span>Sound: </span><input type="file" name="sound.soundFile" value="" size="10" accept="${model.audioTypesList}"></label><br>
+        <label><span>Sound: </span><input type="file" name="sound.soundFile" size="10" accept="${model.audioTypesList}"></label><br>
         <br>
         <button type="submit">Create</button>
     </fieldset>
@@ -58,7 +58,7 @@
     <fieldset>
         <legend>New image</legend>
         <label><span>Caption: </span><input type="text" name="image.caption" value="<c:out value="${model.formData[uri]['image.caption'][0]}"/>" size="10"> (optional)</label><br>
-        <label><span>Image: </span><input type="file" name="image.imageFile" value="" size="10" accept="${model.imageTypesList}"></label><br>
+        <label><span>Image: </span><input type="file" name="image.imageFile" size="10" accept="${model.imageTypesList}"></label><br>
         <br>
         <button type="submit">Create</button>
     </fieldset>
@@ -86,7 +86,7 @@
     <fieldset>
         <legend>New video</legend>
         <label><span>Caption: </span><input type="text" name="video.caption" value="<c:out value="${model.formData[uri]['video.caption'][0]}"/>" size="10"> (optional)</label><br>
-        <label><span>Video: </span><input type="file" name="video.videoFile" value="" size="10" accept="${model.videoTypesList}"></label><br>
+        <label><span>Video: </span><input type="file" name="video.videoFile" size="10" accept="${model.videoTypesList}"></label><br>
         <br>
         <button type="submit">Create</button>
     </fieldset>
