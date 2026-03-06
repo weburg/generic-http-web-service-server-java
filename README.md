@@ -2,11 +2,6 @@
 
 ## An example server providing the Web service and an HTML-only static client
 
-> [!CAUTION]
-> This server and its code isn't meant to run in a production or otherwise
-> public environment, as it lacks enough error checking and restrictions to be
-> safe. It's meant to run locally for prototyping and example purposes only.
-
 ### Design goals
 
 - Map incoming HTTP requests by looking at resource (from the URL) and verb

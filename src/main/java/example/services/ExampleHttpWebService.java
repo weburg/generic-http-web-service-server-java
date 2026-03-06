@@ -32,13 +32,12 @@ import java.util.logging.Logger;
 import static org.apache.tika.metadata.TikaCoreProperties.RESOURCE_NAME_KEY;
 
 public class ExampleHttpWebService implements ExampleService {
-    int lastEngineId = 0;
-    String dataFilePath;
+    public static final String DATAFILEPATH = System.getProperty("user.home") + System.getProperty("file.separator") + ".HttpWebService" + System.getProperty("file.separator") + "java";
 
     private static final Logger LOGGER = Logger.getLogger(ExampleHttpWebService.class.getName());
+    private int lastEngineId = 0;
 
-    public ExampleHttpWebService(String dataFilePath) {
-        this.dataFilePath = dataFilePath;
+    public ExampleHttpWebService() {
 
         // Set the last engine ID based on existing files
 
@@ -114,7 +113,7 @@ public class ExampleHttpWebService implements ExampleService {
 
     public Engine getEngines(int id) {
         try {
-            FileInputStream fis = new FileInputStream(this.dataFilePath + System.getProperty("file.separator")
+            FileInputStream fis = new FileInputStream(DATAFILEPATH + System.getProperty("file.separator")
                     + "Engine_" + id + ".ser");
             ObjectInputStream ois = new ObjectInputStream(fis);
 
@@ -171,7 +170,7 @@ public class ExampleHttpWebService implements ExampleService {
         engine.setId(engineId);
 
         try {
-            FileOutputStream fos = new FileOutputStream(this.dataFilePath + System.getProperty("file.separator")
+            FileOutputStream fos = new FileOutputStream(DATAFILEPATH + System.getProperty("file.separator")
                     + "Engine_" + engineId + ".ser");
             ObjectOutputStream oos = new ObjectOutputStream(fos);
 
@@ -191,7 +190,7 @@ public class ExampleHttpWebService implements ExampleService {
             throw new IllegalArgumentException("For createOrReplace operations, the id must be specified.");
         }
 
-        File file = new File(this.dataFilePath + System.getProperty("file.separator")
+        File file = new File(DATAFILEPATH + System.getProperty("file.separator")
                 + "Engine_" + engine.getId() + ".ser");
 
         try {
@@ -220,11 +219,25 @@ public class ExampleHttpWebService implements ExampleService {
             throw new IllegalArgumentException("For update operations, the id must be specified.");
         }
 
-        return createOrReplaceEngines(engine); // For simple persistence, reuse other method since replacement happens anyway
+        File file = new File(DATAFILEPATH + System.getProperty("file.separator")
+                + "Engine_" + engine.getId() + ".ser");
+
+        // For update operations, the resource must exist
+        if (!file.exists()) {
+            throw new NotFoundException("Engine with id \"" + engine.getId() + "\" not found.");
+        }
+
+        return createOrReplaceEngines(engine); // TODO For simple object persistence, just replace; ideally and for efficiency, this would only update affected fields
     }
 
     public void deleteEngines(int id) {
-        File file = new File(this.dataFilePath + System.getProperty("file.separator") + "Engine_" + id + ".ser");
+        File file = new File(DATAFILEPATH + System.getProperty("file.separator") + "Engine_" + id + ".ser");
+
+        // For delete operations, the resource must exist
+        if (!file.exists()) {
+            throw new NotFoundException("Engine with id \"" + id + "\" not found.");
+        }
+
         boolean deleted = file.delete();
 
         if (!deleted) {
@@ -255,7 +268,7 @@ public class ExampleHttpWebService implements ExampleService {
     }
 
     private File[] getEngineFiles() {
-        File directory = new File(this.dataFilePath);
+        File directory = new File(DATAFILEPATH);
 
         File engineFiles[] = directory.listFiles(
                 (dir, name) -> {
@@ -294,7 +307,7 @@ public class ExampleHttpWebService implements ExampleService {
     }
 
     private <T extends Multimedia> File[] getMultimediaFiles(Class<T> clazz) {
-        File directory = new File(this.dataFilePath);
+        File directory = new File(DATAFILEPATH);
 
         File mediaFiles[] = directory.listFiles(
                 (dir, name) -> {
@@ -317,7 +330,7 @@ public class ExampleHttpWebService implements ExampleService {
         try {
             T multimedia = clazz.getDeclaredConstructor().newInstance();
 
-            File mediaFile = new File(this.dataFilePath + System.getProperty("file.separator") + name);
+            File mediaFile = new File(DATAFILEPATH + System.getProperty("file.separator") + name);
             if (!mediaFile.exists() || !mediaFile.isFile()) {
                 throw new NotFoundException(clazz.getSimpleName() + " \"" + name + "\" not found.");
             }
@@ -371,7 +384,7 @@ public class ExampleHttpWebService implements ExampleService {
             caption = getCaptionFromMediaFile(multimedia.getMediaFile(), multimedia.getMimeType());
         }
 
-        File captionFile = new File(this.dataFilePath + System.getProperty("file.separator") + multimedia.getMediaFile().getName() + ".txt");
+        File captionFile = new File(DATAFILEPATH + System.getProperty("file.separator") + multimedia.getMediaFile().getName() + ".txt");
         if (!caption.isEmpty()) {
             try {
                 // Write caption
@@ -384,7 +397,7 @@ public class ExampleHttpWebService implements ExampleService {
         }
 
         try {
-            File finalMediaFile = new File(this.dataFilePath + System.getProperty("file.separator") + multimedia.getMediaFile().getName());
+            File finalMediaFile = new File(DATAFILEPATH + System.getProperty("file.separator") + multimedia.getMediaFile().getName());
             Files.copy(multimedia.getMediaFile().toPath(), finalMediaFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
             multimedia.setMediaFile(finalMediaFile);
         } catch (IOException e) {
@@ -471,9 +484,7 @@ public class ExampleHttpWebService implements ExampleService {
     }
 
     static public void main(String[] args) {
-        final String dataPath = System.getProperty("user.home") + System.getProperty("file.separator") + ".HttpWebService";
-
-        ExampleService ws = new ExampleHttpWebService(dataPath);
+        ExampleService ws = new ExampleHttpWebService();
         Map<String, String> results = new LinkedHashMap<>();
 
         List<Sound> sounds = ws.getSounds();
@@ -509,7 +520,7 @@ public class ExampleHttpWebService implements ExampleService {
             System.out.println(fileName + ": " + results.get(fileName));
 
             try {
-                FileOutputStream fos = new FileOutputStream(dataPath + System.getProperty("file.separator")
+                FileOutputStream fos = new FileOutputStream(DATAFILEPATH + System.getProperty("file.separator")
                         + fileName + ".txt");
                 fos.write(results.get(fileName).getBytes());
                 fos.close();

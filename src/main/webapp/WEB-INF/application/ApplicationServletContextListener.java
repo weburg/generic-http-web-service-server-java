@@ -13,7 +13,7 @@ import java.util.logging.Logger;
 
 public class ApplicationServletContextListener implements ServletContextListener {
     private static final Logger LOGGER = Logger.getLogger(ApplicationServletContextListener.class.getName());
-    private static final String DATAFILEPATH = System.getProperty("user.home") + System.getProperty("file.separator") + ".HttpWebService";
+    private static final String DATAFILEPATH = ExampleHttpWebService.DATAFILEPATH;
     private static final String UPLOADTEMPPATH = DATAFILEPATH + System.getProperty("file.separator") + "uploadtemp";
 
     public void contextInitialized(ServletContextEvent event) {
@@ -49,7 +49,7 @@ public class ApplicationServletContextListener implements ServletContextListener
             throw new RuntimeException(e);
         }
 
-        ExampleService exampleService = new ExampleHttpWebService(DATAFILEPATH);
+        ExampleService exampleService = new ExampleHttpWebService();
         String httpWebServiceUriPath = "/generichttpws";
         ServletRegistration.Dynamic exampleHttpWebServiceServletRegistration = event.getServletContext()
                 .addServlet("ExampleHttpWebServiceServlet", new ExampleHttpWebServiceServlet(exampleService, httpWebServiceUriPath, UPLOADTEMPPATH));
