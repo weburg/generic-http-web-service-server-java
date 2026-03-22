@@ -1,5 +1,9 @@
 body {
-    font: normal small Arial, sans-serif;
+    font-family: "Courier 10 Pitch", sans-serif;
+}
+
+fieldset, label {
+    font-size: small;
 }
 
 table {

@@ -25,6 +25,8 @@ public class ApplicationServletContextListener implements ServletContextListener
         event.getServletContext().addFilter("FormMemoryFilter", new FormMemoryFilter())
                 .addMappingForUrlPatterns(EnumSet.of(DispatcherType.REQUEST), true, "/generichttpws/*");
 
+        event.getServletContext().addServlet("AboutServlet", new AboutServlet()).addMapping("/about");
+
         Engine engine = new Engine();
         engine.setName("Hemi");
         engine.setCylinders(8);

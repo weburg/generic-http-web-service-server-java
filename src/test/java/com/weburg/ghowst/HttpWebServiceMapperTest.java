@@ -3,7 +3,6 @@ package com.weburg.ghowst;
 import org.junit.jupiter.api.Test;
 
 class HttpWebServiceMapperTest {
-
     @Test
     void getResourceFromPath() {
         String resource = HttpWebServiceMapper.getResourceFromPath("/resource/subresource");

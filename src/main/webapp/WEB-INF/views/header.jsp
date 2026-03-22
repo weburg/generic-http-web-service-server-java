@@ -7,7 +7,6 @@
     <title>${param.title}</title>
     <link rel="stylesheet" href="/styles/main.css">
 </head>
-
 <body>
 
 <header>
