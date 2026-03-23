@@ -2,7 +2,6 @@ package com.weburg.ghowst;
 
 import com.google.gson.Gson;
 import com.weburg.ghowst.HttpWebServiceMapper.HttpMethod;
-import example.services.ExampleService;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -19,15 +18,13 @@ import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 public abstract class HttpWebServiceServlet extends HttpServlet {
-    private final ExampleService exampleService;
     protected HttpWebServiceMapper httpWebServiceMapper;
     protected String uploadTempPath;
 
     private static final Logger LOGGER = Logger.getLogger(HttpWebServiceServlet.class.getName());
 
-    public HttpWebServiceServlet(ExampleService exampleService, String uri, String uploadTempPath) {
-        this.exampleService = exampleService;
-        this.httpWebServiceMapper = new HttpWebServiceMapper(this.exampleService, uri);
+    public HttpWebServiceServlet(Object webService, String uri, String uploadTempPath) {
+        this.httpWebServiceMapper = new HttpWebServiceMapper(webService, uri);
         this.uploadTempPath = uploadTempPath;
     }
 

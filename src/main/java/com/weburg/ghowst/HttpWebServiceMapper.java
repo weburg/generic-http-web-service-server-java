@@ -25,7 +25,7 @@ public class HttpWebServiceMapper {
 
     public HttpWebServiceMapper(Object webService, String webServiceUriBasePath) {
         this.webService = webService;
-        this.webServiceClass = webService.getClass().getInterfaces()[0];
+        this.webServiceClass = webService.getClass().getInterfaces()[0]; // TODO consider supporting concrete classes
         this.webServiceUriBasePath = webServiceUriBasePath;
         this.serviceDescription = this.describeService(); // Populate before any invocations are made
     }
