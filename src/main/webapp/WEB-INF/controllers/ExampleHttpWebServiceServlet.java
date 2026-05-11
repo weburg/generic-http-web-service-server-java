@@ -71,7 +71,7 @@ public class ExampleHttpWebServiceServlet extends HttpWebServiceServlet {
             response.setStatus(HttpServletResponse.SC_SEE_OTHER);
             response.setHeader("location", requestUri + '?' + resourceKeyName + '=' + handledResponse);
         } else if (handledResponse != null) {
-            if (getResourceFromPath(request.getPathInfo()).equals("trucks")) {
+            if (getResourceFromPath(request.getPathInfo()).equals("trucks") || getResourceFromPath(request.getPathInfo()).equals("omnibus")) {
                 if (getAccept(request).contains("text/html")) {
                     respondWithResource(request, response, handledResponse, getResourceFromPath(request.getPathInfo()), "result");
                 }

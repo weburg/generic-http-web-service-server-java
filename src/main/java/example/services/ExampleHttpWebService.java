@@ -26,6 +26,8 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -130,7 +132,7 @@ public class ExampleHttpWebService implements ExampleService {
         }
     }
 
-    public ArrayList<Engine> getEngines() {
+    public List<Engine> getEngines() {
         ArrayList<Engine> engines = new ArrayList<>();
 
         File[] engineFiles = getEngineFiles();
@@ -302,6 +304,14 @@ public class ExampleHttpWebService implements ExampleService {
         } else {
             sb.append("The race is too close to call! It's a virtual tie.");
         }
+
+        return sb.toString();
+    }
+
+    public String testOmnibus(LocalDateTime birthtime, List<String> toppings) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("A birth time of ").append(birthtime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)).append(" with toppings ").append(toppings.size() > 0 ? toppings.toString() : "missing").append(" is a party!");
 
         return sb.toString();
     }

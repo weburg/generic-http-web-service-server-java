@@ -5,6 +5,7 @@ import example.domain.*;
 import jdk.jfr.Description;
 import jdk.jfr.Name;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Name("Example HTTP Web Service")
@@ -30,7 +31,7 @@ public interface ExampleService {
 
     String createVideos(Video video);
 
-    @Description("Gets a list of Engines based on the id")
+    @Description("Gets an Engine based on the id")
     Engine getEngines(int id);
 
     List<Engine> getEngines();
@@ -49,4 +50,6 @@ public interface ExampleService {
     int stopEngines(int id);
 
     String raceTrucks(Truck truck1, Truck truck2);
+
+    String testOmnibus(LocalDateTime birthtime, List<String> toppings); // java.util.Date
 }

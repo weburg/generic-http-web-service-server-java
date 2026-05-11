@@ -1,4 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
+<%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
 <jsp:useBean id="model" scope="request" type="beans.HtmlClientBean"/>
 <jsp:include page="header.jsp">
     <jsp:param name="title" value="Generic HTTP Web Service Client in HTML (GHoWSt)"/>
@@ -37,7 +38,7 @@
 <form action="<c:out value="${uri}"/>" method="post">
     <fieldset>
         <legend>Play sound</legend>
-        <label><span>Name: </span><input type="radio" name="name" value="arrow_x.wav" size="10"<c:if test="${model.formData[uri].name[0] == 'arrow_x.wav' || (model.formData[uri].name[0] != 'arrow_x.wav' && model.formData[uri].name[0] != 'arrow2.wav')}"> checked</c:if>>Arrow X</label> <label><input type="radio" name="name" value="arrow2.wav" size="10"<c:if test="${model.formData[uri].name[0] == 'arrow2.wav'}"> checked</c:if>>Arrow 2</label>
+        <label><span>Name: </span></label><label><input type="radio" name="name" value="arrow_x.wav"<c:if test="${model.formData[uri].name[0] == 'arrow_x.wav' || (model.formData[uri].name[0] != 'arrow_x.wav' && model.formData[uri].name[0] != 'arrow2.wav')}"> checked</c:if>>Arrow X</label> <label><input type="radio" name="name" value="arrow2.wav"<c:if test="${model.formData[uri].name[0] == 'arrow2.wav'}"> checked</c:if>>Arrow 2</label>
         <button type="submit">Play on server</button>
     </fieldset>
 </form>
@@ -170,6 +171,21 @@
         <label><span>T2 engine id: </span><input type="text" name="truck2.engineId" value="<c:out value="${model.formData[uri]['truck2.engineId'][0]}"/>" size="10"></label><br>
         <br>
         <button type="submit">Race</button>
+    </fieldset>
+</form>
+
+<h2>Omnibus</h2>
+
+<c:set var="uri" value="/generichttpws/omnibus/test"/>
+<c:set var="selectedToppings" value="|${fn:join(model.formData[uri].toppings, '|')}|"/>
+
+<form action="<c:out value="${uri}"/>" method="post">
+    <fieldset>
+        <legend>Various other types</legend>
+        <label><span>Birth time: </span><input type="datetime-local" name="birthtime" value="<c:out value="${model.formData[uri]['birthtime'][0]}"/>"></label><br>
+        <label><span>Toppings: </span></label><label><input type="checkbox" name="toppings" value="Cheese"<c:if test="${fn:contains(selectedToppings, '|Cheese|')}"> checked</c:if>>Cheese</label> <label><input type="checkbox" name="toppings" value="Pepperoni"<c:if test="${fn:contains(selectedToppings, '|Pepperoni|')}"> checked</c:if>>Pepperoni</label> <label><input type="checkbox" name="toppings" value="Mushrooms"<c:if test="${fn:contains(selectedToppings, '|Mushrooms|')}"> checked</c:if>>Mushrooms</label><br>
+        <br>
+        <button type="submit">Test</button>
     </fieldset>
 </form>
 

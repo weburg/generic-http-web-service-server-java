@@ -7,6 +7,9 @@ import org.apache.commons.beanutils.ConvertUtils;
 
 import java.beans.*;
 import java.lang.reflect.*;
+import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -25,7 +28,7 @@ public class HttpWebServiceMapper {
 
     public HttpWebServiceMapper(Object webService, String webServiceUriBasePath) {
         this.webService = webService;
-        this.webServiceClass = webService.getClass().getInterfaces()[0]; // TODO consider supporting concrete classes
+        this.webServiceClass = webService.getClass().getInterfaces()[0];
         this.webServiceUriBasePath = webServiceUriBasePath;
         this.serviceDescription = this.describeService(); // Populate before any invocations are made
     }
@@ -243,11 +246,15 @@ public class HttpWebServiceMapper {
             List<Class> methodParameterTypes = methodMap.get(methodName + '(' + httpObjectNameListFormatted + ')');
 
             Method method = this.webServiceClass.getMethod(methodName, methodParameterTypes.toArray(new Class[methodParameterTypes.size()]));
+            Parameter[] methodParameters = method.getParameters();
 
             // Now build up the actual argument list for use in invoking the real method, lining up types and values by parameter name
             Object[] methodArguments = new Object[methodParameterTypes.size()];
             for (int i = 0; i < methodParameterTypes.size(); i++) {
-                Class methodParameterType = methodParameterTypes.get(i);
+                Parameter parameter = methodParameters[i];
+                Class<?> methodParameterType = parameter.getType();
+                Type methodGenericParameterType = parameter.getParameterizedType();
+                Object httpValue = httpObjectList.get(parameter.getName());
 
                 Object methodArgument;
                 if (customTypes.contains(methodParameterType.getName())) {
@@ -257,11 +264,43 @@ public class HttpWebServiceMapper {
                     PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
 
                     for (PropertyDescriptor descriptor : descriptors) {
-                        Map<String, Object> httpObject = (Map<String, Object>) httpObjectList.get(httpObjectNames[i]);
+                        Map<String, Object> httpObject = (Map<String, Object>) httpValue;
                         BeanUtils.setProperty(methodArgument, descriptor.getName(), httpObject.get(descriptor.getName()));
                     }
                 } else {
-                    methodArgument = ConvertUtils.convert(httpObjectList.get(httpObjectNames[i]), methodParameterType);
+                    // The below helps read values when developing new supported datatypes
+                    if (false) {
+                        String a = methodParameterType.getName();
+                        String b = methodParameterType.getSimpleName();
+                        String c = methodParameterType.getCanonicalName();
+                        String d = methodParameterType.getTypeName();
+                        String e = methodGenericParameterType.getTypeName();
+                        String f = "breakpoint this line";
+                    }
+
+                    if (methodParameterType.getName().equals("java.time.LocalDateTime")) {
+                        methodArgument = LocalDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    } else if (methodParameterType.getName().equals("java.time.ZonedDateTime")) {
+                        methodArgument = ZonedDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                    } else if (List.class.isAssignableFrom(methodParameterType) && methodGenericParameterType instanceof ParameterizedType) {
+                        ParameterizedType parameterizedType = (ParameterizedType) methodGenericParameterType;
+                        Type listItemType = parameterizedType.getActualTypeArguments()[0];
+
+                        String[] values = (String[]) httpValue;
+                        List<Object> convertedValues = new ArrayList<>();
+
+                        for (String value : values) {
+                            if (listItemType instanceof Class<?>) {
+                                convertedValues.add(ConvertUtils.convert(value, (Class<?>) listItemType));
+                            } else {
+                                throw new IllegalArgumentException("Unsupported list item type: " + listItemType.getTypeName());
+                            }
+                        }
+
+                        methodArgument = convertedValues;
+                    } else {
+                        methodArgument = ConvertUtils.convert(httpValue, methodParameterType);
+                    }
                 }
 
                 methodArguments[i] = methodArgument;
@@ -387,7 +426,7 @@ public class HttpWebServiceMapper {
             methodSignatureParameters.putIfAbsent(method, new TreeSet<>());
 
             String genericReturnType = method.getGenericReturnType().getTypeName();
-            if (!genericReturnType.startsWith("java.lang") && !genericReturnType.contains("[]")) {
+            if (!genericReturnType.startsWith("java.") && !genericReturnType.contains("[]")) {
                 customTypes.add(method.getGenericReturnType().getTypeName());
             }
 
@@ -399,7 +438,7 @@ public class HttpWebServiceMapper {
                 }
 
                 String genericParameterType = parameter.getType().getTypeName();
-                if (!genericParameterType.startsWith("java.lang") && !genericParameterType.contains("[]")) {
+                if (!genericParameterType.startsWith("java.") && !genericParameterType.contains("[]")) {
                     customTypes.add(parameter.getType().getTypeName());
                 }
 
@@ -417,8 +456,8 @@ public class HttpWebServiceMapper {
             serviceMethod.name = methodsSorted.get(methodKey).getName();
             serviceMethod.description = getDescription(methodsSorted.get(methodKey));
             serviceMethod.returns = new WebService.ServiceMethod.MethodReturn();
-            String genericReturnType = methodsSorted.get(methodKey).getGenericReturnType().getTypeName();
-            serviceMethod.returns.type = simplifyName(genericReturnType);
+            Type genericReturnType = methodsSorted.get(methodKey).getGenericReturnType();
+            serviceMethod.returns.type = simplifyName(genericReturnType.getTypeName(), genericReturnType);
             serviceMethod.returns.description = getDescriptionInOut(methodsSorted.get(methodKey).getAnnotatedReturnType());
 
             String customVerb = getCustomVerbFromMethod(serviceMethod.name);
@@ -431,7 +470,7 @@ public class HttpWebServiceMapper {
                 WebService.ServiceMethod.MethodParameter methodParameter = new WebService.ServiceMethod.MethodParameter();
                 methodParameter.name = parameters[i].getName();
                 methodParameter.description = getDescriptionInOut(parameters[i]);
-                methodParameter.type = simplifyName(parameters[i].getType().getCanonicalName());
+                methodParameter.type = simplifyName(parameters[i].getType().getCanonicalName(), parameters[i].getParameterizedType());
                 serviceMethod.parameters.add(methodParameter);
             }
 
@@ -460,7 +499,7 @@ public class HttpWebServiceMapper {
                 PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors(); // Alphabetical order
 
                 WebService.CustomType customType = new WebService.CustomType();
-                customType.name = simplifyName(type);
+                customType.name = simplifyName(type, null);
                 customType.description = (!beanInfo.getBeanDescriptor().getShortDescription().equals(customType.name) ? beanInfo.getBeanDescriptor().getShortDescription() : "");
                 beanInfo.getBeanDescriptor().getShortDescription();
                 customType.properties = new LinkedHashSet<>();
@@ -470,14 +509,14 @@ public class HttpWebServiceMapper {
                         WebService.CustomType.Property property = new WebService.CustomType.Property();
                         property.name = descriptor.getName();
                         property.description = (!descriptor.getShortDescription().equals(property.name) ? descriptor.getShortDescription() : "");
-                        property.type = simplifyName(descriptor.getPropertyType().getTypeName());
+                        property.type = simplifyName(descriptor.getPropertyType().getTypeName(), descriptor.getPropertyType());
                         customType.properties.add(property);
                     }
                 }
 
                 this.webServiceMetadata.customTypes.add(customType);
             } catch (ClassNotFoundException e) {
-                // If class wasn't found, it's not a custom type, but something like void, int, a list. Not needed.
+                // If class wasn't found, it's not a custom type, not needed.
                 customTypesIterator.remove();
             } catch (IntrospectionException e) {
                 LOGGER.warning("Class " + type + " could not be fully introspected.");
@@ -547,28 +586,24 @@ public class HttpWebServiceMapper {
         return serviceDescription.toString();
     }
 
-    private static String simplifyName(String name) {
-        String[] types = name.split("<");
+    private static String simplifyName(String name, Type genericType) {
+        if (genericType instanceof ParameterizedType) {
+            ParameterizedType parameterizedType = (ParameterizedType) genericType;
+            Type rawType = parameterizedType.getRawType();
 
-        String newName = "";
-        for (String type : types) {
-            boolean hasJava = false;
+            if (rawType instanceof Class<?> && List.class.isAssignableFrom((Class<?>) rawType)) {
+                Type listItemType = parameterizedType.getActualTypeArguments()[0];
 
-            String[] nameSplit = type.split("\\.");
-
-            if (nameSplit[0].compareTo("java") == 0) hasJava = true;
-
-            name = nameSplit[nameSplit.length - 1];
-
-            name = (hasJava ? name.toLowerCase() : name).replace(">", "");
-
-            if (newName.length() > 0) {
-                newName = newName + " of " + name;
-            } else {
-                newName = name;
+                return simplifyName(listItemType.getTypeName(), listItemType) + "[]";
             }
+
+            name = rawType.getTypeName();
+        } else if (genericType != null) {
+            name = genericType.getTypeName();
         }
 
-        return newName;
+        String simpleName = name.substring(name.lastIndexOf('.') + 1).replace(">", "");
+
+        return name.startsWith("java.") ? simpleName.toLowerCase() : simpleName;
     }
 }
