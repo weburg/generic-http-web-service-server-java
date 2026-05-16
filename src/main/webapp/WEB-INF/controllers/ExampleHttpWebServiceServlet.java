@@ -71,9 +71,16 @@ public class ExampleHttpWebServiceServlet extends HttpWebServiceServlet {
             response.setStatus(HttpServletResponse.SC_SEE_OTHER);
             response.setHeader("location", requestUri + '?' + resourceKeyName + '=' + handledResponse);
         } else if (handledResponse != null) {
-            if (getResourceFromPath(request.getPathInfo()).equals("trucks") || getResourceFromPath(request.getPathInfo()).equals("omnibus")) {
+            String resource = getResourceFromPath(request.getPathInfo());
+
+            if (resource.equals("trucks") || resource.startsWith("omnibus")) {
+                // All omnibus output is the same
+                if (resource.startsWith("omnibus")) {
+                    resource = "omnibus";
+                }
+
                 if (getAccept(request).contains("text/html")) {
-                    respondWithResource(request, response, handledResponse, getResourceFromPath(request.getPathInfo()), "result");
+                    respondWithResource(request, response, handledResponse, resource, "result");
                 }
             } else {
                 response.setStatus(HttpServletResponse.SC_OK);

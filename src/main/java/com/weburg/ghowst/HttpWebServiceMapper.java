@@ -243,9 +243,20 @@ public class HttpWebServiceMapper {
                 httpObjectNameListFormatted += httpObjectNames[i].toString() + (i < (httpObjectList.size() - 1) ? ", " : "");
             }
 
-            List<Class> methodParameterTypes = methodMap.get(methodName + '(' + httpObjectNameListFormatted + ')');
+            List<Class> methodParameterTypes;
+
+            methodParameterTypes = methodMap.get(methodName + '(' + httpObjectNameListFormatted + ')');
+
+            if (methodParameterTypes == null) {
+                methodParameterTypes = methodMap.get(methodName);
+            }
+
+            if (methodParameterTypes == null) {
+                throw new NoSuchMethodException();
+            }
 
             Method method = this.webServiceClass.getMethod(methodName, methodParameterTypes.toArray(new Class[methodParameterTypes.size()]));
+
             Parameter[] methodParameters = method.getParameters();
 
             // Now build up the actual argument list for use in invoking the real method, lining up types and values by parameter name
@@ -278,28 +289,57 @@ public class HttpWebServiceMapper {
                         String f = "breakpoint this line";
                     }
 
-                    if (methodParameterType.getName().equals("java.time.LocalDateTime")) {
-                        methodArgument = LocalDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                    } else if (methodParameterType.getName().equals("java.time.ZonedDateTime")) {
-                        methodArgument = ZonedDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                    if (methodParameterType == java.time.LocalDateTime.class) {
+                        if (!((String[]) httpValue)[0].isEmpty()) {
+                            methodArgument = LocalDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                        } else {
+                            methodArgument = null;
+                        }
+                    } else if (methodParameterType == java.time.ZonedDateTime.class) {
+                        if (!((String[]) httpValue)[0].isEmpty()) {
+                            methodArgument = ZonedDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                        } else {
+                            methodArgument = null;
+                        }
                     } else if (List.class.isAssignableFrom(methodParameterType) && methodGenericParameterType instanceof ParameterizedType) {
-                        ParameterizedType parameterizedType = (ParameterizedType) methodGenericParameterType;
-                        Type listItemType = parameterizedType.getActualTypeArguments()[0];
+                        if (httpValue != null) {
+                            ParameterizedType parameterizedType = (ParameterizedType) methodGenericParameterType;
+                            Type listItemType = parameterizedType.getActualTypeArguments()[0];
 
-                        String[] values = (String[]) httpValue;
-                        List<Object> convertedValues = new ArrayList<>();
+                            String[] values = (String[]) httpValue;
+                            List<Object> convertedValues = new ArrayList<>();
 
-                        for (String value : values) {
-                            if (listItemType instanceof Class<?>) {
-                                convertedValues.add(ConvertUtils.convert(value, (Class<?>) listItemType));
-                            } else {
-                                throw new IllegalArgumentException("Unsupported list item type: " + listItemType.getTypeName());
+                            for (String value : values) {
+                                if (listItemType instanceof Class<?>) {
+                                    convertedValues.add(ConvertUtils.convert(value, (Class<?>) listItemType));
+                                } else {
+                                    throw new IllegalArgumentException("Unsupported list item type: " + listItemType.getTypeName());
+                                }
+                            }
+
+                            methodArgument = convertedValues;
+                        } else {
+                            methodArgument = new ArrayList<>();
+                        }
+                    } else if (methodParameterType.isArray()) {
+                        if (httpValue != null) {
+                            methodArgument = ConvertUtils.convert((String[]) httpValue, methodParameterType.getComponentType());
+                        } else {
+                            methodArgument = Array.newInstance(methodParameterType.getComponentType(), 0);
+                        }
+                    } else if (methodParameterType == boolean.class || methodParameterType == Boolean.class) {
+                        boolean booleanResult = false;
+                        if (httpValue != null) {
+                            String booleanValue = ((String[]) httpValue)[0];
+
+                            if (booleanValue.compareToIgnoreCase("false") != 0 || booleanValue.compareToIgnoreCase("no") != 0 || booleanValue.compareToIgnoreCase("off") != 0 || booleanValue.compareToIgnoreCase("0") != 0) {
+                                booleanResult = true;
                             }
                         }
 
-                        methodArgument = convertedValues;
+                        methodArgument = ConvertUtils.convert(booleanResult, methodParameterType);
                     } else {
-                        methodArgument = ConvertUtils.convert(httpValue, methodParameterType);
+                        methodArgument = ConvertUtils.convert(((String[]) httpValue)[0], methodParameterType);
                     }
                 }
 
@@ -466,12 +506,17 @@ public class HttpWebServiceMapper {
 
             serviceMethod.parameters = new LinkedHashSet<>();
             Parameter[] parameters = methodsSorted.get(methodKey).getParameters();
+            int optionalParameterCount = 0;
             for (int i = 0; i < parameters.length; i++) {
                 WebService.ServiceMethod.MethodParameter methodParameter = new WebService.ServiceMethod.MethodParameter();
                 methodParameter.name = parameters[i].getName();
                 methodParameter.description = getDescriptionInOut(parameters[i]);
                 methodParameter.type = simplifyName(parameters[i].getType().getCanonicalName(), parameters[i].getParameterizedType());
                 serviceMethod.parameters.add(methodParameter);
+
+                if (java.util.List.class.isAssignableFrom(parameters[i].getType()) || parameters[i].getType().isArray() || parameters[i].getType() == boolean.class || parameters[i].getType() == Boolean.class) {
+                    optionalParameterCount++;
+                }
             }
 
             this.webServiceMetadata.serviceMethods.add(serviceMethod);
@@ -485,6 +530,14 @@ public class HttpWebServiceMapper {
             methodSignature.append(')');
 
             methodMap.put(methodSignature.toString(), parameterClasses.get(methodsSorted.get(methodKey)));
+
+            if (optionalParameterCount > 0) {
+                List<Class> previousMapping = methodMap.put(serviceMethod.name, parameterClasses.get(methodsSorted.get(methodKey)));
+
+                if (previousMapping != null) {
+                    throw new IllegalArgumentException("The same method has multiple definitions containing optional parameters which is illegal: " + methodSignature.toString() +  ". Methods can only have multiple definitions if all their parameters are required. Optional parameters are any parameter that might not be sent at all, e.g. arrays or booleans where the user did not select anything and the client omitted the field.");
+                }
+            }
         }
 
         this.webServiceMetadata.customTypes = new LinkedHashSet<>();

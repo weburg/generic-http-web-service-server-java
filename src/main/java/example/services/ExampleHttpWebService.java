@@ -27,6 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
@@ -296,6 +297,7 @@ public class ExampleHttpWebService implements ExampleService {
 
         StringBuilder sb = new StringBuilder();
         sb.append("The ").append(truck1.getName()).append(" and the ").append(truck2.getName()).append(" trucks race! ");
+        sb.append("\n\n");
 
         if (engine1.getCylinders() > engine2.getCylinders() && engine1.getThrottleSetting() > engine2.getThrottleSetting()) {
             sb.append("The ").append(truck1.getName()).append(" wins!");
@@ -308,12 +310,29 @@ public class ExampleHttpWebService implements ExampleService {
         return sb.toString();
     }
 
-    public String testOmnibus(LocalDateTime birthtime, List<String> toppings) {
+    public String testOmnibus(Omnibus omnibus) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("A birth time of ").append(birthtime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME)).append(" with toppings ").append(toppings.size() > 0 ? toppings.toString() : "missing").append(" is a party!");
+        sb.append("A birth time of ").append((omnibus.getBirthtime() != null ? omnibus.getBirthtime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "none")).append(" with toppings ").append(omnibus.getToppings().size() > 0 ? omnibus.getToppings().toString() : "missing").append(" is a party!");
+        sb.append("\n\n");
+        sb.append("A send time of ").append((omnibus.getSendtime() != null ? omnibus.getSendtime().format(DateTimeFormatter.ISO_ZONED_DATE_TIME) : "none"));
+        sb.append("\n\n");
+        sb.append("Sides: ").append(omnibus.getSides().length > 0 ? Arrays.asList(omnibus.getSides()) : "none");
+        sb.append("\n\n");
+        sb.append("The omnibus is on fire: ").append(omnibus.getOnFire());
 
         return sb.toString();
+    }
+
+    public String testOmnibusr(LocalDateTime birthtime, ZonedDateTime sendtime, List<String> toppings, String[] sides, boolean onFire) {
+        Omnibus omnibus = new Omnibus();
+        omnibus.setBirthtime(birthtime);
+        omnibus.setSendtime(sendtime);
+        omnibus.setToppings(toppings);
+        omnibus.setSides(sides);
+        omnibus.setOnFire(onFire);
+
+        return testOmnibus(omnibus);
     }
 
     private <T extends Multimedia> File[] getMultimediaFiles(Class<T> clazz) {

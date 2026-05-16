@@ -6,6 +6,7 @@ import jdk.jfr.Description;
 import jdk.jfr.Name;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 import java.util.List;
 
 @Name("Example HTTP Web Service")
@@ -51,5 +52,7 @@ public interface ExampleService {
 
     String raceTrucks(Truck truck1, Truck truck2);
 
-    String testOmnibus(LocalDateTime birthtime, List<String> toppings); // java.util.Date
+    String testOmnibus(Omnibus omnibus);
+
+    String testOmnibusr(LocalDateTime birthtime, ZonedDateTime sendtime, List<String> toppings, String[] sides, boolean onFire); // java.util.Date, ZonedDateTime next
 }
