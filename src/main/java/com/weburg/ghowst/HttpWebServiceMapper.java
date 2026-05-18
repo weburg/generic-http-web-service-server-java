@@ -295,7 +295,7 @@ public class HttpWebServiceMapper {
                             try {
                                 methodArgument = LocalDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                             } catch (DateTimeParseException e) {
-                                throw new IllegalArgumentException("Invalid localdatetime format for parameter: " + parameter.getName() + ". Expected format is ISO-8601, seconds optional, up to 3 microseconds optional, without timezone or offset, e.g. 2026-05-07T14:30 or 2026-05-07T14:30:00.000.");
+                                throw new IllegalArgumentException("Invalid localdatetime format for parameter: " + parameter.getName() + ". Expected format is ISO-8601, seconds optional, up to 9 fractional digits optional, without timezone or offset, e.g. 2026-05-07T14:30 or 2026-05-07T14:30:00.000.");
                             }
                         } else {
                             methodArgument = null;
@@ -305,7 +305,7 @@ public class HttpWebServiceMapper {
                             try {
                                 methodArgument = OffsetDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_OFFSET_DATE_TIME);
                             } catch (DateTimeParseException e) {
-                                throw new IllegalArgumentException("Invalid offsetdatetime format for parameter: " + parameter.getName() + ". Expected format is RFC3339, microseconds optional, with an offset or Zulu time, e.g. 2026-05-07T14:30-08:00, 2026-05-07T14:30:00.000Z.");
+                                throw new IllegalArgumentException("Invalid offsetdatetime format for parameter: " + parameter.getName() + ". Expected format is RFC3339, up to 9 fractional digits optional, with an offset or Zulu time, e.g. 2026-05-07T14:30:00-08:00, 2026-05-07T14:30:00.000Z.");
                             }
                         } else {
                             methodArgument = null;
