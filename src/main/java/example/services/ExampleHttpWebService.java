@@ -27,7 +27,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
@@ -320,17 +320,20 @@ public class ExampleHttpWebService implements ExampleService {
         sb.append("Sides: ").append(omnibus.getSides().length > 0 ? Arrays.asList(omnibus.getSides()) : "none");
         sb.append("\n\n");
         sb.append("The omnibus is on fire: ").append(omnibus.getOnFire());
+        sb.append("\n\n");
+        sb.append("Document: ").append((omnibus.getDocument() != null ? omnibus.getDocument().getName() + " (size: " + omnibus.getDocument().length() + " bytes)" : "none"));
 
         return sb.toString();
     }
 
-    public String testOmnibusr(LocalDateTime birthtime, ZonedDateTime sendtime, List<String> toppings, String[] sides, boolean onFire) {
+    public String testOmnibusr(LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document) {
         Omnibus omnibus = new Omnibus();
         omnibus.setBirthtime(birthtime);
         omnibus.setSendtime(sendtime);
         omnibus.setToppings(toppings);
         omnibus.setSides(sides);
         omnibus.setOnFire(onFire);
+        omnibus.setDocument(document);
 
         return testOmnibus(omnibus);
     }

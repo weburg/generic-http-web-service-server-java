@@ -1,8 +1,9 @@
 package example.domain;
 
+import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -11,11 +12,12 @@ public class Omnibus implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    private LocalDateTime birthtime = LocalDateTime.now();
-    private ZonedDateTime sendtime = ZonedDateTime.now();
+    private LocalDateTime birthtime = null;
+    private OffsetDateTime sendtime = null;
     private List<String> toppings = new ArrayList<>();
     private String[] sides = new String[0];
     private Boolean isOnFire = false;
+    private File document = null;
 
     public LocalDateTime getBirthtime() {
         return birthtime;
@@ -25,11 +27,11 @@ public class Omnibus implements Serializable {
         this.birthtime = birthtime;
     }
 
-    public ZonedDateTime getSendtime() {
+    public OffsetDateTime getSendtime() {
         return sendtime;
     }
 
-    public void setSendtime(ZonedDateTime sendtime) {
+    public void setSendtime(OffsetDateTime sendtime) {
         this.sendtime = sendtime;
     }
 
@@ -55,5 +57,13 @@ public class Omnibus implements Serializable {
 
     public void setOnFire(Boolean onFire) {
         isOnFire = onFire;
+    }
+
+    public File getDocument() {
+        return document;
+    }
+
+    public void setDocument(File document) {
+        this.document = document;
     }
 }

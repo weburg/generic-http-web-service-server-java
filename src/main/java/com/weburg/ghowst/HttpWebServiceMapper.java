@@ -8,8 +8,9 @@ import org.apache.commons.beanutils.ConvertUtils;
 import java.beans.*;
 import java.lang.reflect.*;
 import java.time.LocalDateTime;
-import java.time.ZonedDateTime;
+import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 import java.util.logging.Logger;
 
@@ -289,15 +290,23 @@ public class HttpWebServiceMapper {
                         String f = "breakpoint this line";
                     }
 
-                    if (methodParameterType == java.time.LocalDateTime.class) {
+                    if (methodParameterType == LocalDateTime.class) {
                         if (!((String[]) httpValue)[0].isEmpty()) {
-                            methodArgument = LocalDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                            try {
+                                methodArgument = LocalDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                            } catch (DateTimeParseException e) {
+                                throw new IllegalArgumentException("Invalid localdatetime format for parameter: " + parameter.getName() + ". Expected format is ISO-8601, seconds optional, up to 3 microseconds optional, without timezone or offset, e.g. 2026-05-07T14:30 or 2026-05-07T14:30:00.000.");
+                            }
                         } else {
                             methodArgument = null;
                         }
-                    } else if (methodParameterType == java.time.ZonedDateTime.class) {
+                    } else if (methodParameterType == OffsetDateTime.class) {
                         if (!((String[]) httpValue)[0].isEmpty()) {
-                            methodArgument = ZonedDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_ZONED_DATE_TIME);
+                            try {
+                                methodArgument = OffsetDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                            } catch (DateTimeParseException e) {
+                                throw new IllegalArgumentException("Invalid offsetdatetime format for parameter: " + parameter.getName() + ". Expected format is RFC3339, microseconds optional, with an offset or Zulu time, e.g. 2026-05-07T14:30-08:00, 2026-05-07T14:30:00.000Z.");
+                            }
                         } else {
                             methodArgument = null;
                         }
@@ -338,6 +347,16 @@ public class HttpWebServiceMapper {
                         }
 
                         methodArgument = ConvertUtils.convert(booleanResult, methodParameterType);
+                    } else if (methodParameterType == java.io.File.class) {
+                        if (httpValue == null) {
+                            methodArgument = null;
+                        } else {
+                            if (httpValue.getClass().isArray() && httpValue.getClass().getComponentType() == java.io.File.class) {
+                                methodArgument = ((java.io.File[]) httpValue)[0]; // It was preprocessed into a file already
+                            } else {
+                                throw new IllegalArgumentException("Expected a file for parameter: " + parameter.getName() + ". Check that the input type is file and that encoding type of the request is multipart/form-data.");
+                            }
+                        }
                     } else {
                         methodArgument = ConvertUtils.convert(((String[]) httpValue)[0], methodParameterType);
                     }
@@ -514,7 +533,7 @@ public class HttpWebServiceMapper {
                 methodParameter.type = simplifyName(parameters[i].getType().getCanonicalName(), parameters[i].getParameterizedType());
                 serviceMethod.parameters.add(methodParameter);
 
-                if (java.util.List.class.isAssignableFrom(parameters[i].getType()) || parameters[i].getType().isArray() || parameters[i].getType() == boolean.class || parameters[i].getType() == Boolean.class) {
+                if (java.util.List.class.isAssignableFrom(parameters[i].getType()) || parameters[i].getType().isArray() || parameters[i].getType() == boolean.class || parameters[i].getType() == Boolean.class || parameters[i].getType() == java.io.File.class) {
                     optionalParameterCount++;
                 }
             }

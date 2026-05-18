@@ -179,16 +179,17 @@
 <c:set var="uri" value="/generichttpws/omnibus/test"/>
 <c:set var="selectedToppings" value="|${fn:join(model.formData[uri]['omnibus.toppings'], '|')}|"/>
 <c:set var="selectedSides" value="|${fn:join(model.formData[uri]['omnibus.toppings'], '|')}|"/>
-<c:set var="omnibusSendtime" value="${model.formData[uri]['omnibus.sendtime'][0] == null ? '2026-05-07T14:30:00-04:00[America/New_York]' : model.formData[uri]['omnibus.sendtime'][0]}"/>
+<c:set var="omnibusSendtime" value="${model.formData[uri]['omnibus.sendtime'][0] == null ? '2026-05-07T14:30:00.000-08:00' : model.formData[uri]['omnibus.sendtime'][0]}"/>
 
-<form action="<c:out value="${uri}"/>" method="post">
-    <fieldset>
+<form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
+    <fieldset disabled>
         <legend>Various other types within custom object</legend>
         <label><span>Birth time: </span><input type="datetime-local" name="omnibus.birthtime" value="<c:out value="${model.formData[uri]['omnibus.birthtime'][0]}"/>"></label><br>
-        <label><span>Send time: </span><input type="text" name="omnibus.sendtime" value="<c:out value="${omnibusSendtime}"/>" size="50"></label><br>
+        <label><span>Send time: </span><input type="text" name="omnibus.sendtime" value="<c:out value="${omnibusSendtime}"/>" size="30"></label><br>
         <label><span>Toppings: </span></label><label><input type="checkbox" name="omnibus.toppings" value="Cheese"<c:if test="${fn:contains(selectedToppings, '|Cheese|')}"> checked</c:if>>Cheese</label> <label><input type="checkbox" name="omnibus.toppings" value="Pepperoni"<c:if test="${fn:contains(selectedToppings, '|Pepperoni|')}"> checked</c:if>>Pepperoni</label> <label><input type="checkbox" name="omnibus.toppings" value="Mushrooms"<c:if test="${fn:contains(selectedToppings, '|Mushrooms|')}"> checked</c:if>>Mushrooms</label><br>
         <label><span>Sides: </span></label><label><input type="checkbox" name="omnibus.sides" value="Salad"<c:if test="${fn:contains(selectedSides, '|Salad|')}"> checked</c:if>>Salad</label> <label><input type="checkbox" name="omnibus.sides" value="Beans"<c:if test="${fn:contains(selectedSides, '|Beans|')}"> checked</c:if>>Beans</label> <label><input type="checkbox" name="omnibus.sides" value="Fries"<c:if test="${fn:contains(selectedSides, '|Fries|')}"> checked</c:if>>Fries</label><br>
         <label><span>On fire: </span><input type="checkbox" name="omnibus.onFire" value="true"<c:if test="${model.formData[uri]['omnibus.onFire'][0]}"> checked</c:if>></label><br>
+        <label><span>Document: </span><input type="file" name="omnibus.document" size="10" accept="application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"></label><br>
         <br>
         <button type="submit">Test</button>
     </fieldset>
@@ -197,16 +198,17 @@
 <c:set var="uri" value="/generichttpws/omnibusr/test"/>
 <c:set var="selectedToppings" value="|${fn:join(model.formData[uri]['toppings'], '|')}|"/>
 <c:set var="selectedSides" value="|${fn:join(model.formData[uri]['sides'], '|')}|"/>
-<c:set var="sendtime" value="${model.formData[uri]['sendtime'][0] == null ? '2026-05-07T14:30:00-04:00[America/New_York]' : model.formData[uri]['sendtime'][0]}"/>
+<c:set var="sendtime" value="${model.formData[uri]['sendtime'][0] == null ? '2026-05-07T14:30:00.000-08:00' : model.formData[uri]['sendtime'][0]}"/>
 
-<form action="<c:out value="${uri}"/>" method="post">
+<form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
     <fieldset>
         <legend>Various other types at root level</legend>
         <label><span>Birth time: </span><input type="datetime-local" name="birthtime" value="<c:out value="${model.formData[uri]['birthtime'][0]}"/>"></label><br>
-        <label><span>Send time: </span><input type="text" name="sendtime" value="<c:out value="${sendtime}"/>" size="50"></label><br>
+        <label><span>Send time: </span><input type="text" name="sendtime" value="<c:out value="${sendtime}"/>" size="30"></label><br>
         <label><span>Toppings: </span></label><label><input type="checkbox" name="toppings" value="Cheese"<c:if test="${fn:contains(selectedToppings, '|Cheese|')}"> checked</c:if>>Cheese</label> <label><input type="checkbox" name="toppings" value="Pepperoni"<c:if test="${fn:contains(selectedToppings, '|Pepperoni|')}"> checked</c:if>>Pepperoni</label> <label><input type="checkbox" name="toppings" value="Mushrooms"<c:if test="${fn:contains(selectedToppings, '|Mushrooms|')}"> checked</c:if>>Mushrooms</label><br>
         <label><span>Sides: </span></label><label><input type="checkbox" name="sides" value="Salad"<c:if test="${fn:contains(selectedSides, '|Salad|')}"> checked</c:if>>Salad</label> <label><input type="checkbox" name="sides" value="Beans"<c:if test="${fn:contains(selectedSides, '|Beans|')}"> checked</c:if>>Beans</label> <label><input type="checkbox" name="sides" value="Fries"<c:if test="${fn:contains(selectedSides, '|Fries|')}"> checked</c:if>>Fries</label><br>
         <label><span>On fire: </span><input type="checkbox" name="onFire" value="true"<c:if test="${model.formData[uri]['onFire'][0]}"> checked</c:if>></label><br>
+        <label><span>Document: </span><input type="file" name="document" size="10" accept="application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"></label><br>
         <br>
         <button type="submit">Test</button>
     </fieldset>

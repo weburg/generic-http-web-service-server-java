@@ -110,14 +110,18 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
         if (contentType != null && contentType.startsWith("multipart/form-data")) { // vs. application/x-www-form-urlencoded
             for (Part part : request.getParts()) {
                 if (part.getSubmittedFileName() != null) {
-                    File[] files = {new File(this.uploadTempPath + System.getProperty("file.separator") + part.getSubmittedFileName())};
+                    File file = new File(this.uploadTempPath + System.getProperty("file.separator") + part.getSubmittedFileName());
 
-                    File[] priorFiles = (File[]) parameterMap.putIfAbsent(part.getName(), files);
-                    if (priorFiles != null) {
-                        File[] mergedFiles = Arrays.copyOf(priorFiles, priorFiles.length + 1);
-                        System.arraycopy(files, 0, mergedFiles, priorFiles.length, 1);
+                    if (!file.isDirectory()) {
+                        File[] files = {file};
 
-                        parameterMap.put(part.getName(), mergedFiles);
+                        File[] priorFiles = (File[]) parameterMap.putIfAbsent(part.getName(), files);
+                        if (priorFiles != null) {
+                            File[] mergedFiles = Arrays.copyOf(priorFiles, priorFiles.length + 1);
+                            System.arraycopy(files, 0, mergedFiles, priorFiles.length, 1);
+
+                            parameterMap.put(part.getName(), mergedFiles);
+                        }
                     }
                 }
             }
@@ -206,7 +210,11 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
                 for (Part part : request.getParts()) {
                     if (part.getSubmittedFileName() != null) {
                         try {
-                            Files.deleteIfExists(new File(this.uploadTempPath + System.getProperty("file.separator") + part.getSubmittedFileName()).toPath());
+                            File file = new File(this.uploadTempPath + System.getProperty("file.separator") + part.getSubmittedFileName());
+
+                            if (!file.isDirectory()) {
+                                Files.deleteIfExists(file.toPath());
+                            }
                         } catch (IOException ex) {
                             LOGGER.log(Level.SEVERE, "Failed to delete temporary uploaded file: " + part.getSubmittedFileName(), ex);
                         }
