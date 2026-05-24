@@ -330,6 +330,48 @@ public class HttpWebServiceMapper {
                         } else {
                             methodArgument = new ArrayList<>();
                         }
+                    } else if (Map.class.isAssignableFrom(methodParameterType) && methodGenericParameterType instanceof ParameterizedType) {
+                        Map<String, String> values = new LinkedHashMap<>();
+
+                        for (String parameterKey : httpObjectList.keySet()) {
+                            if (parameterKey.startsWith(parameter.getName() + "[")) {
+                                String mapKey = parameterKey.substring(parameter.getName().length() + 1, parameterKey.length() - 1);
+
+                                if (mapKey.isEmpty()) {
+                                    throw new IllegalArgumentException("Map keys cannot be empty for parameter: " + parameter.getName());
+                                }
+
+                                String mapValue = ((String[]) httpObjectList.get(parameterKey))[0];
+
+                                values.put(mapKey, mapValue);
+                            }
+                        }
+
+                        if (!values.isEmpty()) {
+                            ParameterizedType parameterizedType = (ParameterizedType) methodGenericParameterType;
+                            Type[] mapItemTypes = parameterizedType.getActualTypeArguments();
+
+                            Map<String, Object> convertedValues = new LinkedHashMap<>();
+
+                            for (String key : values.keySet()) {
+                                int typeIndex = 0;
+                                for (Type mapItemType : mapItemTypes) {
+                                    if (typeIndex++ == 0) {
+                                        continue; // Skip the first type as it's the key type; we rely on it already having been enforced as a String
+                                    }
+
+                                    if (mapItemType instanceof Class<?>) {
+                                        convertedValues.put(key, ConvertUtils.convert(values.get(key), (Class<?>) mapItemType));
+                                    } else {
+                                        throw new IllegalArgumentException("Unsupported map item type: " + mapItemType.getTypeName());
+                                    }
+                                }
+                            }
+
+                            methodArgument = convertedValues;
+                        } else {
+                            methodArgument = new LinkedHashMap<>();
+                        }
                     } else if (methodParameterType.isArray()) {
                         if (httpValue != null) {
                             methodArgument = ConvertUtils.convert((String[]) httpValue, methodParameterType.getComponentType());
@@ -533,7 +575,7 @@ public class HttpWebServiceMapper {
                 methodParameter.type = simplifyName(parameters[i].getType().getCanonicalName(), parameters[i].getParameterizedType());
                 serviceMethod.parameters.add(methodParameter);
 
-                if (java.util.List.class.isAssignableFrom(parameters[i].getType()) || parameters[i].getType().isArray() || parameters[i].getType() == boolean.class || parameters[i].getType() == Boolean.class || parameters[i].getType() == java.io.File.class) {
+                if (java.util.List.class.isAssignableFrom(parameters[i].getType()) || java.util.Map.class.isAssignableFrom(parameters[i].getType()) || parameters[i].getType().isArray() || parameters[i].getType() == boolean.class || parameters[i].getType() == Boolean.class || parameters[i].getType() == java.io.File.class) {
                     optionalParameterCount++;
                 }
             }
@@ -554,7 +596,7 @@ public class HttpWebServiceMapper {
                 List<Class> previousMapping = methodMap.put(serviceMethod.name, parameterClasses.get(methodsSorted.get(methodKey)));
 
                 if (previousMapping != null) {
-                    throw new IllegalArgumentException("The same method has multiple definitions containing optional parameters which is illegal: " + methodSignature.toString() +  ". Methods can only have multiple definitions if all their parameters are required. Optional parameters are any parameter that might not be sent at all, e.g. arrays or booleans where the user did not select anything and the client omitted the field.");
+                    throw new IllegalArgumentException("The same service method has multiple definitions containing optional parameters which is illegal: " + methodSignature.toString() +  ". Service methods can only have multiple definitions if all their parameters are required. Optional parameters are any parameter that might not be sent at all, e.g. arrays or booleans where the user did not select anything and the client omitted the field.");
                 }
             }
         }
@@ -667,15 +709,39 @@ public class HttpWebServiceMapper {
                 Type listItemType = parameterizedType.getActualTypeArguments()[0];
 
                 return simplifyName(listItemType.getTypeName(), listItemType) + "[]";
+            } else if (rawType instanceof Class<?> && Map.class.isAssignableFrom((Class<?>) rawType)) {
+                Type mapKeyType = parameterizedType.getActualTypeArguments()[0];
+
+                if (mapKeyType != String.class) {
+                    throw new IllegalArgumentException("Maps in service methods must be strings, type was: " + mapKeyType.getTypeName());
+                }
+
+                Type mapValueType = parameterizedType.getActualTypeArguments()[1];
+
+                return simplifyName(mapValueType.getTypeName(), mapValueType) + "{}";
             }
 
-            name = rawType.getTypeName();
+            name = normalizeTypeName(rawType);
         } else if (genericType != null) {
-            name = genericType.getTypeName();
+            name = normalizeTypeName(genericType);
         }
 
         String simpleName = name.substring(name.lastIndexOf('.') + 1).replace(">", "");
 
         return name.startsWith("java.") ? simpleName.toLowerCase() : simpleName;
+    }
+
+    private static String normalizeTypeName(Type type) {
+        String name = type.getTypeName();
+
+        if (type instanceof Class<?>) {
+            if (type == Integer.class || type == int.class || type == Short.class || type == short.class || type == Long.class || type == long.class || type == Byte.class || type == byte.class) {
+                name = "int";
+            } else if (type == Float.class || type == float.class || type == Double.class || type == double.class) {
+                name = "float";
+            }
+        }
+
+        return name;
     }
 }

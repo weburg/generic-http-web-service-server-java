@@ -4,8 +4,7 @@ import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 public class Omnibus implements Serializable {
     public Omnibus() {}
@@ -18,6 +17,7 @@ public class Omnibus implements Serializable {
     private String[] sides = new String[0];
     private Boolean isOnFire = false;
     private File document = null;
+    private Map<String, String> pairing = new LinkedHashMap<>();
 
     public LocalDateTime getBirthtime() {
         return birthtime;
@@ -65,5 +65,13 @@ public class Omnibus implements Serializable {
 
     public void setDocument(File document) {
         this.document = document;
+    }
+
+    public Map<String, String> getPairing() {
+        return pairing;
+    }
+
+    public void setPairing(Map<String, String> pairing) {
+        this.pairing = pairing;
     }
 }

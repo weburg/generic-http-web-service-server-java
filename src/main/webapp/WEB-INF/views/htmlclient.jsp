@@ -198,6 +198,8 @@
 <c:set var="uri" value="/generichttpws/omnibusr/test"/>
 <c:set var="selectedToppings" value="|${fn:join(model.formData[uri]['toppings'], '|')}|"/>
 <c:set var="selectedSides" value="|${fn:join(model.formData[uri]['sides'], '|')}|"/>
+<c:set var="selectedSteakPairings" value="|${fn:join(model.formData[uri]['pairing[Steak]'], '|')}|"/>
+<c:set var="selectedFishPairings" value="|${fn:join(model.formData[uri]['pairing[Fish]'], '|')}|"/>
 <c:set var="sendtime" value="${model.formData[uri]['sendtime'][0] == null ? '2026-05-07T14:30:00.000-08:00' : model.formData[uri]['sendtime'][0]}"/>
 
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
@@ -209,6 +211,7 @@
         <label><span>Sides: </span></label><label><input type="checkbox" name="sides" value="Salad"<c:if test="${fn:contains(selectedSides, '|Salad|')}"> checked</c:if>>Salad</label> <label><input type="checkbox" name="sides" value="Beans"<c:if test="${fn:contains(selectedSides, '|Beans|')}"> checked</c:if>>Beans</label> <label><input type="checkbox" name="sides" value="Fries"<c:if test="${fn:contains(selectedSides, '|Fries|')}"> checked</c:if>>Fries</label><br>
         <label><span>On fire: </span><input type="checkbox" name="onFire" value="true"<c:if test="${model.formData[uri]['onFire'][0]}"> checked</c:if>></label><br>
         <label><span>Document: </span><input type="file" name="document" size="10" accept="application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"></label><br>
+        <label><span>Pairings: </span></label><label><input type="radio" name="pairing[Steak]" value="Cabernet Sauvignon"<c:if test="${fn:contains(selectedSteakPairings, '|Cabernet Sauvignon|')}"> checked</c:if>>Steak/Cabernet Sauvignon</label> <label><input type="radio" name="pairing[Steak]" value="Malbec"<c:if test="${fn:contains(selectedSteakPairings, '|Malbec|')}"> checked</c:if>>Steak/Malbec</label><label><input type="radio" name="pairing[Fish]" value="Sauvignon Blanc"<c:if test="${fn:contains(selectedFishPairings, '|Sauvignon Blanc|')}"> checked</c:if>>Fish/Sauvignon Blanc</label> <label><input type="radio" name="pairing[Fish]" value="Chardonnay"<c:if test="${fn:contains(selectedFishPairings, '|Chardonnay|')}"> checked</c:if>>Fish/Chardonnay</label><br>
         <br>
         <button type="submit">Test</button>
     </fieldset>

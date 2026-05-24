@@ -9,6 +9,7 @@ import java.io.File;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Name("Example HTTP Web Service")
 @Description("An example service showing the power of GHoWSt")
@@ -55,5 +56,5 @@ public interface ExampleService {
 
     String testOmnibus(Omnibus omnibus);
 
-    String testOmnibusr(LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document);
+    String testOmnibusr(LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing);
 }

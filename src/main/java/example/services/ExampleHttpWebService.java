@@ -322,11 +322,15 @@ public class ExampleHttpWebService implements ExampleService {
         sb.append("The omnibus is on fire: ").append(omnibus.getOnFire());
         sb.append("\n\n");
         sb.append("Document: ").append((omnibus.getDocument() != null ? omnibus.getDocument().getName() + " (size: " + omnibus.getDocument().length() + " bytes)" : "none"));
+        sb.append("\n\n");
+        sb.append("Pairing for Steak: ").append((omnibus.getPairing() != null && omnibus.getPairing().get("Steak") != null ? omnibus.getPairing().get("Steak") : "none"));
+        sb.append("\n\n");
+        sb.append("Pairing for Fish: ").append((omnibus.getPairing() != null && omnibus.getPairing().get("Fish") != null ? omnibus.getPairing().get("Fish") : "none"));
 
         return sb.toString();
     }
 
-    public String testOmnibusr(LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document) {
+    public String testOmnibusr(LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing) {
         Omnibus omnibus = new Omnibus();
         omnibus.setBirthtime(birthtime);
         omnibus.setSendtime(sendtime);
@@ -334,6 +338,7 @@ public class ExampleHttpWebService implements ExampleService {
         omnibus.setSides(sides);
         omnibus.setOnFire(onFire);
         omnibus.setDocument(document);
+        omnibus.setPairing(pairing);
 
         return testOmnibus(omnibus);
     }
