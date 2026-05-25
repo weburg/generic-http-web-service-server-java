@@ -15,7 +15,7 @@ public class Omnibus implements Serializable {
     private OffsetDateTime sendtime = null;
     private List<String> toppings = new ArrayList<>();
     private String[] sides = new String[0];
-    private Boolean isOnFire = false;
+    private Boolean onFire = false;
     private File document = null;
     private Map<String, String> pairing = new LinkedHashMap<>();
 
@@ -51,12 +51,12 @@ public class Omnibus implements Serializable {
         this.sides = sides;
     }
 
-    public Boolean getOnFire() {
-        return isOnFire;
+    public Boolean isOnFire() {
+        return onFire;
     }
 
     public void setOnFire(Boolean onFire) {
-        isOnFire = onFire;
+        this.onFire = onFire;
     }
 
     public File getDocument() {

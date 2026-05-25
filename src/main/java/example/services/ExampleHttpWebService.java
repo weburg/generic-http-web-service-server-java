@@ -319,7 +319,7 @@ public class ExampleHttpWebService implements ExampleService {
         sb.append("\n\n");
         sb.append("Sides: ").append(omnibus.getSides().length > 0 ? Arrays.asList(omnibus.getSides()) : "none");
         sb.append("\n\n");
-        sb.append("The omnibus is on fire: ").append(omnibus.getOnFire());
+        sb.append("The omnibus is on fire: ").append(omnibus.isOnFire());
         sb.append("\n\n");
         sb.append("Document: ").append((omnibus.getDocument() != null ? omnibus.getDocument().getName() + " (size: " + omnibus.getDocument().length() + " bytes)" : "none"));
         sb.append("\n\n");
