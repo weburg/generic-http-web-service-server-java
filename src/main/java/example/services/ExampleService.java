@@ -57,4 +57,6 @@ public interface ExampleService {
     String testOmnibus(Omnibus omnibus);
 
     String testOmnibusr(LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing);
+
+    Omnibus getOmnibus();
 }

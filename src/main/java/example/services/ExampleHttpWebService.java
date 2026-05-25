@@ -343,6 +343,22 @@ public class ExampleHttpWebService implements ExampleService {
         return testOmnibus(omnibus);
     }
 
+    public Omnibus getOmnibus() {
+        Omnibus omnibus = new Omnibus();
+        omnibus.setBirthtime(LocalDateTime.of(2016, 5, 11, 12, 0, 0, 0));
+        omnibus.setSendtime(OffsetDateTime.now());
+        omnibus.setToppings(Arrays.asList("Cheese", "Pepperoni", "Sausage"));
+        omnibus.setSides(new String[]{"Fries", "Onion Rings"});
+        omnibus.setOnFire(false);
+        omnibus.setDocument(null);
+        omnibus.setPairing(new LinkedHashMap<>() {{
+            put("Steak", "Cabernet Sauvignon");
+            put("Fish", "Chardonnay");
+        }});
+
+        return omnibus;
+    }
+
     private <T extends Multimedia> File[] getMultimediaFiles(Class<T> clazz) {
         File directory = new File(DATAFILEPATH);
 

@@ -195,6 +195,14 @@
     </fieldset>
 </form>
 
+<c:set var="uri" value="/generichttpws/omnibus"/>
+
+<form action="<c:out value="${uri}"/>" method="get">
+    <fieldset disabled>
+        <button type="submit">Get omnibus</button>
+    </fieldset>
+</form>
+
 <c:set var="uri" value="/generichttpws/omnibusr/test"/>
 <c:set var="selectedToppings" value="|${fn:join(model.formData[uri]['toppings'], '|')}|"/>
 <c:set var="selectedSides" value="|${fn:join(model.formData[uri]['sides'], '|')}|"/>
