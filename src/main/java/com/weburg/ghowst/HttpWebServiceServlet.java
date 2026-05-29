@@ -96,6 +96,7 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
                 }
 
                 // Nothing to do, delegate to the child servlet
+                // TODO if the service class has a plain get() method, call that instead of the below fallback
                 doGet(request, response);
                 return;
             }
