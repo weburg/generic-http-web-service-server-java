@@ -1,6 +1,12 @@
 package com.weburg.ghowst;
 
-import com.google.gson.Gson;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonSerializer;
+import com.fasterxml.jackson.databind.MapperFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializerProvider;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.weburg.ghowst.HttpWebServiceMapper.HttpMethod;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -10,6 +16,9 @@ import jakarta.servlet.http.Part;
 
 import java.io.*;
 import java.nio.file.Files;
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -20,6 +29,39 @@ import java.util.stream.Collectors;
 public abstract class HttpWebServiceServlet extends HttpServlet {
     protected HttpWebServiceMapper httpWebServiceMapper;
     protected String uploadTempPath;
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper()
+            .configure(MapperFeature.USE_ANNOTATIONS, false)
+            .registerModule(new SimpleModule()
+                    .addSerializer(LocalDateTime.class, new JsonSerializer<LocalDateTime>() {
+                        public void serialize(LocalDateTime value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                            if (value == null) {
+                                gen.writeNull();
+                                return;
+                            }
+                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.nnnnnnnnn")));
+                        }
+                    })
+                    .addSerializer(OffsetDateTime.class, new JsonSerializer<OffsetDateTime>() {
+                        public void serialize(OffsetDateTime value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                            if (value == null) {
+                                gen.writeNull();
+                                return;
+                            }
+                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.nnnnnnnnnXXX")));
+                        }
+                    })
+                    .addSerializer(File.class, new JsonSerializer<File>() {
+                        @Override
+                        public void serialize(File value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
+                            if (value == null) {
+                                gen.writeNull();
+                                return;
+                            }
+                            // basename only (no path)
+                            gen.writeString(value.getName());
+                        }
+                    })
+            );
 
     private static final Logger LOGGER = Logger.getLogger(HttpWebServiceServlet.class.getName());
 
@@ -83,8 +125,7 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
 
                         response.setStatus(HttpServletResponse.SC_OK);
 
-                        Gson gson = new Gson();
-                        String webServiceMetadataJson = gson.toJson(httpWebServiceMapper.getWebServiceMetadata());
+                        String webServiceMetadataJson = toJson(httpWebServiceMapper.getWebServiceMetadata());
 
                         PrintWriter write = response.getWriter();
                         write.print(webServiceMetadataJson);
@@ -158,8 +199,7 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
                     if (handledResponse != null) {
                         response.setStatus(HttpServletResponse.SC_OK);
 
-                        Gson gson = new Gson();
-                        String idJson = gson.toJson(handledResponse);
+                        String idJson = toJson(handledResponse);
 
                         PrintWriter write = response.getWriter();
                         write.print(idJson);
@@ -177,8 +217,7 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
 
                         response.setStatus(HttpServletResponse.SC_CREATED);
 
-                        Gson gson = new Gson();
-                        String idJson = gson.toJson(handledResponse);
+                        String idJson = toJson(handledResponse);
 
                         PrintWriter write = response.getWriter();
                         write.print(idJson);
@@ -255,6 +294,18 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
             throw new NotFoundException("The resource with name \"" + file.getName() + "\" was not found.");
         } catch (IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private String toJson(Object value) {
+        if (value == null) {
+            return null;
+        }
+
+        try {
+            return OBJECT_MAPPER.writeValueAsString(value);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to serialize return object to JSON", e);
         }
     }
 }

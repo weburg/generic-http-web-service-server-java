@@ -6,8 +6,10 @@ import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
 import java.util.*;
 
-public class Omnibus implements Serializable {
-    public Omnibus() {}
+public class Omnibus extends Bus implements Serializable {
+    public Omnibus() {
+        super("omni-58-87");
+    }
 
     private static final long serialVersionUID = 1L;
 
