@@ -179,7 +179,7 @@
 <c:set var="uri" value="/generichttpws/omnibus/test"/>
 <c:set var="selectedToppings" value="|${fn:join(model.formData[uri]['omnibus.toppings'], '|')}|"/>
 <c:set var="selectedSides" value="|${fn:join(model.formData[uri]['omnibus.toppings'], '|')}|"/>
-<c:set var="omnibusSendtime" value="${model.formData[uri]['omnibus.sendtime'][0] == null ? '2026-05-07T14:30:00.000-08:00' : model.formData[uri]['omnibus.sendtime'][0]}"/>
+<c:set var="omnibusSendtime" value="${model.formData[uri]['omnibus.sendtime'][0] == null ? '2026-05-07T14:30:00.000000000-08:00' : model.formData[uri]['omnibus.sendtime'][0]}"/>
 
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
     <fieldset disabled>
@@ -208,7 +208,7 @@
 <c:set var="selectedSides" value="|${fn:join(model.formData[uri]['sides'], '|')}|"/>
 <c:set var="selectedSteakPairings" value="|${fn:join(model.formData[uri]['pairing[Steak]'], '|')}|"/>
 <c:set var="selectedFishPairings" value="|${fn:join(model.formData[uri]['pairing[Fish]'], '|')}|"/>
-<c:set var="sendtime" value="${model.formData[uri]['sendtime'][0] == null ? '2026-05-07T14:30:00.000-08:00' : model.formData[uri]['sendtime'][0]}"/>
+<c:set var="sendtime" value="${model.formData[uri]['sendtime'][0] == null ? '2026-05-07T14:30:00.000000000-08:00' : model.formData[uri]['sendtime'][0]}"/>
 
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
     <fieldset>
