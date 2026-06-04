@@ -150,7 +150,9 @@ public class HttpWebServiceMapper {
         String[] pathParts = pathInfo.split("/");
 
         if (pathParts.length > 2) {
-            return pathParts[pathParts.length - 1];
+            String verb = pathParts[pathParts.length - 1];
+
+            return verb.split("(?=[A-Z])")[0];
         } else {
             return "";
         }
@@ -172,14 +174,7 @@ public class HttpWebServiceMapper {
 
             String[] parts = methodName.split("(?=[A-Z])");
 
-            String verb = "";
-
-            for (int i = 0; i < parts.length; i++) {
-                verb += parts[i].toLowerCase();
-                break;
-            }
-
-            return verb;
+            return parts[0];
         }
     }
 
