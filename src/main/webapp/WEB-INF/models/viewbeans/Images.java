@@ -1,4 +1,4 @@
-package beans;
+package viewbeans;
 
 import example.domain.Image;
 
@@ -6,10 +6,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ImagesBean implements Serializable {
+public class Images implements Serializable {
     private List<Image> images = new ArrayList<>();
 
-    public ImagesBean() {}
+    public Images() {}
 
     public List<Image> getImages() {
         return images;

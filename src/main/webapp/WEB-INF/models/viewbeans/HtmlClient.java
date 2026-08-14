@@ -1,4 +1,4 @@
-package beans;
+package viewbeans;
 
 import example.domain.Sound;
 
@@ -6,8 +6,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class HtmlClientBean implements Serializable {
-    public HtmlClientBean() {}
+public class HtmlClient implements Serializable {
+    public HtmlClient() {}
 
     private Object formData = new Object();
     private List<Sound> sounds = new ArrayList<>();

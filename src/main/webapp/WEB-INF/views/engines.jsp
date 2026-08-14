@@ -1,5 +1,5 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
-<jsp:useBean id="model" class="beans.EnginesBean" scope="request"/>
+<jsp:useBean id="model" class="viewbeans.Engines" scope="request"/>
 <jsp:include page="header.jsp">
     <jsp:param name="title" value="HTML Generic HTTP WS Client - Engines"/>
 </jsp:include>

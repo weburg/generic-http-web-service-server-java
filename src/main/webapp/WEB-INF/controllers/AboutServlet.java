@@ -1,6 +1,4 @@
-import beans.AboutBean;
-import beans.IndexBean;
-import example.domain.Engine;
+import viewbeans.About;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
 import jakarta.servlet.http.HttpServletRequest;
@@ -12,10 +10,10 @@ public class AboutServlet extends HttpServlet {
     public AboutServlet() {}
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        AboutBean aboutBean = new AboutBean();
-        aboutBean.setRequestUri(request.getRequestURI());
+        About about = new About();
+        about.setRequestUri(request.getRequestURI());
 
-        request.setAttribute("model", aboutBean);
+        request.setAttribute("model", about);
         request.getRequestDispatcher("/WEB-INF/views/about.jsp").forward(request, response);
     }
 }

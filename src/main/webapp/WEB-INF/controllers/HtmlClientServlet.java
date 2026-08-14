@@ -1,4 +1,4 @@
-import beans.HtmlClientBean;
+import viewbeans.HtmlClient;
 import example.SupportedMimeTypes;
 import example.services.ExampleService;
 import jakarta.servlet.ServletException;
@@ -18,7 +18,7 @@ class HtmlClientServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         Object formData = request.getSession(true).getAttribute("formData");
 
-        HtmlClientBean model = new HtmlClientBean();
+        HtmlClient model = new HtmlClient();
         model.setFormData(formData);
         model.setSounds(this.exampleService.getSounds());
         model.setAudioTypesList(SupportedMimeTypes.getSubtypesAsCommaSeparatedString(SupportedMimeTypes.MimeTypes.AUDIO));

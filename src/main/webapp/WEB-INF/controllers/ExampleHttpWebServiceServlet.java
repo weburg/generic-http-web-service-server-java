@@ -97,7 +97,7 @@ public class ExampleHttpWebServiceServlet extends HttpWebServiceServlet {
     protected void respondWithResource(HttpServletRequest request, HttpServletResponse response, Object handledResponse, String resource, String beanFieldName) throws ServletException, IOException {
         try {
             String resourceTitleCase = resource.substring(0, 1).toUpperCase() + resource.substring(1);
-            Class beanClass = Class.forName("beans." + resourceTitleCase + "Bean");
+            Class beanClass = Class.forName("viewbeans." + resourceTitleCase);
             Object bean = beanClass.getConstructor().newInstance();
 
             try {

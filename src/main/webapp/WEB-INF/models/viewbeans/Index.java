@@ -1,13 +1,13 @@
-package beans;
+package viewbeans;
 
 import example.domain.Engine;
 
 import java.io.Serializable;
 
-public class IndexBean implements Serializable {
+public class Index implements Serializable {
     private Engine engine = new Engine();
 
-    public IndexBean() {}
+    public Index() {}
 
     public Engine getEngine() {
         return engine;

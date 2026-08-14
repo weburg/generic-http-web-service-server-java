@@ -1,6 +1,6 @@
 <%@ taglib prefix="c" uri="jakarta.tags.core" %>
 <%@ taglib prefix="fn" uri="jakarta.tags.functions" %>
-<jsp:useBean id="model" scope="request" type="beans.HtmlClientBean"/>
+<jsp:useBean id="model" scope="request" type="viewbeans.HtmlClient"/>
 <jsp:include page="header.jsp">
     <jsp:param name="title" value="Generic HTTP Web Service Client in HTML (GHoWSt)"/>
 </jsp:include>

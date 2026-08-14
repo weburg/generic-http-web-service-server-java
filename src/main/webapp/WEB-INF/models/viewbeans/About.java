@@ -1,14 +1,14 @@
-package beans;
+package viewbeans;
 
 import java.io.Serializable;
 import java.time.ZonedDateTime;
 import java.util.Date;
 
-public class AboutBean implements Serializable {
+public class About implements Serializable {
     private ZonedDateTime date = ZonedDateTime.now();
     private String requestUri = "";
 
-    public AboutBean() {}
+    public About() {}
 
     public Date getDate() {
         // Note: Instant.now gives an Instant, and its .toString() formats to ISO 8601 UTC.

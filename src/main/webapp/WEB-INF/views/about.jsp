@@ -1,6 +1,6 @@
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <%@ taglib prefix="fmt" uri="jakarta.tags.fmt" %>
-<jsp:useBean id="model" class="beans.AboutBean" scope="request"/>
+<jsp:useBean id="model" class="viewbeans.About" scope="request"/>
 <jsp:useBean id="myclass" class="example.MyClass" scope="request"/>
 <jsp:include page="header.jsp">
     <jsp:param name="title" value="About"/>

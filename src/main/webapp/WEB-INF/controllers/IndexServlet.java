@@ -1,4 +1,4 @@
-import beans.IndexBean;
+import viewbeans.Index;
 
 import example.domain.Engine;
 import jakarta.servlet.ServletException;
@@ -15,9 +15,9 @@ public class IndexServlet extends HttpServlet {
     }
 
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        IndexBean indexBean = new IndexBean();
-        indexBean.setEngine(engine);
-        request.setAttribute("model", indexBean);
+        Index index = new Index();
+        index.setEngine(engine);
+        request.setAttribute("model", index);
 
         request.getRequestDispatcher("/WEB-INF/views/index.jsp").forward(request, response);
     }

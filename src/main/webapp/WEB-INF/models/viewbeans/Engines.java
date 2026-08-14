@@ -1,4 +1,4 @@
-package beans;
+package viewbeans;
 
 import example.domain.Engine;
 
@@ -6,10 +6,10 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EnginesBean implements Serializable {
+public class Engines implements Serializable {
     private List<Engine> engines = new ArrayList<>();
 
-    public EnginesBean() {}
+    public Engines() {}
 
     public List<Engine> getEngines() {
         return engines;

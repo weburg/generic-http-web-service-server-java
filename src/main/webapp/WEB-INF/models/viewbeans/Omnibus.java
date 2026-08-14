@@ -1,11 +1,11 @@
-package beans;
+package viewbeans;
 
 import java.io.Serializable;
 
-public class TrucksBean implements Serializable {
+public class Omnibus implements Serializable {
     private String result = "";
 
-    public TrucksBean() {}
+    public Omnibus() {}
 
     public String getResult() {
         return result;
