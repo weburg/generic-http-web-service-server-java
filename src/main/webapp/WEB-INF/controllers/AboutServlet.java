@@ -1,3 +1,4 @@
+import example.MyClass;
 import viewbeans.About;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServlet;
@@ -12,6 +13,9 @@ public class AboutServlet extends HttpServlet {
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         About about = new About();
         about.setRequestUri(request.getRequestURI());
+
+        MyClass myClass = new MyClass();
+        about.setMyFunctionOutput(myClass.myFunction("Java"));
 
         request.setAttribute("model", about);
         request.getRequestDispatcher("/WEB-INF/views/about.jsp").forward(request, response);

@@ -16,7 +16,7 @@
     <tbody>
     <c:forEach var="engine" items="${model.engines}">
         <tr>
-            <td><a href="${pageContext.request.contextPath}/generichttpws/engines?id=<c:out value="${engine.id}"/>"><c:out value="${engine.id}"/></a></td>
+            <td><a href="<c:out value="${pageContext.request.contextPath}"/>/generichttpws/engines?id=<c:out value="${engine.id}"/>"><c:out value="${engine.id}"/></a></td>
             <td><c:out value="${engine.name}"/></td>
             <td><c:out value="${engine.cylinders}"/></td>
             <td><c:out value="${engine.throttleSetting}"/></td>

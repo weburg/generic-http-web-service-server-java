@@ -15,9 +15,9 @@
     <tbody>
     <c:forEach var="sound" items="${model.sounds}">
         <tr>
-            <td><audio controls><source src="${pageContext.request.contextPath}/generichttpws/sounds?name=<c:out value="${sound.name}"/>"></audio></td>
+            <td><audio controls><source src="<c:out value="${pageContext.request.contextPath}"/>/generichttpws/sounds?name=<c:out value="${sound.name}"/>"></audio></td>
             <td><c:out value="${sound.caption}"/></td>
-            <td><a href="${pageContext.request.contextPath}/generichttpws/sounds?name=<c:out value="${sound.name}"/>"><c:out value="${sound.name}"/></a></td>
+            <td><a href="<c:out value="${pageContext.request.contextPath}"/>/generichttpws/sounds?name=<c:out value="${sound.name}"/>"><c:out value="${sound.name}"/></a></td>
         </tr>
     </c:forEach>
     </tbody>

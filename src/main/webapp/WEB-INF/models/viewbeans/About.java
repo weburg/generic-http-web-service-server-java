@@ -7,6 +7,7 @@ import java.util.Date;
 public class About implements Serializable {
     private ZonedDateTime date = ZonedDateTime.now();
     private String requestUri = "";
+    private String myFunctionOutput = "";
 
     public About() {}
 
@@ -25,5 +26,13 @@ public class About implements Serializable {
 
     public void setRequestUri(String requestUri) {
         this.requestUri = requestUri;
+    }
+
+    public String getMyFunctionOutput() {
+        return myFunctionOutput;
+    }
+
+    public void setMyFunctionOutput(String myFunctionOutput) {
+        this.myFunctionOutput = myFunctionOutput;
     }
 }

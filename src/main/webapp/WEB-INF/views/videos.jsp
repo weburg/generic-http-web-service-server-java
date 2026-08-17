@@ -15,9 +15,9 @@
     <tbody>
     <c:forEach var="video" items="${model.videos}">
         <tr>
-            <td><video controls width="256"><source src="${pageContext.request.contextPath}/generichttpws/videos?name=<c:out value="${video.name}"/>"></video></td>
+            <td><video controls width="256"><source src="<c:out value="${pageContext.request.contextPath}"/>/generichttpws/videos?name=<c:out value="${video.name}"/>"></video></td>
             <td><c:out value="${video.caption}"/></td>
-            <td><a href="${pageContext.request.contextPath}/generichttpws/videos?name=<c:out value="${video.name}"/>"><c:out value="${video.name}"/></a></td>
+            <td><a href="<c:out value="${pageContext.request.contextPath}"/>/generichttpws/videos?name=<c:out value="${video.name}"/>"><c:out value="${video.name}"/></a></td>
         </tr>
     </c:forEach>
     </tbody>
