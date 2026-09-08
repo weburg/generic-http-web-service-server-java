@@ -8,7 +8,7 @@
 
 <img src="images/ghowstlogo.png" width="616" height="659" alt="GHoWSt logo" style="width: auto; height: 72px; float: left; margin-right: 10px; margin-bottom: 10px;">
 
-<p>This <a href="/about">DUETS</a> server runs the Generic HTTP Web Service as well as an HTML frontend to it as linked below, which has limited functionality because plain HTML cannot send all the HTTP methods. Generally, it can only do GET and POST. Use the JavaScript client or any other client for full functionality. That being said, actions on existing resources beyond simple create and read are supported and all use POST.</p>
+<p>This <a href="/about">DEwETs</a> server runs the Generic HTTP Web Service as well as an HTML frontend to it as linked below, which has limited functionality because plain HTML cannot send all the HTTP methods. Generally, it can only do GET and POST. Use the JavaScript client or any other client for full functionality. That being said, actions on existing resources beyond simple create and read are supported and all use POST.</p>
 
 <p>Probably, you'll be more interested in one of the links below than anything else on this page.</p>
 

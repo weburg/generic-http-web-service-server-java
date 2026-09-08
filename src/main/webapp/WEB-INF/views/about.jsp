@@ -5,11 +5,11 @@
     <jsp:param name="title" value="About"/>
 </jsp:include>
 
-<h2>GHoWSt DUETS</h2>
+<h2>GHoWSt DEwETs</h2>
 
-<img src="/images/ghowstduetslogo.png" alt="GHoWSt DUETS logo" width="744" height="682" style="width: auto; height: 72px; float: left; margin-right: 10px; margin-bottom: 10px;">
+<img src="/images/ghowstdewetslogo.png" alt="GHoWSt DEwETs logo" width="744" height="682" style="width: auto; height: 72px; float: left; margin-right: 10px; margin-bottom: 10px;">
 
-<h3>Depend Upon Existing Technology Stack</h3>
+<h3>Dependable Elegant Existing Templates</h3>
 
 <fmt:formatDate value="${model.date}" var="date" pattern="yyyy-MM-dd'T'HH:mm:ss.SSS'Z'" timeZone="UTC" />
 <p>The time is <c:out value="${date}"/>. <c:out value="${model.myFunctionOutput}"/>.</p>
