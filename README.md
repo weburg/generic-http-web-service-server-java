@@ -1,6 +1,6 @@
 # Generic HTTP Web Service Server in Java (GHoWSt)
 
-![Logo](http://www.weburg.com/ghowst/images/ghowstlogo.png)
+![Logo](https://www.weburg.com/ghowst/images/ghowstlogo.png)
 
 ## An example server providing the Web service and an HTML-only static client
 
