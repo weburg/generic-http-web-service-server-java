@@ -43,16 +43,13 @@ label span {
 /* Forms */
 
 :root {
-    --fether-radius: 0px;
     --fether-accent: navy;
     accent-color: var(--fether-accent);
 }
 
-input:not([type="file"]),
+input,
 textarea,
 select {
-    border-radius: var(--fether-radius);
-    border: 1px solid;
     margin-top: 1px;
     margin-bottom: 1px;
 }
