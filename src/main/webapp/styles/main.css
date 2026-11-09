@@ -39,3 +39,20 @@ label span {
     display: inline-block;
     min-width: 80px;
 }
+
+/* Forms */
+
+:root {
+    --fether-radius: 0px;
+    --fether-accent: navy;
+    accent-color: var(--fether-accent);
+}
+
+input:not([type="file"]),
+textarea,
+select {
+    border-radius: var(--fether-radius);
+    border: 1px solid;
+    margin-top: 1px;
+    margin-bottom: 1px;
+}
