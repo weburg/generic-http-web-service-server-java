@@ -1,9 +1,25 @@
-body {
-    font-family: "Courier 10 Pitch", sans-serif;
+:root {
+    --accent-dark: navy;
+    --accent-light: hotpink;
+    accent-color: var(--accent-dark);
 }
 
-fieldset, label {
-    font-size: small;
+body {
+    font-family: sans-serif;
+    color: black;
+    a:link, a:visited {
+        color: var(--accent-dark);
+    }
+    a:hover {
+        opacity: 0.6;
+    }
+}
+
+hr {
+    height: 0;
+    border: 0;
+    border-top: 1px solid var(--accent-light);
+    border-bottom: 1px solid var(--accent-light);
 }
 
 table {
@@ -23,6 +39,14 @@ td, th {
     text-align: left;
 }
 
+blockquote {
+    margin-left: 16px;
+}
+
+footer {
+    margin-bottom: 2em;
+}
+
 form {
     margin-bottom: 1.5em;
 }
@@ -31,20 +55,13 @@ form:last-of-type {
     margin-bottom: 1em;
 }
 
-blockquote {
-    margin-left: 16px;
+fieldset, label {
+    font-size: small;
 }
 
 label span {
     display: inline-block;
     min-width: 80px;
-}
-
-/* Forms */
-
-:root {
-    --fether-accent: navy;
-    accent-color: var(--fether-accent);
 }
 
 input,
