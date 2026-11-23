@@ -38,7 +38,7 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
                                 gen.writeNull();
                                 return;
                             }
-                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.nnnnnnnnn")));
+                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSS")));
                         }
                     })
                     .addSerializer(OffsetDateTime.class, new JsonSerializer<OffsetDateTime>() {
@@ -47,7 +47,7 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
                                 gen.writeNull();
                                 return;
                             }
-                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.nnnnnnnnnXXX")));
+                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")));
                         }
                     })
                     .addSerializer(File.class, new JsonSerializer<File>() {
