@@ -28,6 +28,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.LocalDateTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.logging.Logger;
@@ -346,7 +347,7 @@ public class ExampleHttpWebService implements ExampleService {
     public Omnibus getOmnibus() {
         Omnibus omnibus = new Omnibus();
         omnibus.setBirthtime(LocalDateTime.of(2016, 5, 11, 12, 0, 0, 0));
-        omnibus.setSendtime(OffsetDateTime.now());
+        omnibus.setSendtime(OffsetDateTime.now(ZoneOffset.UTC));
         omnibus.setToppings(Arrays.asList("Cheese", "Pepperoni", "Sausage"));
         omnibus.setSides(new String[]{"Fries", "Onion Rings"});
         omnibus.setOnFire(false);

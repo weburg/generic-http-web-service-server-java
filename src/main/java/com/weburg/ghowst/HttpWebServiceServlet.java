@@ -47,7 +47,7 @@ public abstract class HttpWebServiceServlet extends HttpServlet {
                                 gen.writeNull();
                                 return;
                             }
-                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSXXX")));
+                            gen.writeString(value.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSSSSxxx")));
                         }
                     })
                     .addSerializer(File.class, new JsonSerializer<File>() {
