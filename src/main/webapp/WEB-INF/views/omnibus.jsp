@@ -4,7 +4,7 @@
     <jsp:param name="title" value="HTML Generic HTTP WS Client - Omnibus"/>
 </jsp:include>
 
-<h2>Let's see all the fun stuff we can look at!</h2>
+<h2>Let's see all the fun bus stuff we can look at!</h2>
 
 <p><c:out value="${model.result}" escapeXml="false"/></p>
 

@@ -287,6 +287,8 @@ public class ExampleHttpWebService implements ExampleService {
         return engineFiles;
     }
 
+    // TODO move HTML into presentation later, this is just some dirty manual testing
+
     public String raceTrucks(Truck truck1, Truck truck2) {
         // This method is just to demo and test parsing two objects in same call.
 
@@ -311,10 +313,38 @@ public class ExampleHttpWebService implements ExampleService {
         return sb.toString();
     }
 
+    public String testOrder(String color, LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing) {
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("Napkin color: ")
+                .append("<span style=\"background-color:")
+                .append(color)
+                .append("; color:")
+                .append("contrast-color(").append(color).append(")\">")
+                .append(color)
+                .append("</span>");
+        sb.append("<br><br>");
+        sb.append("Delivery time of ").append((birthtime != null ? birthtime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "none")).append(" with toppings ").append(toppings.size() > 0 ? toppings.toString() : "missing").append(" is a party!");
+        sb.append("<br><br>");
+        sb.append("A send time of ").append((sendtime != null ? sendtime.format(DateTimeFormatter.ISO_ZONED_DATE_TIME) : "none"));
+        sb.append("<br><br>");
+        sb.append("Sides: ").append(sides.length > 0 ? Arrays.asList(sides) : "none");
+        sb.append("<br><br>");
+        sb.append("The food is on fire: ").append(onFire);
+        sb.append("<br><br>");
+        sb.append("Recipe: ").append((document != null ? document.getName() + " (size: " + document.length() + " bytes)" : "none"));
+        sb.append("<br><br>");
+        sb.append("Pairing for Steak: ").append((pairing != null && pairing.get("Steak") != null ? pairing.get("Steak") : "none"));
+        sb.append("<br><br>");
+        sb.append("Pairing for Fish: ").append((pairing != null && pairing.get("Fish") != null ? pairing.get("Fish") : "none"));
+
+        return sb.toString();
+    }
+
     public String testOmnibus(Omnibus omnibus) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("Color: ")
+        sb.append("Exterior color: ")
                 .append("<span style=\"background-color:")
                 .append(omnibus.getColor())
                 .append("; color:")
@@ -322,52 +352,21 @@ public class ExampleHttpWebService implements ExampleService {
                 .append(omnibus.getColor())
                 .append("</span>");
         sb.append("<br><br>");
-        sb.append("A birth time of ").append((omnibus.getBirthtime() != null ? omnibus.getBirthtime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "none")).append(" with toppings ").append(omnibus.getToppings().size() > 0 ? omnibus.getToppings().toString() : "missing").append(" is a party!");
+        sb.append("A creation time of ").append((omnibus.getBirthtime() != null ? omnibus.getBirthtime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "none")).append(" with meal toppings ").append(omnibus.getToppings().size() > 0 ? omnibus.getToppings().toString() : "missing").append(" is a party!");
         sb.append("<br><br>");
         sb.append("A send time of ").append((omnibus.getSendtime() != null ? omnibus.getSendtime().format(DateTimeFormatter.ISO_ZONED_DATE_TIME) : "none"));
         sb.append("<br><br>");
-        sb.append("Sides: ").append(omnibus.getSides().length > 0 ? Arrays.asList(omnibus.getSides()) : "none");
+        sb.append("Meal sides: ").append(omnibus.getSides().length > 0 ? Arrays.asList(omnibus.getSides()) : "none");
         sb.append("<br><br>");
-        sb.append("The omnibus is on fire: ").append(omnibus.isOnFire());
+        sb.append("The bus is on fire: ").append(omnibus.isOnFire());
         sb.append("<br><br>");
-        sb.append("Document: ").append((omnibus.getDocument() != null ? omnibus.getDocument().getName() + " (size: " + omnibus.getDocument().length() + " bytes)" : "none"));
+        sb.append("Manual: ").append((omnibus.getDocument() != null ? omnibus.getDocument().getName() + " (size: " + omnibus.getDocument().length() + " bytes)" : "none"));
         sb.append("<br><br>");
-        sb.append("Pairing for Steak: ").append((omnibus.getPairing() != null && omnibus.getPairing().get("Steak") != null ? omnibus.getPairing().get("Steak") : "none"));
+        sb.append("Meal pairing for Steak: ").append((omnibus.getPairing() != null && omnibus.getPairing().get("Steak") != null ? omnibus.getPairing().get("Steak") : "none"));
         sb.append("<br><br>");
-        sb.append("Pairing for Fish: ").append((omnibus.getPairing() != null && omnibus.getPairing().get("Fish") != null ? omnibus.getPairing().get("Fish") : "none"));
+        sb.append("Meal pairing for Fish: ").append((omnibus.getPairing() != null && omnibus.getPairing().get("Fish") != null ? omnibus.getPairing().get("Fish") : "none"));
 
         return sb.toString();
-    }
-
-    public String testOmnibusr(String color, LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing) {
-        Omnibus omnibus = new Omnibus();
-        omnibus.setColor(color);
-        omnibus.setBirthtime(birthtime);
-        omnibus.setSendtime(sendtime);
-        omnibus.setToppings(toppings);
-        omnibus.setSides(sides);
-        omnibus.setOnFire(onFire);
-        omnibus.setDocument(document);
-        omnibus.setPairing(pairing);
-
-        return testOmnibus(omnibus);
-    }
-
-    public Omnibus getOmnibus() {
-        Omnibus omnibus = new Omnibus();
-        omnibus.setColor("green");
-        omnibus.setBirthtime(LocalDateTime.of(2016, 5, 11, 12, 0, 0, 0));
-        omnibus.setSendtime(OffsetDateTime.now(ZoneOffset.UTC));
-        omnibus.setToppings(Arrays.asList("Cheese", "Pepperoni", "Sausage"));
-        omnibus.setSides(new String[]{"Fries", "Onion Rings"});
-        omnibus.setOnFire(false);
-        omnibus.setDocument(null);
-        omnibus.setPairing(new LinkedHashMap<>() {{
-            put("Steak", "Cabernet Sauvignon");
-            put("Fish", "Chardonnay");
-        }});
-
-        return omnibus;
     }
 
     private <T extends Multimedia> File[] getMultimediaFiles(Class<T> clazz) {

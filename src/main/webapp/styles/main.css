@@ -61,7 +61,7 @@ fieldset, label {
 
 label span {
     display: inline-block;
-    min-width: 80px;
+    min-width: 7em;
 }
 
 input,

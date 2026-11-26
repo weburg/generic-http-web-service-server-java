@@ -54,9 +54,7 @@ public interface ExampleService {
 
     String raceTrucks(Truck truck1, Truck truck2);
 
+    String testOrder(String color, LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing);
+
     String testOmnibus(Omnibus omnibus);
-
-    String testOmnibusr(String color, LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing);
-
-    Omnibus getOmnibus();
 }

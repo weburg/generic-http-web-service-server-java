@@ -73,12 +73,7 @@ public class ExampleHttpWebServiceServlet extends HttpWebServiceServlet {
         } else if (handledResponse != null) {
             String resource = getResourceFromPath(request.getPathInfo());
 
-            if (resource.equals("trucks") || resource.startsWith("omnibus")) {
-                // All omnibus output is the same
-                if (resource.startsWith("omnibus")) {
-                    resource = "omnibus";
-                }
-
+            if (resource.equals("trucks") || resource.equals("omnibus") || resource.equals("order")) {
                 if (getAccept(request).contains("text/html")) {
                     respondWithResource(request, response, handledResponse, resource, "result");
                 }
