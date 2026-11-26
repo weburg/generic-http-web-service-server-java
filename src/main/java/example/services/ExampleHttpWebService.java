@@ -298,7 +298,7 @@ public class ExampleHttpWebService implements ExampleService {
 
         StringBuilder sb = new StringBuilder();
         sb.append("The ").append(truck1.getName()).append(" and the ").append(truck2.getName()).append(" trucks race! ");
-        sb.append("\n\n");
+        sb.append("<br><br>");
 
         if (engine1.getCylinders() > engine2.getCylinders() && engine1.getThrottleSetting() > engine2.getThrottleSetting()) {
             sb.append("The ").append(truck1.getName()).append(" wins!");
@@ -314,25 +314,34 @@ public class ExampleHttpWebService implements ExampleService {
     public String testOmnibus(Omnibus omnibus) {
         StringBuilder sb = new StringBuilder();
 
+        sb.append("Color: ")
+                .append("<span style=\"background-color:")
+                .append(omnibus.getColor())
+                .append("; color:")
+                .append("contrast-color(").append(omnibus.getColor()).append(")\">")
+                .append(omnibus.getColor())
+                .append("</span>");
+        sb.append("<br><br>");
         sb.append("A birth time of ").append((omnibus.getBirthtime() != null ? omnibus.getBirthtime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "none")).append(" with toppings ").append(omnibus.getToppings().size() > 0 ? omnibus.getToppings().toString() : "missing").append(" is a party!");
-        sb.append("\n\n");
+        sb.append("<br><br>");
         sb.append("A send time of ").append((omnibus.getSendtime() != null ? omnibus.getSendtime().format(DateTimeFormatter.ISO_ZONED_DATE_TIME) : "none"));
-        sb.append("\n\n");
+        sb.append("<br><br>");
         sb.append("Sides: ").append(omnibus.getSides().length > 0 ? Arrays.asList(omnibus.getSides()) : "none");
-        sb.append("\n\n");
+        sb.append("<br><br>");
         sb.append("The omnibus is on fire: ").append(omnibus.isOnFire());
-        sb.append("\n\n");
+        sb.append("<br><br>");
         sb.append("Document: ").append((omnibus.getDocument() != null ? omnibus.getDocument().getName() + " (size: " + omnibus.getDocument().length() + " bytes)" : "none"));
-        sb.append("\n\n");
+        sb.append("<br><br>");
         sb.append("Pairing for Steak: ").append((omnibus.getPairing() != null && omnibus.getPairing().get("Steak") != null ? omnibus.getPairing().get("Steak") : "none"));
-        sb.append("\n\n");
+        sb.append("<br><br>");
         sb.append("Pairing for Fish: ").append((omnibus.getPairing() != null && omnibus.getPairing().get("Fish") != null ? omnibus.getPairing().get("Fish") : "none"));
 
         return sb.toString();
     }
 
-    public String testOmnibusr(LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing) {
+    public String testOmnibusr(String color, LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing) {
         Omnibus omnibus = new Omnibus();
+        omnibus.setColor(color);
         omnibus.setBirthtime(birthtime);
         omnibus.setSendtime(sendtime);
         omnibus.setToppings(toppings);
@@ -346,6 +355,7 @@ public class ExampleHttpWebService implements ExampleService {
 
     public Omnibus getOmnibus() {
         Omnibus omnibus = new Omnibus();
+        omnibus.setColor("green");
         omnibus.setBirthtime(LocalDateTime.of(2016, 5, 11, 12, 0, 0, 0));
         omnibus.setSendtime(OffsetDateTime.now(ZoneOffset.UTC));
         omnibus.setToppings(Arrays.asList("Cheese", "Pepperoni", "Sausage"));

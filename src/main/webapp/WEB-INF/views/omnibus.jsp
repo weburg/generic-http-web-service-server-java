@@ -6,6 +6,6 @@
 
 <h2>Let's see all the fun stuff we can look at!</h2>
 
-<p><pre><c:out value="${model.result}"/></pre></p>
+<p><c:out value="${model.result}" escapeXml="false"/></p>
 
 <%@ include file="footer.jsp" %>

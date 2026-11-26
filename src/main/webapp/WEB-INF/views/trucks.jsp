@@ -6,6 +6,6 @@
 
 <h2>Well, race fans, here's the result of the race!</h2>
 
-<p><pre><c:out value="${model.result}"/></pre></p>
+<p><c:out value="${model.result}" escapeXml="false"/></p>
 
 <%@ include file="footer.jsp" %>

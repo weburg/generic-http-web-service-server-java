@@ -184,6 +184,7 @@
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
     <fieldset disabled>
         <legend>Various other types within custom object</legend>
+        <label><span>Color: </span><input type="color" name="omnibus.color" value="<c:out value="${model.formData[uri]['omnibus.color'][0]}"/>"></label><br>
         <label><span>Birth time: </span><input type="datetime-local" name="omnibus.birthtime" value="<c:out value="${model.formData[uri]['omnibus.birthtime'][0]}"/>"></label><br>
         <label><span>Send time: </span><input type="text" name="omnibus.sendtime" value="<c:out value="${omnibusSendtime}"/>" size="30"></label><br>
         <label><span>Toppings: </span></label><label><input type="checkbox" name="omnibus.toppings" value="Cheese"<c:if test="${fn:contains(selectedToppings, '|Cheese|')}"> checked</c:if>>Cheese</label> <label><input type="checkbox" name="omnibus.toppings" value="Pepperoni"<c:if test="${fn:contains(selectedToppings, '|Pepperoni|')}"> checked</c:if>>Pepperoni</label> <label><input type="checkbox" name="omnibus.toppings" value="Mushrooms"<c:if test="${fn:contains(selectedToppings, '|Mushrooms|')}"> checked</c:if>>Mushrooms</label><br>
@@ -213,6 +214,7 @@
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
     <fieldset>
         <legend>Various other types at root level</legend>
+        <label><span>Color: </span><input type="color" name="color" value="<c:out value="${model.formData[uri]['color'][0]}"/>"></label><br>
         <label><span>Birth time: </span><input type="datetime-local" name="birthtime" value="<c:out value="${model.formData[uri]['birthtime'][0]}"/>"></label><br>
         <label><span>Send time: </span><input type="text" name="sendtime" value="<c:out value="${sendtime}"/>" size="30"></label><br>
         <label><span>Toppings: </span></label><label><input type="checkbox" name="toppings" value="Cheese"<c:if test="${fn:contains(selectedToppings, '|Cheese|')}"> checked</c:if>>Cheese</label> <label><input type="checkbox" name="toppings" value="Pepperoni"<c:if test="${fn:contains(selectedToppings, '|Pepperoni|')}"> checked</c:if>>Pepperoni</label> <label><input type="checkbox" name="toppings" value="Mushrooms"<c:if test="${fn:contains(selectedToppings, '|Mushrooms|')}"> checked</c:if>>Mushrooms</label><br>
