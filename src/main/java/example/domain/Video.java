@@ -7,11 +7,11 @@ import java.io.File;
 import java.io.Serializable;
 
 public class Video extends Multimedia implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     public Video() {
         super(SupportedMimeTypes.MimeTypes.VIDEO);
     }
-
-    private static final long serialVersionUID = 1L;
 
     public String getName() {
         return name;

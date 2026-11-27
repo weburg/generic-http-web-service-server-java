@@ -4,8 +4,21 @@
     <jsp:param name="title" value="HTML Generic HTTP WS Client - Trucks"/>
 </jsp:include>
 
-<h2>Well, race fans, here's the result of the race!</h2>
+<h2>Well, race fans, get ready!</h2>
 
-<p><c:out value="${model.result}" escapeXml="false"/></p>
+<p>
+<c:if test="${not empty model.truckRaceResult}">
+    <p>The <c:out value="${model.truckRaceResult.truck1.name}"/> and <c:out value="${model.truckRaceResult.truck2.name}"/> race!</p>
+
+    <c:choose>
+        <c:when test="${not empty model.truckRaceResult.winner}">
+            The <c:out value="${model.truckRaceResult.winner.name}"/> wins!
+        </c:when>
+        <c:otherwise>
+            The race is too close to call! It's a virtual tie.
+        </c:otherwise>
+    </c:choose>
+</c:if>
+</p>
 
 <%@ include file="footer.jsp" %>

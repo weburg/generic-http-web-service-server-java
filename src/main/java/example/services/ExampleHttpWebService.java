@@ -287,10 +287,12 @@ public class ExampleHttpWebService implements ExampleService {
         return engineFiles;
     }
 
-    // TODO move HTML into presentation later, this is just some dirty manual testing
-
-    public String raceTrucks(Truck truck1, Truck truck2) {
+    public TruckRaceResult raceTrucks(Truck truck1, Truck truck2) {
         // This method is just to demo and test parsing two objects in same call.
+
+        TruckRaceResult result = new TruckRaceResult();
+        result.setTruck1(truck1);
+        result.setTruck2(truck2);
 
         Engine engine1 = getEngines(truck1.getEngineId());
         Engine engine2 = getEngines(truck2.getEngineId());
@@ -298,75 +300,50 @@ public class ExampleHttpWebService implements ExampleService {
         LOGGER.info("Got trucks: " + truck1.getName() + " and " + truck2.getName());
         LOGGER.info("Engines: " + getEngines(truck1.getEngineId()).getName() + " and " + getEngines(truck2.getEngineId()).getName());
 
-        StringBuilder sb = new StringBuilder();
-        sb.append("The ").append(truck1.getName()).append(" and the ").append(truck2.getName()).append(" trucks race! ");
-        sb.append("<br><br>");
-
         if (engine1.getCylinders() > engine2.getCylinders() && engine1.getThrottleSetting() > engine2.getThrottleSetting()) {
-            sb.append("The ").append(truck1.getName()).append(" wins!");
+            result.setWinner(truck1);
         } else if (engine2.getCylinders() > engine1.getCylinders() && engine2.getThrottleSetting() > engine1.getThrottleSetting()) {
-            sb.append("The ").append(truck2.getName()).append(" wins!");
+            result.setWinner(truck2);
         } else {
-            sb.append("The race is too close to call! It's a virtual tie.");
+            result.setWinner(null);
         }
 
-        return sb.toString();
+        return result;
     }
 
-    public String testOrder(String color, LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing) {
-        StringBuilder sb = new StringBuilder();
+    public Map<String, Object> testOrders(String color, LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing) {
+        Map<String, Object> m = new java.util.LinkedHashMap<>();
 
-        sb.append("Napkin color: ")
-                .append("<span style=\"background-color:")
-                .append(color)
-                .append("; color:")
-                .append("contrast-color(").append(color).append(")\">")
-                .append(color)
-                .append("</span>");
-        sb.append("<br><br>");
-        sb.append("Delivery time of ").append((birthtime != null ? birthtime.format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "none")).append(" with toppings ").append(toppings.size() > 0 ? toppings.toString() : "missing").append(" is a party!");
-        sb.append("<br><br>");
-        sb.append("A send time of ").append((sendtime != null ? sendtime.format(DateTimeFormatter.ISO_ZONED_DATE_TIME) : "none"));
-        sb.append("<br><br>");
-        sb.append("Sides: ").append(sides.length > 0 ? Arrays.asList(sides) : "none");
-        sb.append("<br><br>");
-        sb.append("The food is on fire: ").append(onFire);
-        sb.append("<br><br>");
-        sb.append("Recipe: ").append((document != null ? document.getName() + " (size: " + document.length() + " bytes)" : "none"));
-        sb.append("<br><br>");
-        sb.append("Pairing for Steak: ").append((pairing != null && pairing.get("Steak") != null ? pairing.get("Steak") : "none"));
-        sb.append("<br><br>");
-        sb.append("Pairing for Fish: ").append((pairing != null && pairing.get("Fish") != null ? pairing.get("Fish") : "none"));
+        m.put("color", color);
+        m.put("birthtime", birthtime);
+        m.put("sendtime", sendtime);
+        m.put("toppings", toppings);
+        m.put("sides", sides);
+        m.put("onFire", onFire);
+        m.put("document", document);
+        m.put("pairing", pairing);
 
-        return sb.toString();
+        return m;
     }
 
-    public String testOmnibus(Omnibus omnibus) {
-        StringBuilder sb = new StringBuilder();
+    public Omnibus getOmnibusses() {
+        Omnibus omnibus = new Omnibus();
+        omnibus.setBirthtime(LocalDateTime.of(2016, 5, 11, 12, 0, 0, 0));
+        omnibus.setSendtime(OffsetDateTime.now(ZoneOffset.UTC));
+        omnibus.setToppings(Arrays.asList("Cheese", "Pepperoni", "Sausage"));
+        omnibus.setSides(new String[]{"Fries", "Onion Rings"});
+        omnibus.setOnFire(false);
+        omnibus.setDocument(null);
+        omnibus.setPairing(new LinkedHashMap<>() {{
+            put("Steak", "Cabernet Sauvignon");
+            put("Fish", "Chardonnay");
+        }});
 
-        sb.append("Exterior color: ")
-                .append("<span style=\"background-color:")
-                .append(omnibus.getColor())
-                .append("; color:")
-                .append("contrast-color(").append(omnibus.getColor()).append(")\">")
-                .append(omnibus.getColor())
-                .append("</span>");
-        sb.append("<br><br>");
-        sb.append("A creation time of ").append((omnibus.getBirthtime() != null ? omnibus.getBirthtime().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME) : "none")).append(" with meal toppings ").append(omnibus.getToppings().size() > 0 ? omnibus.getToppings().toString() : "missing").append(" is a party!");
-        sb.append("<br><br>");
-        sb.append("A send time of ").append((omnibus.getSendtime() != null ? omnibus.getSendtime().format(DateTimeFormatter.ISO_ZONED_DATE_TIME) : "none"));
-        sb.append("<br><br>");
-        sb.append("Meal sides: ").append(omnibus.getSides().length > 0 ? Arrays.asList(omnibus.getSides()) : "none");
-        sb.append("<br><br>");
-        sb.append("The bus is on fire: ").append(omnibus.isOnFire());
-        sb.append("<br><br>");
-        sb.append("Manual: ").append((omnibus.getDocument() != null ? omnibus.getDocument().getName() + " (size: " + omnibus.getDocument().length() + " bytes)" : "none"));
-        sb.append("<br><br>");
-        sb.append("Meal pairing for Steak: ").append((omnibus.getPairing() != null && omnibus.getPairing().get("Steak") != null ? omnibus.getPairing().get("Steak") : "none"));
-        sb.append("<br><br>");
-        sb.append("Meal pairing for Fish: ").append((omnibus.getPairing() != null && omnibus.getPairing().get("Fish") != null ? omnibus.getPairing().get("Fish") : "none"));
+        return omnibus;
+    }
 
-        return sb.toString();
+    public Omnibus testOmnibusses(Omnibus omnibus) {
+        return omnibus;
     }
 
     private <T extends Multimedia> File[] getMultimediaFiles(Class<T> clazz) {

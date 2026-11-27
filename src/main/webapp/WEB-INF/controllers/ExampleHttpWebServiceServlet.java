@@ -38,7 +38,7 @@ public class ExampleHttpWebServiceServlet extends HttpWebServiceServlet {
                 respondWithStream(response, videoFileStored);
             } else {
                 String resource = getResourceFromPath(request.getPathInfo());
-                respondWithResource(request, response, handledResponse, resource, resource);
+                respondWithResourceHtml(request, response, handledResponse, resource, resource);
             }
         } else {
             /*
@@ -73,9 +73,11 @@ public class ExampleHttpWebServiceServlet extends HttpWebServiceServlet {
         } else if (handledResponse != null) {
             String resource = getResourceFromPath(request.getPathInfo());
 
-            if (resource.equals("trucks") || resource.equals("omnibus") || resource.equals("order")) {
-                if (getAccept(request).contains("text/html")) {
-                    respondWithResource(request, response, handledResponse, resource, "result");
+            if (getAccept(request).contains("text/html")) {
+                if (resource.equals("trucks")) {
+                    respondWithResourceHtml(request, response, handledResponse, resource, "truckRaceResult");
+                } else {
+                    respondWithResourceHtml(request, response, handledResponse, resource, resource);
                 }
             } else {
                 response.setStatus(HttpServletResponse.SC_OK);
@@ -89,7 +91,7 @@ public class ExampleHttpWebServiceServlet extends HttpWebServiceServlet {
         }
     }
 
-    protected void respondWithResource(HttpServletRequest request, HttpServletResponse response, Object handledResponse, String resource, String beanFieldName) throws ServletException, IOException {
+    protected void respondWithResourceHtml(HttpServletRequest request, HttpServletResponse response, Object handledResponse, String resource, String beanFieldName) throws ServletException, IOException {
         try {
             String resourceTitleCase = resource.substring(0, 1).toUpperCase() + resource.substring(1);
             Class beanClass = Class.forName("viewbeans." + resourceTitleCase);
@@ -101,7 +103,7 @@ public class ExampleHttpWebServiceServlet extends HttpWebServiceServlet {
                     handledResponse = Arrays.asList(handledResponse);
                 }
             } catch (NoSuchFieldException e) {
-                // Don't tamper with it
+                throw new IllegalArgumentException("No field named '" + beanFieldName + "' found in bean class '" + beanClass.getName() + "'");
             }
 
             try {

@@ -7,11 +7,11 @@ import java.io.File;
 import java.io.Serializable;
 
 public class Image extends Multimedia implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     public Image() {
         super(SupportedMimeTypes.MimeTypes.IMAGE);
     }
-
-    private static final long serialVersionUID = 1L;
 
     public String getName() {
         return name;

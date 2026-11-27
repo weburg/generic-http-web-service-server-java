@@ -52,9 +52,11 @@ public interface ExampleService {
 
     int stopEngines(int id);
 
-    String raceTrucks(Truck truck1, Truck truck2);
+    TruckRaceResult raceTrucks(Truck truck1, Truck truck2);
 
-    String testOrder(String color, LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing);
+    Map<String, Object> testOrders(String color, LocalDateTime birthtime, OffsetDateTime sendtime, List<String> toppings, String[] sides, boolean onFire, File document, Map<String, String> pairing);
 
-    String testOmnibus(Omnibus omnibus);
+    Omnibus getOmnibusses();
+
+    Omnibus testOmnibusses(Omnibus omnibus);
 }

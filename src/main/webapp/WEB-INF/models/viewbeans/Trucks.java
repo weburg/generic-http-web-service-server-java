@@ -1,17 +1,19 @@
 package viewbeans;
 
+import example.domain.TruckRaceResult;
+
 import java.io.Serializable;
 
 public class Trucks implements Serializable {
-    private String result = "";
+    TruckRaceResult truckRaceResult;
 
     public Trucks() {}
 
-    public String getResult() {
-        return result;
+    public TruckRaceResult getTruckRaceResult() {
+        return truckRaceResult;
     }
 
-    public void setResult(String result) {
-        this.result = result;
+    public void setTruckRaceResult(TruckRaceResult truckRaceResult) {
+        this.truckRaceResult = truckRaceResult;
     }
 }

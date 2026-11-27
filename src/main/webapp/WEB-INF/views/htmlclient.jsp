@@ -122,8 +122,6 @@
     </fieldset>
 </form>
 
-<c:set var="uri" value="/generichttpws/engines"/>
-
 <form action="<c:out value="${uri}"/>" method="get">
     <fieldset>
         <legend>Get engine</legend>
@@ -174,9 +172,9 @@
     </fieldset>
 </form>
 
-<h2>Order</h2>
+<h2>Orders</h2>
 
-<c:set var="uri" value="/generichttpws/order/test"/>
+<c:set var="uri" value="/generichttpws/orders/test"/>
 <c:set var="selectedToppings" value="|${fn:join(model.formData[uri]['toppings'], '|')}|"/>
 <c:set var="selectedSides" value="|${fn:join(model.formData[uri]['sides'], '|')}|"/>
 <c:set var="selectedSteakPairings" value="|${fn:join(model.formData[uri]['pairing[Steak]'], '|')}|"/>
@@ -199,9 +197,9 @@
     </fieldset>
 </form>
 
-<h2>Omnibus</h2>
+<h2>Omnibusses</h2>
 
-<c:set var="uri" value="/generichttpws/omnibus/test"/>
+<c:set var="uri" value="/generichttpws/omnibusses/test"/>
 <c:set var="selectedToppings" value="|${fn:join(model.formData[uri]['omnibus.toppings'], '|')}|"/>
 <c:set var="selectedSides" value="|${fn:join(model.formData[uri]['omnibus.toppings'], '|')}|"/>
 <c:set var="selectedSteakPairings" value="|${fn:join(model.formData[uri]['omnibus.pairing[Steak]'], '|')}|"/>
@@ -221,6 +219,14 @@
         <label><span>Meal pairings: </span></label><label><input type="radio" name="omnibus.pairing[Steak]" value="Cabernet Sauvignon"<c:if test="${fn:contains(selectedSteakPairings, '|Cabernet Sauvignon|')}"> checked</c:if>>Steak/Cabernet Sauvignon</label> <label><input type="radio" name="omnibus.pairing[Steak]" value="Malbec"<c:if test="${fn:contains(selectedSteakPairings, '|Malbec|')}"> checked</c:if>>Steak/Malbec</label><label><input type="radio" name="omnibus.pairing[Fish]" value="Sauvignon Blanc"<c:if test="${fn:contains(selectedFishPairings, '|Sauvignon Blanc|')}"> checked</c:if>>Fish/Sauvignon Blanc</label> <label><input type="radio" name="omnibus.pairing[Fish]" value="Chardonnay"<c:if test="${fn:contains(selectedFishPairings, '|Chardonnay|')}"> checked</c:if>>Fish/Chardonnay</label><br>
         <br>
         <button type="submit">Test</button>
+    </fieldset>
+</form>
+
+<c:set var="uri" value="/generichttpws/omnibusses"/>
+
+<form action="<c:out value="${uri}"/>" method="get">
+    <fieldset>
+        <button type="submit">Get omnibus</button>
     </fieldset>
 </form>
 

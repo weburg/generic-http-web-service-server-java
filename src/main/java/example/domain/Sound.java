@@ -7,11 +7,11 @@ import java.io.File;
 import java.io.Serializable;
 
 public class Sound extends Multimedia implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     public Sound() {
         super(SupportedMimeTypes.MimeTypes.AUDIO);
     }
-
-    private static final long serialVersionUID = 1L;
 
     public String getName() {
         return name;

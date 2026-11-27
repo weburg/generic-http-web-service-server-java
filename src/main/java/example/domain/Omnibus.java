@@ -7,19 +7,19 @@ import java.time.OffsetDateTime;
 import java.util.*;
 
 public class Omnibus extends Bus implements Serializable {
-    public Omnibus() {
-        super("omni-58-87");
-    }
-
     private static final long serialVersionUID = 1L;
 
     private LocalDateTime birthtime = null;
     private OffsetDateTime sendtime = null;
     private List<String> toppings = new ArrayList<>();
     private String[] sides = new String[0];
-    private Boolean onFire = false;
+    private boolean onFire = false;
     private File document = null;
     private Map<String, String> pairing = new LinkedHashMap<>();
+
+    public Omnibus() {
+        super("omni-58-87");
+    }
 
     public LocalDateTime getBirthtime() {
         return birthtime;
@@ -53,11 +53,11 @@ public class Omnibus extends Bus implements Serializable {
         this.sides = sides;
     }
 
-    public Boolean isOnFire() {
+    public boolean isOnFire() {
         return onFire;
     }
 
-    public void setOnFire(Boolean onFire) {
+    public void setOnFire(boolean onFire) {
         this.onFire = onFire;
     }
 
