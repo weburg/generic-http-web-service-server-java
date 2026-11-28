@@ -273,153 +273,152 @@ public class HttpWebServiceMapper {
         }
     }
 
-    private Object convertArgument(String name, Class<?> methodParameterType, Type methodGenericParameterType, Map<String, Object> httpObjectList)
-            throws ReflectiveOperationException, IntrospectionException {
-                Object httpValue = httpObjectList.get(name);
-                Object methodArgument;
-                if (httpValue instanceof Map && !Map.class.isAssignableFrom(methodParameterType)) {
-                    methodArgument = methodParameterType.getDeclaredConstructor().newInstance();
-                    BeanInfo beanInfo = Introspector.getBeanInfo(methodParameterType, Object.class);
-                    Map<String, Object> httpObject = (Map<String, Object>) httpValue;
-                    for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
-                        Method setter = descriptor.getWriteMethod();
-                        if (setter == null) {
-                            continue;
-                        }
-                        String propertyName = descriptor.getName();
-                        Class<?> propertyType = setter.getParameterTypes()[0];
-                        boolean present = httpObject.containsKey(propertyName);
-                        boolean mapPresent = Map.class.isAssignableFrom(propertyType) && httpObject.keySet().stream().anyMatch(key -> key.startsWith(propertyName + "["));
-                        if (present || mapPresent || List.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType) || propertyType.isArray() || propertyType == boolean.class || propertyType == Boolean.class || propertyType == java.io.File.class) {
-                            setter.invoke(methodArgument, convertArgument(propertyName, propertyType, setter.getGenericParameterTypes()[0], httpObject));
-                        }
+    private Object convertArgument(String name, Class<?> methodParameterType, Type methodGenericParameterType, Map<String, Object> httpObjectList) throws ReflectiveOperationException, IntrospectionException {
+        Object httpValue = httpObjectList.get(name);
+        Object methodArgument;
+        if (httpValue instanceof Map && !Map.class.isAssignableFrom(methodParameterType)) {
+            methodArgument = methodParameterType.getDeclaredConstructor().newInstance();
+            BeanInfo beanInfo = Introspector.getBeanInfo(methodParameterType, Object.class);
+            Map<String, Object> httpObject = (Map<String, Object>) httpValue;
+            for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
+                Method setter = descriptor.getWriteMethod();
+                if (setter == null) {
+                    continue;
+                }
+                String propertyName = descriptor.getName();
+                Class<?> propertyType = setter.getParameterTypes()[0];
+                boolean present = httpObject.containsKey(propertyName);
+                boolean mapPresent = Map.class.isAssignableFrom(propertyType) && httpObject.keySet().stream().anyMatch(key -> key.startsWith(propertyName + "["));
+                if (present || mapPresent || List.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType) || propertyType.isArray() || propertyType == boolean.class || propertyType == Boolean.class || propertyType == java.io.File.class) {
+                    setter.invoke(methodArgument, convertArgument(propertyName, propertyType, setter.getGenericParameterTypes()[0], httpObject));
+                }
+            }
+        } else {
+            // The below helps read values when developing new supported datatypes
+            if (false) {
+                String a = methodParameterType.getName();
+                String b = methodParameterType.getSimpleName();
+                String c = methodParameterType.getCanonicalName();
+                String d = methodParameterType.getTypeName();
+                String e = methodGenericParameterType.getTypeName();
+                String f = "breakpoint this line";
+            }
+
+            if (methodParameterType == LocalDateTime.class) {
+                if (!((String[]) httpValue)[0].isEmpty()) {
+                    try {
+                        methodArgument = LocalDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
+                    } catch (DateTimeParseException e) {
+                        throw new IllegalArgumentException("Invalid localdatetime format for parameter: " + name + ". Expected format is ISO-8601, seconds optional, up to 9 fractional digits optional, without timezone or offset, e.g. 2026-05-07T14:30 or 2026-05-07T14:30:00.000.");
                     }
                 } else {
-                    // The below helps read values when developing new supported datatypes
-                    if (false) {
-                        String a = methodParameterType.getName();
-                        String b = methodParameterType.getSimpleName();
-                        String c = methodParameterType.getCanonicalName();
-                        String d = methodParameterType.getTypeName();
-                        String e = methodGenericParameterType.getTypeName();
-                        String f = "breakpoint this line";
+                    methodArgument = null;
+                }
+            } else if (methodParameterType == OffsetDateTime.class) {
+                if (!((String[]) httpValue)[0].isEmpty()) {
+                    try {
+                        methodArgument = OffsetDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_OFFSET_DATE_TIME);
+                    } catch (DateTimeParseException e) {
+                        throw new IllegalArgumentException("Invalid offsetdatetime format for parameter: " + name + ". Expected format is RFC3339, up to 9 fractional digits optional, with an offset or Zulu time, e.g. 2026-05-07T14:30:00-08:00, 2026-05-07T14:30:00.000Z.");
+                    }
+                } else {
+                    methodArgument = null;
+                }
+            } else if (List.class.isAssignableFrom(methodParameterType) && methodGenericParameterType instanceof ParameterizedType) {
+                if (httpValue != null) {
+                    ParameterizedType parameterizedType = (ParameterizedType) methodGenericParameterType;
+                    Type listItemType = parameterizedType.getActualTypeArguments()[0];
+
+                    String[] values = (String[]) httpValue;
+                    List<Object> convertedValues = new ArrayList<>();
+
+                    for (String value : values) {
+                        if (listItemType instanceof Class<?>) {
+                            convertedValues.add(ConvertUtils.convert(value, (Class<?>) listItemType));
+                        } else {
+                            throw new IllegalArgumentException("Unsupported list item type: " + listItemType.getTypeName());
+                        }
                     }
 
-                    if (methodParameterType == LocalDateTime.class) {
-                        if (!((String[]) httpValue)[0].isEmpty()) {
-                            try {
-                                methodArgument = LocalDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
-                            } catch (DateTimeParseException e) {
-                                throw new IllegalArgumentException("Invalid localdatetime format for parameter: " + name + ". Expected format is ISO-8601, seconds optional, up to 9 fractional digits optional, without timezone or offset, e.g. 2026-05-07T14:30 or 2026-05-07T14:30:00.000.");
-                            }
-                        } else {
-                            methodArgument = null;
-                        }
-                    } else if (methodParameterType == OffsetDateTime.class) {
-                        if (!((String[]) httpValue)[0].isEmpty()) {
-                            try {
-                                methodArgument = OffsetDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_OFFSET_DATE_TIME);
-                            } catch (DateTimeParseException e) {
-                                throw new IllegalArgumentException("Invalid offsetdatetime format for parameter: " + name + ". Expected format is RFC3339, up to 9 fractional digits optional, with an offset or Zulu time, e.g. 2026-05-07T14:30:00-08:00, 2026-05-07T14:30:00.000Z.");
-                            }
-                        } else {
-                            methodArgument = null;
-                        }
-                    } else if (List.class.isAssignableFrom(methodParameterType) && methodGenericParameterType instanceof ParameterizedType) {
-                        if (httpValue != null) {
-                            ParameterizedType parameterizedType = (ParameterizedType) methodGenericParameterType;
-                            Type listItemType = parameterizedType.getActualTypeArguments()[0];
+                    methodArgument = convertedValues;
+                } else {
+                    methodArgument = new ArrayList<>();
+                }
+            } else if (Map.class.isAssignableFrom(methodParameterType) && methodGenericParameterType instanceof ParameterizedType) {
+                Map<String, String> values = new LinkedHashMap<>();
 
-                            String[] values = (String[]) httpValue;
-                            List<Object> convertedValues = new ArrayList<>();
+                for (String parameterKey : httpObjectList.keySet()) {
+                    if (parameterKey.startsWith(name + "[")) {
+                        String mapKey = parameterKey.substring(name.length() + 1, parameterKey.length() - 1);
 
-                            for (String value : values) {
-                                if (listItemType instanceof Class<?>) {
-                                    convertedValues.add(ConvertUtils.convert(value, (Class<?>) listItemType));
-                                } else {
-                                    throw new IllegalArgumentException("Unsupported list item type: " + listItemType.getTypeName());
-                                }
-                            }
-
-                            methodArgument = convertedValues;
-                        } else {
-                            methodArgument = new ArrayList<>();
-                        }
-                    } else if (Map.class.isAssignableFrom(methodParameterType) && methodGenericParameterType instanceof ParameterizedType) {
-                        Map<String, String> values = new LinkedHashMap<>();
-
-                        for (String parameterKey : httpObjectList.keySet()) {
-                            if (parameterKey.startsWith(name + "[")) {
-                                String mapKey = parameterKey.substring(name.length() + 1, parameterKey.length() - 1);
-
-                                if (mapKey.isEmpty()) {
-                                    throw new IllegalArgumentException("Map keys cannot be empty for parameter: " + name);
-                                }
-
-                                String mapValue = ((String[]) httpObjectList.get(parameterKey))[0];
-
-                                values.put(mapKey, mapValue);
-                            }
+                        if (mapKey.isEmpty()) {
+                            throw new IllegalArgumentException("Map keys cannot be empty for parameter: " + name);
                         }
 
-                        if (!values.isEmpty()) {
-                            ParameterizedType parameterizedType = (ParameterizedType) methodGenericParameterType;
-                            Type[] mapItemTypes = parameterizedType.getActualTypeArguments();
+                        String mapValue = ((String[]) httpObjectList.get(parameterKey))[0];
 
-                            Map<String, Object> convertedValues = new LinkedHashMap<>();
-
-                            for (String key : values.keySet()) {
-                                int typeIndex = 0;
-                                for (Type mapItemType : mapItemTypes) {
-                                    if (typeIndex++ == 0) {
-                                        continue; // Skip the first type as it's the key type; we rely on it already having been enforced as a String
-                                    }
-
-                                    if (mapItemType instanceof Class<?>) {
-                                        convertedValues.put(key, ConvertUtils.convert(values.get(key), (Class<?>) mapItemType));
-                                    } else {
-                                        throw new IllegalArgumentException("Unsupported map item type: " + mapItemType.getTypeName());
-                                    }
-                                }
-                            }
-
-                            methodArgument = convertedValues;
-                        } else {
-                            methodArgument = new LinkedHashMap<>();
-                        }
-                    } else if (methodParameterType.isArray()) {
-                        if (httpValue != null) {
-                            methodArgument = ConvertUtils.convert((String[]) httpValue, methodParameterType.getComponentType());
-                        } else {
-                            methodArgument = Array.newInstance(methodParameterType.getComponentType(), 0);
-                        }
-                    } else if (methodParameterType == boolean.class || methodParameterType == Boolean.class) {
-                        boolean booleanResult = false;
-                        if (httpValue != null) {
-                            String booleanValue = ((String[]) httpValue)[0];
-
-                            if (booleanValue.compareToIgnoreCase("false") != 0 && booleanValue.compareToIgnoreCase("no") != 0 && booleanValue.compareToIgnoreCase("off") != 0 && booleanValue.compareToIgnoreCase("0") != 0) {
-                                booleanResult = true;
-                            }
-                        }
-
-                        methodArgument = ConvertUtils.convert(booleanResult, methodParameterType);
-                    } else if (methodParameterType == java.io.File.class) {
-                        if (httpValue == null) {
-                            methodArgument = null;
-                        } else {
-                            if (httpValue.getClass().isArray() && httpValue.getClass().getComponentType() == java.io.File.class) {
-                                methodArgument = ((java.io.File[]) httpValue)[0]; // It was preprocessed into a file already
-                            } else {
-                                throw new IllegalArgumentException("Expected a file for parameter: " + name + ". Check that the input type is file and that encoding type of the request is multipart/form-data.");
-                            }
-                        }
-                    } else {
-                        methodArgument = ConvertUtils.convert(((String[]) httpValue)[0], methodParameterType);
+                        values.put(mapKey, mapValue);
                     }
                 }
 
-                return methodArgument;
+                if (!values.isEmpty()) {
+                    ParameterizedType parameterizedType = (ParameterizedType) methodGenericParameterType;
+                    Type[] mapItemTypes = parameterizedType.getActualTypeArguments();
+
+                    Map<String, Object> convertedValues = new LinkedHashMap<>();
+
+                    for (String key : values.keySet()) {
+                        int typeIndex = 0;
+                        for (Type mapItemType : mapItemTypes) {
+                            if (typeIndex++ == 0) {
+                                continue; // Skip the first type as it's the key type; we rely on it already having been enforced as a String
+                            }
+
+                            if (mapItemType instanceof Class<?>) {
+                                convertedValues.put(key, ConvertUtils.convert(values.get(key), (Class<?>) mapItemType));
+                            } else {
+                                throw new IllegalArgumentException("Unsupported map item type: " + mapItemType.getTypeName());
+                            }
+                        }
+                    }
+
+                    methodArgument = convertedValues;
+                } else {
+                    methodArgument = new LinkedHashMap<>();
+                }
+            } else if (methodParameterType.isArray()) {
+                if (httpValue != null) {
+                    methodArgument = ConvertUtils.convert((String[]) httpValue, methodParameterType.getComponentType());
+                } else {
+                    methodArgument = Array.newInstance(methodParameterType.getComponentType(), 0);
+                }
+            } else if (methodParameterType == boolean.class || methodParameterType == Boolean.class) {
+                boolean booleanResult = false;
+                if (httpValue != null) {
+                    String booleanValue = ((String[]) httpValue)[0];
+
+                    if (booleanValue.compareToIgnoreCase("false") != 0 && booleanValue.compareToIgnoreCase("no") != 0 && booleanValue.compareToIgnoreCase("off") != 0 && booleanValue.compareToIgnoreCase("0") != 0) {
+                        booleanResult = true;
+                    }
+                }
+
+                methodArgument = ConvertUtils.convert(booleanResult, methodParameterType);
+            } else if (methodParameterType == java.io.File.class) {
+                if (httpValue == null) {
+                    methodArgument = null;
+                } else {
+                    if (httpValue.getClass().isArray() && httpValue.getClass().getComponentType() == java.io.File.class) {
+                        methodArgument = ((java.io.File[]) httpValue)[0]; // It was preprocessed into a file already
+                    } else {
+                        throw new IllegalArgumentException("Expected a file for parameter: " + name + ". Check that the input type is file and that encoding type of the request is multipart/form-data.");
+                    }
+                }
+            } else {
+                methodArgument = ConvertUtils.convert(((String[]) httpValue)[0], methodParameterType);
+            }
+        }
+
+        return methodArgument;
     }
 
     private static Map<String, Object> getNestedMap(Map<String, Object[]> dotKeyValues) {
