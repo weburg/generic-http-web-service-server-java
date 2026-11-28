@@ -209,8 +209,8 @@
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
     <fieldset disabled>
         <legend>Various types within object</legend>
-        <label><span>Exterior color: </span><input type="color" name="omnibus.color" value="<c:out value="${model.formData[uri]['omnibus.color'][0]}"/>"></label><br>
-        <label><span>Creation time: </span><input type="datetime-local" name="omnibus.birthtime" value="<c:out value="${model.formData[uri]['omnibus.birthtime'][0]}"/>"></label><br>
+        <label><span>Bus color: </span><input type="color" name="omnibus.color" value="<c:out value="${model.formData[uri]['omnibus.color'][0]}"/>"></label><br>
+        <label><span>Build time: </span><input type="datetime-local" name="omnibus.birthtime" value="<c:out value="${model.formData[uri]['omnibus.birthtime'][0]}"/>"></label><br>
         <label><span>Send time: </span><input type="text" name="omnibus.sendtime" value="<c:out value="${omnibusSendtime}"/>" size="30"></label><br>
         <label><span>Meal toppings: </span></label><label><input type="checkbox" name="omnibus.toppings" value="Cheese"<c:if test="${fn:contains(selectedToppings, '|Cheese|')}"> checked</c:if>>Cheese</label> <label><input type="checkbox" name="omnibus.toppings" value="Pepperoni"<c:if test="${fn:contains(selectedToppings, '|Pepperoni|')}"> checked</c:if>>Pepperoni</label> <label><input type="checkbox" name="omnibus.toppings" value="Mushrooms"<c:if test="${fn:contains(selectedToppings, '|Mushrooms|')}"> checked</c:if>>Mushrooms</label><br>
         <label><span>Meal sides: </span></label><label><input type="checkbox" name="omnibus.sides" value="Salad"<c:if test="${fn:contains(selectedSides, '|Salad|')}"> checked</c:if>>Salad</label> <label><input type="checkbox" name="omnibus.sides" value="Beans"<c:if test="${fn:contains(selectedSides, '|Beans|')}"> checked</c:if>>Beans</label> <label><input type="checkbox" name="omnibus.sides" value="Fries"<c:if test="${fn:contains(selectedSides, '|Fries|')}"> checked</c:if>>Fries</label><br>

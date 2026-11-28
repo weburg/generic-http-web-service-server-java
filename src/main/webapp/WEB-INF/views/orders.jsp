@@ -16,7 +16,7 @@
 </p>
 
 <p>
-    An order time of
+    A delivery time of
     <c:choose>
         <c:when test="${model.orders.birthtime != null}">
             <c:out value="${model.orders.birthtime}"/>
