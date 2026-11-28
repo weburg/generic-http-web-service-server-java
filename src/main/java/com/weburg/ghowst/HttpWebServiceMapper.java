@@ -2,7 +2,6 @@ package com.weburg.ghowst;
 
 import jdk.jfr.Description;
 import jdk.jfr.Name;
-import org.apache.commons.beanutils.BeanUtils;
 import org.apache.commons.beanutils.ConvertUtils;
 
 import java.beans.*;
@@ -259,20 +258,41 @@ public class HttpWebServiceMapper {
             Object[] methodArguments = new Object[methodParameterTypes.size()];
             for (int i = 0; i < methodParameterTypes.size(); i++) {
                 Parameter parameter = methodParameters[i];
-                Class<?> methodParameterType = parameter.getType();
-                Type methodGenericParameterType = parameter.getParameterizedType();
-                Object httpValue = httpObjectList.get(parameter.getName());
+                methodArguments[i] = convertArgument(parameter.getName(), parameter.getType(), parameter.getParameterizedType(), httpObjectList);
+            }
 
+            response = method.invoke(this.webService, methodArguments);
+
+            return response;
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e.getCause());
+        } catch (IllegalArgumentException e) {
+            throw e;
+        } catch (ReflectiveOperationException | IntrospectionException | RuntimeException e) {
+            throw new IllegalArgumentException("Request invalid for action " + verb + " on resource " + resource + ". Check action, resource, any subresource, and parameters for correctness.", e);
+        }
+    }
+
+    private Object convertArgument(String name, Class<?> methodParameterType, Type methodGenericParameterType, Map<String, Object> httpObjectList)
+            throws ReflectiveOperationException, IntrospectionException {
+                Object httpValue = httpObjectList.get(name);
                 Object methodArgument;
-                if (customTypes.contains(methodParameterType.getName())) {
+                if (httpValue instanceof Map && !Map.class.isAssignableFrom(methodParameterType)) {
                     methodArgument = methodParameterType.getDeclaredConstructor().newInstance();
-                    BeanInfo beanInfo = Introspector.getBeanInfo(methodParameterType, methodParameterType.getSuperclass());
-
-                    PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors();
-
-                    for (PropertyDescriptor descriptor : descriptors) {
-                        Map<String, Object> httpObject = (Map<String, Object>) httpValue;
-                        BeanUtils.setProperty(methodArgument, descriptor.getName(), httpObject.get(descriptor.getName()));
+                    BeanInfo beanInfo = Introspector.getBeanInfo(methodParameterType, Object.class);
+                    Map<String, Object> httpObject = (Map<String, Object>) httpValue;
+                    for (PropertyDescriptor descriptor : beanInfo.getPropertyDescriptors()) {
+                        Method setter = descriptor.getWriteMethod();
+                        if (setter == null) {
+                            continue;
+                        }
+                        String propertyName = descriptor.getName();
+                        Class<?> propertyType = setter.getParameterTypes()[0];
+                        boolean present = httpObject.containsKey(propertyName);
+                        boolean mapPresent = Map.class.isAssignableFrom(propertyType) && httpObject.keySet().stream().anyMatch(key -> key.startsWith(propertyName + "["));
+                        if (present || mapPresent || List.class.isAssignableFrom(propertyType) || Map.class.isAssignableFrom(propertyType) || propertyType.isArray() || propertyType == boolean.class || propertyType == Boolean.class || propertyType == java.io.File.class) {
+                            setter.invoke(methodArgument, convertArgument(propertyName, propertyType, setter.getGenericParameterTypes()[0], httpObject));
+                        }
                     }
                 } else {
                     // The below helps read values when developing new supported datatypes
@@ -290,7 +310,7 @@ public class HttpWebServiceMapper {
                             try {
                                 methodArgument = LocalDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_LOCAL_DATE_TIME);
                             } catch (DateTimeParseException e) {
-                                throw new IllegalArgumentException("Invalid localdatetime format for parameter: " + parameter.getName() + ". Expected format is ISO-8601, seconds optional, up to 9 fractional digits optional, without timezone or offset, e.g. 2026-05-07T14:30 or 2026-05-07T14:30:00.000.");
+                                throw new IllegalArgumentException("Invalid localdatetime format for parameter: " + name + ". Expected format is ISO-8601, seconds optional, up to 9 fractional digits optional, without timezone or offset, e.g. 2026-05-07T14:30 or 2026-05-07T14:30:00.000.");
                             }
                         } else {
                             methodArgument = null;
@@ -300,7 +320,7 @@ public class HttpWebServiceMapper {
                             try {
                                 methodArgument = OffsetDateTime.parse(((String[]) httpValue)[0], DateTimeFormatter.ISO_OFFSET_DATE_TIME);
                             } catch (DateTimeParseException e) {
-                                throw new IllegalArgumentException("Invalid offsetdatetime format for parameter: " + parameter.getName() + ". Expected format is RFC3339, up to 9 fractional digits optional, with an offset or Zulu time, e.g. 2026-05-07T14:30:00-08:00, 2026-05-07T14:30:00.000Z.");
+                                throw new IllegalArgumentException("Invalid offsetdatetime format for parameter: " + name + ". Expected format is RFC3339, up to 9 fractional digits optional, with an offset or Zulu time, e.g. 2026-05-07T14:30:00-08:00, 2026-05-07T14:30:00.000Z.");
                             }
                         } else {
                             methodArgument = null;
@@ -329,11 +349,11 @@ public class HttpWebServiceMapper {
                         Map<String, String> values = new LinkedHashMap<>();
 
                         for (String parameterKey : httpObjectList.keySet()) {
-                            if (parameterKey.startsWith(parameter.getName() + "[")) {
-                                String mapKey = parameterKey.substring(parameter.getName().length() + 1, parameterKey.length() - 1);
+                            if (parameterKey.startsWith(name + "[")) {
+                                String mapKey = parameterKey.substring(name.length() + 1, parameterKey.length() - 1);
 
                                 if (mapKey.isEmpty()) {
-                                    throw new IllegalArgumentException("Map keys cannot be empty for parameter: " + parameter.getName());
+                                    throw new IllegalArgumentException("Map keys cannot be empty for parameter: " + name);
                                 }
 
                                 String mapValue = ((String[]) httpObjectList.get(parameterKey))[0];
@@ -378,7 +398,7 @@ public class HttpWebServiceMapper {
                         if (httpValue != null) {
                             String booleanValue = ((String[]) httpValue)[0];
 
-                            if (booleanValue.compareToIgnoreCase("false") != 0 || booleanValue.compareToIgnoreCase("no") != 0 || booleanValue.compareToIgnoreCase("off") != 0 || booleanValue.compareToIgnoreCase("0") != 0) {
+                            if (booleanValue.compareToIgnoreCase("false") != 0 && booleanValue.compareToIgnoreCase("no") != 0 && booleanValue.compareToIgnoreCase("off") != 0 && booleanValue.compareToIgnoreCase("0") != 0) {
                                 booleanResult = true;
                             }
                         }
@@ -391,7 +411,7 @@ public class HttpWebServiceMapper {
                             if (httpValue.getClass().isArray() && httpValue.getClass().getComponentType() == java.io.File.class) {
                                 methodArgument = ((java.io.File[]) httpValue)[0]; // It was preprocessed into a file already
                             } else {
-                                throw new IllegalArgumentException("Expected a file for parameter: " + parameter.getName() + ". Check that the input type is file and that encoding type of the request is multipart/form-data.");
+                                throw new IllegalArgumentException("Expected a file for parameter: " + name + ". Check that the input type is file and that encoding type of the request is multipart/form-data.");
                             }
                         }
                     } else {
@@ -399,19 +419,7 @@ public class HttpWebServiceMapper {
                     }
                 }
 
-                methodArguments[i] = methodArgument;
-            }
-
-            response = method.invoke(this.webService, methodArguments);
-
-            return response;
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e.getCause());
-        } catch (IllegalArgumentException e) {
-            throw e;
-        } catch (InstantiationException | IllegalAccessException | NoSuchMethodException | IntrospectionException | RuntimeException e) {
-            throw new IllegalArgumentException("Request invalid for action " + verb + " on resource " + resource + ". Check action, resource, any subresource, and parameters for correctness.", e);
-        }
+                return methodArgument;
     }
 
     private static Map<String, Object> getNestedMap(Map<String, Object[]> dotKeyValues) {
@@ -603,7 +611,7 @@ public class HttpWebServiceMapper {
 
             try {
                 Class<?> beanClass = Class.forName(type.replace("[", "").replace("]", ""));
-                BeanInfo beanInfo = Introspector.getBeanInfo(beanClass, beanClass.getSuperclass());
+                BeanInfo beanInfo = Introspector.getBeanInfo(beanClass, Object.class);
 
                 PropertyDescriptor[] descriptors = beanInfo.getPropertyDescriptors(); // Alphabetical order
 

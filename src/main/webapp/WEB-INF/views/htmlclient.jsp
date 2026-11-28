@@ -207,7 +207,7 @@
 <c:set var="omnibusSendtime" value="${model.formData[uri]['omnibus.sendtime'][0] == null ? '2026-05-07T14:30:00.000000000-08:00' : model.formData[uri]['omnibus.sendtime'][0]}"/>
 
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
-    <fieldset disabled>
+    <fieldset>
         <legend>Various types within object</legend>
         <label><span>Bus color: </span><input type="color" name="omnibus.color" value="<c:out value="${model.formData[uri]['omnibus.color'][0]}"/>"></label><br>
         <label><span>Build time: </span><input type="datetime-local" name="omnibus.birthtime" value="<c:out value="${model.formData[uri]['omnibus.birthtime'][0]}"/>"></label><br>
