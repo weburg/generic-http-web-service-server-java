@@ -208,7 +208,7 @@
 
 <form action="<c:out value="${uri}"/>" method="post" enctype="multipart/form-data">
     <fieldset>
-        <legend>Various types within object</legend>
+        <legend>Various types within object, including nested objects</legend>
         <label><span>Bus color: </span><input type="color" name="omnibus.color" value="<c:out value="${model.formData[uri]['omnibus.color'][0]}"/>"></label><br>
         <label><span>Build time: </span><input type="datetime-local" name="omnibus.birthtime" value="<c:out value="${model.formData[uri]['omnibus.birthtime'][0]}"/>"></label><br>
         <label><span>Send time: </span><input type="text" name="omnibus.sendtime" value="<c:out value="${omnibusSendtime}"/>" size="30"></label><br>
@@ -217,6 +217,13 @@
         <label><span>On fire: </span><input type="checkbox" name="omnibus.onFire" value="true"<c:if test="${model.formData[uri]['omnibus.onFire'][0]}"> checked</c:if>></label><br>
         <label><span>Manual: </span><input type="file" name="omnibus.document" size="10" accept="application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document,application/pdf"></label><br>
         <label><span>Meal pairings: </span></label><label><input type="radio" name="omnibus.pairing[Steak]" value="Cabernet Sauvignon"<c:if test="${fn:contains(selectedSteakPairings, '|Cabernet Sauvignon|')}"> checked</c:if>>Steak/Cabernet Sauvignon</label> <label><input type="radio" name="omnibus.pairing[Steak]" value="Malbec"<c:if test="${fn:contains(selectedSteakPairings, '|Malbec|')}"> checked</c:if>>Steak/Malbec</label><label><input type="radio" name="omnibus.pairing[Fish]" value="Sauvignon Blanc"<c:if test="${fn:contains(selectedFishPairings, '|Sauvignon Blanc|')}"> checked</c:if>>Fish/Sauvignon Blanc</label> <label><input type="radio" name="omnibus.pairing[Fish]" value="Chardonnay"<c:if test="${fn:contains(selectedFishPairings, '|Chardonnay|')}"> checked</c:if>>Fish/Chardonnay</label><br>
+        <br>
+        <fieldset>
+            <legend>Engine</legend>
+            <label><span>Name: </span><input type="text" name="omnibus.engine.name" value="<c:out value="${model.formData[uri]['omnibus.engine.name'][0]}"/>" size="10"></label><br>
+            <label><span>Cylinders: </span><input type="text" name="omnibus.engine.cylinders" value="<c:out value="${model.formData[uri]['omnibus.engine.cylinders'][0]}"/>" size="10"></label><br>
+            <label><span>Throttle: </span><input type="text" name="omnibus.engine.throttleSetting" value="<c:out value="${model.formData[uri]['omnibus.engine.throttleSetting'][0]}"/>" size="10"></label><br>
+        </fieldset>
         <br>
         <button type="submit">Test</button>
     </fieldset>

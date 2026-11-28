@@ -17,6 +17,8 @@ public class Omnibus extends Bus implements Serializable {
     private File document = null;
     private Map<String, String> pairing = new LinkedHashMap<>();
 
+    private Engine engine = null;
+
     public Omnibus() {
         super("omni-58-87");
     }
@@ -75,5 +77,13 @@ public class Omnibus extends Bus implements Serializable {
 
     public void setPairing(Map<String, String> pairing) {
         this.pairing = pairing;
+    }
+
+    public Engine getEngine() {
+        return engine;
+    }
+
+    public void setEngine(Engine engine) {
+        this.engine = engine;
     }
 }

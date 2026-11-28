@@ -101,4 +101,10 @@
     </c:choose>
 </p>
 
+<p>
+    Engine name: <c:out value="${model.omnibusses.engine.name}"/><br>
+    Engine cylinders: <c:out value="${model.omnibusses.engine.cylinders}"/><br>
+    Engine throttle: <c:out value="${model.omnibusses.engine.throttleSetting}"/>
+</p>
+
 <%@ include file="footer.jsp" %>
